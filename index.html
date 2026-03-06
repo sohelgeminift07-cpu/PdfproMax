@@ -60,7 +60,7 @@
       text-rendering:optimizeLegibility;
       white-space:normal; word-break:break-word; overflow-wrap:break-word; max-width:100%;
     }
-    .premium-highlight { display:inline; padding:0!important; margin:0!important; border:none!important; color:#000!important; border-radius:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+    .premium-highlight { display:inline; padding:2px 0!important; margin:0!important; border:none!important; color:#000!important; border-radius:3px; box-decoration-break:clone; -webkit-box-decoration-break:clone; line-height:inherit; vertical-align:baseline; position:relative; z-index:1; }
     .premium-highlight .md-bold-text { color:inherit!important; }
     .highlight-final { background-color:#b45309!important; cursor:pointer; }
     .highlight-pending { background-color:rgba(254,240,138,0.35)!important; animation:pulse-soft 2s infinite; }
@@ -2592,14 +2592,14 @@ function AnalysisModal(_a) {
 // ============================================================
 function MaxDrawer(_a) {
     var _this = this;
-    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange;
+    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange, sessionId = _a.sessionId, initialMessages = _a.initialMessages;
     var _c = useState('summary'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState('current'), contextScope = _d[0], setContextScope = _d[1];
     var _f = useState(''), summary = _f[0], setSummary = _f[1];
     var _g = useState({}), summaryCache = _g[0], setSummaryCache = _g[1];
     var _h = useState(false), isSummaryLoading = _h[0], setIsSummaryLoading = _h[1];
     var _j = useState(''), chatInput = _j[0], setChatInput = _j[1];
-    var _k = useState([]), messages = _k[0], setMessages = _k[1];
+    var _k = useState(initialMessages || []), messages = _k[0], setMessages = _k[1];
     var _l = useState(false), isChatLoading = _l[0], setIsChatLoading = _l[1];
     var _m = useState('gemini-lite'), activeChatModel = _m[0], setActiveChatModel = _m[1];
     var _o = useState('gemini-lite'), activeSummaryModel = _o[0], setActiveSummaryModel = _o[1];
@@ -2644,6 +2644,16 @@ function MaxDrawer(_a) {
     };
     var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'gemini-3.0': 'Gemini 3.0 Flash', 'gemini-flash': 'Gemini 2.5 Flash', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
     useEffect(function () { (messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })); }, [messages]);
+    // Persist chat messages into session extras
+    useEffect(function () {
+        if (!sessionId || messages.length === 0) return;
+        try {
+            var saved = localStorage.getItem('maxofpdf_session_' + sessionId);
+            var extras = saved ? JSON.parse(saved) : {};
+            extras.chatMessages = messages;
+            localStorage.setItem('maxofpdf_session_' + sessionId, JSON.stringify(extras));
+        } catch(e) {}
+    }, [messages, sessionId]);
     useEffect(function () { if (drawerStateRef)
         drawerStateRef.current.isChatActive = (activeTab === 'chat'); }, [activeTab, drawerStateRef]);
     /* Auto-generate summary when drawer opens or page/scope changes */
@@ -3092,27 +3102,48 @@ function Settings(_a) {
                 activeTab === 'history' && (React.createElement("div", { className: "space-y-4 animate-in fade-in" }, (!history || history.length === 0) ? (React.createElement("div", { className: "flex flex-col items-center justify-center py-16 space-y-3" },
                     React.createElement("div", { className: "text-4xl opacity-20" }, "\u25F7"),
                     React.createElement("p", { className: "text-sm font-serif italic text-slate-600" }, "No reading history yet."),
-                    React.createElement("p", { className: "text-[10px] text-slate-700 uppercase tracking-widest" }, "Start reading to see your history here"))) : (React.createElement("div", { className: "space-y-3 max-w-xl" }, history.map(function (item) { return (React.createElement("button", { key: item.id, onClick: function () { (onSelectHistory && onSelectHistory(item)); handleClose(); }, className: "w-full flex items-center space-x-4 p-4 rounded-2xl bg-[#121214] border border-white/5 hover:border-white/15 hover:bg-white/5 transition-all text-left group" },
-                    React.createElement("div", { className: "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ".concat(item.type === 'pdf' ? 'bg-rose-500/15 text-rose-400' : 'bg-indigo-500/15 text-indigo-400') }, item.type === 'pdf'
-                        ? React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
-                            React.createElement("polyline", { points: "14 2 14 8 20 8" }))
-                        : React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("path", { d: "M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" }))),
-                    React.createElement("div", { className: "flex-1 min-w-0" },
-                        React.createElement("div", { className: "text-sm font-semibold text-slate-200 truncate group-hover:text-white transition-colors" }, item.title),
-                        React.createElement("div", { className: "text-[10px] text-slate-600 uppercase tracking-widest mt-0.5" }, new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }))),
-                    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", className: "text-slate-700 group-hover:text-slate-400 shrink-0 transition-colors" },
-                        React.createElement("path", { d: "m9 18 6-6-6-6" })))); })))))))));
+                    React.createElement("p", { className: "text-[10px] text-slate-700 uppercase tracking-widest" }, "Start reading to see your history here"))) : (React.createElement("div", { className: "space-y-3 max-w-xl" },
+                    React.createElement("div", { style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px'} },
+                        React.createElement("span", { style:{fontSize:'10px', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(100,120,160,0.5)'} }, history.length + " saved sessions"),
+                        React.createElement("button", { onClick: function() {
+                            try { localStorage.removeItem('maxofpdf_history'); } catch(e) {}
+                            // Signal parent to clear - using a workaround via window event
+                            window.dispatchEvent(new CustomEvent('maxofpdf_clear_history'));
+                        }, style:{fontSize:'10px', color:'rgba(239,68,68,0.6)', background:'none', border:'none', cursor:'pointer', fontWeight:700, padding:'4px 8px', borderRadius:'6px'} }, "Clear All")),
+                    history.map(function (item) {
+                        var wordCount = item.data && item.data.rawText ? item.data.rawText.trim().split(/\s+/).filter(function(w){return w.length>0;}).length : 0;
+                        var readMins = Math.ceil(wordCount / 200);
+                        return (React.createElement("div", { key: item.id, style:{display:'flex', alignItems:'center', gap:'12px', padding:'14px', borderRadius:'16px', background:'rgba(18,18,20,1)', border:'1px solid rgba(255,255,255,0.05)', transition:'all 0.2s'} },
+                            React.createElement("button", { onClick: function () { (onSelectHistory && onSelectHistory(item)); handleClose(); }, style:{display:'flex', alignItems:'center', gap:'14px', flex:1, minWidth:0, textAlign:'left', background:'none', border:'none', cursor:'pointer', padding:0} },
+                                React.createElement("div", { style:{width:'44px', height:'44px', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, background: item.type === 'pdf' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)', color: item.type === 'pdf' ? '#f87171' : '#a5b4fc'} },
+                                    item.type === 'pdf'
+                                        ? React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
+                                            React.createElement("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
+                                            React.createElement("polyline", { points: "14 2 14 8 20 8" }))
+                                        : React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
+                                            React.createElement("path", { d: "M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" }))),
+                                React.createElement("div", { style:{flex:1, minWidth:0} },
+                                    React.createElement("div", { style:{fontSize:'13px', fontWeight:600, color:'rgba(226,232,240,0.9)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'3px'} }, item.title),
+                                    React.createElement("div", { style:{display:'flex', gap:'10px', flexWrap:'wrap'} },
+                                        React.createElement("span", { style:{fontSize:'10px', color:'rgba(100,116,139,0.8)', textTransform:'uppercase', letterSpacing:'0.08em'} }, new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })),
+                                        wordCount > 0 && React.createElement("span", { style:{fontSize:'10px', color:'rgba(99,102,241,0.7)', fontWeight:700} }, wordCount.toLocaleString() + ' words'),
+                                        wordCount > 0 && React.createElement("span", { style:{fontSize:'10px', color:'rgba(110,231,183,0.6)', fontWeight:700} }, readMins + ' min read')
+                                    ))),
+                            React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", style:{color:'rgba(100,116,139,0.4)', flexShrink:0} },
+                                React.createElement("path", { d: "m9 18 6-6-6-6" }))
+                        ));
+                    })
+                ))))))));
 }
 // ============================================================
 // READER COMPONENT
 // ============================================================
 function Reader(_a) {
     var _this = this;
-    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey;
+    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, sessionId = _a.sessionId, initialSessionExtras = _a.initialSessionExtras;
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
-    var _c = useState([]), highlights = _c[0], setHighlights = _c[1];
+    var _initExtras = initialSessionExtras || {};
+    var _c = useState(_initExtras.highlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
     var _f = useState(null), modalData = _f[0], setModalData = _f[1];
     var _g = useState(false), isModalOpen = _g[0], setIsModalOpen = _g[1];
@@ -3120,7 +3151,7 @@ function Reader(_a) {
     var _j = useState(false), isMaxDrawerOpen = _j[0], setIsMaxDrawerOpen = _j[1];
     var _k = useState(null), notification = _k[0], setNotification = _k[1];
     var _l = useState(false), isRegenerating = _l[0], setIsRegenerating = _l[1];
-    var _m = useState({}), rewrittenPages = _m[0], setRewrittenPages = _m[1];
+    var _m = useState(_initExtras.rewrittenPages || {}), rewrittenPages = _m[0], setRewrittenPages = _m[1];
     var _o = useState({}), rewritingStatus = _o[0], setRewritingStatus = _o[1];
     var _p = useState(false), isCustomizerOpen = _p[0], setIsCustomizerOpen = _p[1];
     var _q = useState(false), isCustomizerClosing = _q[0], setIsCustomizerClosing = _q[1];
@@ -3193,6 +3224,13 @@ function Reader(_a) {
     var drawerActionsRef = useRef({ structureText: function () { }, revertText: function () { } });
     var autoScrollRef = useRef(null);
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
+    // Auto-save session extras (highlights + rewrites) whenever they change
+    useEffect(function () {
+        if (!sessionId) return;
+        try {
+            localStorage.setItem('maxofpdf_session_' + sessionId, JSON.stringify({ highlights: highlights, rewrittenPages: rewrittenPages }));
+        } catch(e) {}
+    }, [highlights, rewrittenPages, sessionId]);
     var displayPages = useMemo(function () { return text ? splitIntoPages(text) : []; }, [text]);
     var totalPages = pdfFile ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1)) : displayPages.length;
     // Load PDF
@@ -4118,7 +4156,7 @@ function Reader(_a) {
     var displayHeader = (function () { var t = getPageHeader(); var ws = t.split(' '); return ws.length > 2 ? ws.slice(0, 2).join(' ') + '...' : t; })();
     return (React.createElement("div", { className: "w-full flex flex-col min-h-screen px-4 pb-40 overflow-x-hidden animate-in fade-in" },
         React.createElement(AnalysisModal, { isOpen: isModalOpen, isAutoOpen: isAutoOpen, data: modalData, isLoading: isRegenerating, autoPlayTTS: autoPlayTTS, onClose: function () { return setIsModalOpen(false); }, onModelChange: handleModelChange, googleApiKey: googleApiKey }),
-        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab }),
+        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab, sessionId: sessionId, initialMessages: (_initExtras && _initExtras.chatMessages) || [] }),
         isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
@@ -4207,7 +4245,7 @@ function Reader(_a) {
                         React.createElement("path", { d: "M14 17H5" }),
                         React.createElement("circle", { cx: "17", cy: "17", r: "3" }),
                         React.createElement("circle", { cx: "7", cy: "7", r: "3" }))),
-                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5') }, "Exit"))),
+                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages, { highlights: highlights, rewrittenPages: rewrittenPages }); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5') }, "Exit"))),
         /* ── Portion Selection Mode Banner ── */
         isSelectingPortion && React.createElement("div", {
             style:{
@@ -4808,7 +4846,41 @@ function Editor(_a) {
             React.createElement("div", { className: "shine-card w-full" },
                 React.createElement("div", { className: "shine-orb" }),
                 React.createElement("div", { className: "shine-card-inner" },
-                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'Paste or type your manuscript...', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }))),
+                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'Paste or type your manuscript...', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }),
+                    text.trim().length > 0 && !pdfFile && (function() {
+                        var words = text.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
+                        var wordCount = words.length;
+                        var charCount = text.length;
+                        var sentences = text.split(/[।.!?]+/).filter(function(s) { return s.trim().length > 0; }).length;
+                        var readingMins = Math.ceil(wordCount / 200);
+                        var pages = Math.ceil(wordCount / 600);
+                        return React.createElement("div", {
+                            style: {
+                                borderTop: '1px solid rgba(255,255,255,0.05)',
+                                padding: '10px 20px',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '6px 16px',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: 'rgba(0,0,0,0.2)'
+                            }
+                        },
+                            [
+                                { label: 'Words', val: wordCount.toLocaleString(), color: '#a5b4fc' },
+                                { label: 'Chars', val: charCount.toLocaleString(), color: '#6ee7b7' },
+                                { label: 'Sentences', val: sentences.toLocaleString(), color: '#fcd34d' },
+                                { label: 'Read', val: readingMins + ' min', color: '#f9a8d4' },
+                                { label: 'Pages', val: pages + 'p', color: '#93c5fd' }
+                            ].map(function(stat) {
+                                return React.createElement("div", { key: stat.label, style: { display: 'flex', alignItems: 'center', gap: '5px' } },
+                                    React.createElement("span", { style: { fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(100,120,160,0.5)' } }, stat.label),
+                                    React.createElement("span", { style: { fontSize: '12px', fontWeight: 700, color: stat.color } }, stat.val)
+                                );
+                            })
+                        );
+                    })()
+                )),
             React.createElement("div", { className: "flex justify-center mt-6 opacity-80" },
                 React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", height: "160", width: "160", viewBox: "0 0 200 200" },
                     React.createElement("g", null,
@@ -4913,7 +4985,17 @@ function App() {
     var _c = useState(null), pdfRange = _c[0], setPdfRange = _c[1];
     var _d = useState({}), extractedCache = _d[0], setExtractedCache = _d[1];
     var _f = useState(0), lastPageIndex = _f[0], setLastPageIndex = _f[1];
-    var _g = useState([]), history = _g[0], setHistory = _g[1];
+    var _g = useState(function() {
+        try {
+            var saved = localStorage.getItem('maxofpdf_history');
+            if (saved) {
+                var parsed = JSON.parse(saved);
+                // Filter out items with pdfFile (can't serialize File objects) - keep text-only
+                return parsed.filter(function(item) { return item.type === 'text' && item.data && item.data.rawText; }).slice(0, 10);
+            }
+        } catch(e) {}
+        return [];
+    }), history = _g[0], setHistory = _g[1];
     var _h = useState(false), isSettingsOpen = _h[0], setIsSettingsOpen = _h[1];
     var _j = useState('gemini-lite'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
     var _k = useState('gemini-lite'), activeStructureModel = _k[0], setActiveStructureModel = _k[1];
@@ -4926,13 +5008,41 @@ function App() {
     var _s = useState(2), autoScrollSpeed = _s[0], setAutoScrollSpeed = _s[1];
     var _t = useState(false), autoPlayTTS = _t[0], setAutoPlayTTS = _t[1];
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
+    var _v = useState(null), activeSessionId = _v[0], setActiveSessionId = _v[1];
+    var _w = useState(null), restoredExtras = _w[0], setRestoredExtras = _w[1];
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
     var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
-    var addToHistory = function (finalLastPage, finalExtracted, file, range, text) {
-        var item = { id: crypto.randomUUID(), type: file ? 'pdf' : 'text', title: file ? file.name : (text.slice(0, 30) + '...'), timestamp: Date.now(), data: { rawText: text, pdfFile: file, pdfRange: range, extractedPages: finalExtracted, lastPageIndex: finalLastPage } };
-        setHistory(function (p) { return __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10); });
+    var addToHistory = function (finalLastPage, finalExtracted, file, range, text, sessionId, extras) {
+        var sid = sessionId || crypto.randomUUID();
+        var item = { id: sid, type: file ? 'pdf' : 'text', title: file ? file.name : (text.slice(0, 40) + (text.length > 40 ? '...' : '')), timestamp: Date.now(), data: { rawText: text, pdfFile: file, pdfRange: range, extractedPages: finalExtracted, lastPageIndex: finalLastPage } };
+        setHistory(function (p) {
+            var updated = __spreadArray([item], p.filter(function (x) { return x.id !== sid && x.title !== item.title; }), true).slice(0, 20);
+            try {
+                var toSave = updated.map(function(h) {
+                    return { id: h.id, type: h.type, title: h.title, timestamp: h.timestamp, data: { rawText: h.data.rawText || '', pdfFile: null, pdfRange: h.data.pdfRange, extractedPages: {}, lastPageIndex: h.data.lastPageIndex || 0 } };
+                });
+                localStorage.setItem('maxofpdf_history', JSON.stringify(toSave));
+            } catch(e) {}
+            return updated;
+        });
+        // Save session extras (highlights, rewrites, chat)
+        if (extras) {
+            try { localStorage.setItem('maxofpdf_session_' + sid, JSON.stringify(extras)); } catch(e) {}
+        }
+        return sid;
     };
-    var handleStartReading = function (text) { setPdfFile(null); setPdfRange(null); setExtractedCache({}); setLastPageIndex(0); setState({ rawText: text, isReading: true }); };
+    var handleStartReading = function (text) {
+        setPdfFile(null); setPdfRange(null); setExtractedCache({}); setLastPageIndex(0);
+        var sid = crypto.randomUUID();
+        setActiveSessionId(sid);
+        addToHistory(0, {}, null, null, text, sid, null);
+        setState({ rawText: text, isReading: true });
+    };
+    useEffect(function() {
+        var handler = function() { setHistory([]); };
+        window.addEventListener('maxofpdf_clear_history', handler);
+        return function() { window.removeEventListener('maxofpdf_clear_history', handler); };
+    }, []);
     var handleStartPdfReading = function (file, range) {
         var isSameFile = pdfFile && pdfFile.name === file.name && pdfFile.size === file.size;
         var isSameRange = (pdfRange ? pdfRange.start : undefined) === (range ? range.start : undefined) && (pdfRange ? pdfRange.end : undefined) === (range ? range.end : undefined);
@@ -4942,10 +5052,45 @@ function App() {
         }
         setPdfFile(file);
         setPdfRange(range || null);
+        var sid = crypto.randomUUID();
+        setActiveSessionId(sid);
+        addToHistory(0, {}, file, range || null, '', sid, null);
         setState({ rawText: '', isReading: true });
     };
-    var handleExitReader = function (curPage, curExtracted) { setExtractedCache(curExtracted); setLastPageIndex(curPage); addToHistory(curPage, curExtracted, pdfFile, pdfRange, state.rawText); setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); }); };
-    var handleRestoreHistory = function (item) { setPdfFile(item.data.pdfFile); setPdfRange(item.data.pdfRange); setExtractedCache(item.data.extractedPages); setLastPageIndex(item.data.lastPageIndex); setState({ rawText: item.data.rawText, isReading: true }); };
+    var handleExitReader = function (curPage, curExtracted, sessionExtras) {
+        setExtractedCache(curExtracted);
+        setLastPageIndex(curPage);
+        // Update history with final page position
+        if (activeSessionId) {
+            try {
+                var saved = localStorage.getItem('maxofpdf_history');
+                if (saved) {
+                    var arr = JSON.parse(saved);
+                    arr = arr.map(function(h) { return h.id === activeSessionId ? __assign(__assign({}, h), { data: __assign(__assign({}, h.data), { lastPageIndex: curPage }) }) : h; });
+                    localStorage.setItem('maxofpdf_history', JSON.stringify(arr));
+                }
+            } catch(e) {}
+            // Save session extras
+            if (sessionExtras) {
+                try { localStorage.setItem('maxofpdf_session_' + activeSessionId, JSON.stringify(sessionExtras)); } catch(e) {}
+            }
+        }
+        setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); });
+    };
+    var handleRestoreHistory = function (item) {
+        var extras = null;
+        try {
+            var saved = localStorage.getItem('maxofpdf_session_' + item.id);
+            if (saved) extras = JSON.parse(saved);
+        } catch(e) {}
+        setActiveSessionId(item.id);
+        setPdfFile(item.data.pdfFile);
+        setPdfRange(item.data.pdfRange);
+        setExtractedCache(item.data.extractedPages || {});
+        setLastPageIndex(item.data.lastPageIndex || 0);
+        setRestoredExtras(extras);
+        setState({ rawText: item.data.rawText || '', isReading: true });
+    };
     var getBg = function () {
         if (!state.isReading)
             return 'bg-[#020202]';
@@ -4958,7 +5103,7 @@ function App() {
         }
     };
     return (React.createElement("div", { className: "min-h-screen transition-colors duration-700 font-sans ".concat(getBg()) },
-        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey }))),
+        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, sessionId: activeSessionId, initialSessionExtras: restoredExtras }))),
         React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onClose: function () { return setIsSettingsOpen(false); } })));
 }
 var container = document.getElementById('root');
