@@ -5,15 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>MaxOfPdf – Premium Reader</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0c0c0c" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="MaxOfPdf" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230c0c0c'/><text y='.9em' font-size='80' x='10'>📄</text></svg>" />
-
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -606,6 +597,342 @@
     }
         @keyframes zoomIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
     .zoom-in-95 { animation:zoomIn 0.2s ease-out; }
+    /* ── Analysis Inline Chat Panel ── */
+    .analysis-chat-panel {
+      border-radius: 20px;
+      border: 1px solid rgba(99,102,241,0.14);
+      background: linear-gradient(160deg, rgba(15,18,35,0.97) 0%, rgba(10,14,28,0.99) 100%);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(120,140,255,0.07);
+      overflow: hidden;
+    }
+    .analysis-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid rgba(99,102,241,0.09);
+      background: rgba(99,102,241,0.04);
+    }
+    .analysis-chat-header-icon {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(79,70,229,0.12));
+      border: 1px solid rgba(99,102,241,0.22);
+      color: #a5b4fc;
+      flex-shrink: 0;
+    }
+    .analysis-chat-header-label {
+      flex: 1;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(165,180,252,0.7);
+    }
+    .analysis-chat-thinking {
+      display: flex; gap: 4px; align-items: center;
+    }
+    .analysis-chat-thinking-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(165,180,252,0.6);
+      animation: maxDrawerBounce 1.1s ease-in-out infinite;
+    }
+    .analysis-chat-thinking-dot:nth-child(2) { animation-delay: 0.16s; }
+    .analysis-chat-thinking-dot:nth-child(3) { animation-delay: 0.32s; }
+    .analysis-chat-messages {
+      padding: 14px 16px 8px;
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .analysis-chat-messages::-webkit-scrollbar { width: 3px; }
+    .analysis-chat-messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 99px; }
+    .analysis-chat-msg-row { display: flex; }
+    .analysis-chat-msg-row.user { justify-content: flex-end; }
+    .analysis-chat-msg-row.ai  { justify-content: flex-start; }
+    .analysis-chat-bubble {
+      max-width: 85%;
+      font-size: 13px; line-height: 1.55;
+      border-radius: 14px;
+      padding: 9px 14px;
+    }
+    .analysis-chat-bubble.user {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      border-radius: 14px 14px 3px 14px;
+      box-shadow: 0 3px 12px rgba(99,102,241,0.3);
+      font-weight: 500;
+    }
+    .analysis-chat-bubble.ai {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(99,130,200,0.12);
+      color: #cbd5e1;
+      border-radius: 14px 14px 14px 3px;
+    }
+    .analysis-chat-hint {
+      padding: 12px 16px 4px;
+      font-size: 11px;
+      color: rgba(100,120,170,0.45);
+      font-style: italic;
+    }
+    .analysis-chat-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px 12px;
+    }
+    .analysis-chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(99,102,241,0.18);
+      border-radius: 12px;
+      padding: 9px 14px;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .analysis-chat-input:focus {
+      border-color: rgba(99,102,241,0.4);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+    }
+    .analysis-chat-input::placeholder { color: rgba(100,120,170,0.4); }
+    .analysis-chat-input:disabled { opacity: 0.5; }
+    .analysis-chat-send {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer; outline: none;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(99,102,241,0.35);
+      transition: all 0.2s cubic-bezier(0.34,1.2,0.64,1);
+      flex-shrink: 0;
+    }
+    .analysis-chat-send:hover:not(.disabled) {
+      transform: scale(1.1) translateY(-1px);
+      box-shadow: 0 5px 18px rgba(99,102,241,0.5);
+    }
+    .analysis-chat-send.disabled {
+      background: rgba(255,255,255,0.07);
+      box-shadow: none; cursor: not-allowed;
+      color: rgba(130,150,200,0.3);
+    }
+
+    /* ── Preloaded Question Chips ── */
+    .preloaded-questions-wrap {
+      padding: 10px 12px 4px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .preloaded-qs-label {
+      font-size: 9px; font-weight: 900; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(165,180,252,0.45);
+      padding: 0 2px 2px;
+    }
+    .preloaded-qs-list {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .pq-chip {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 12px;
+      background: rgba(99,102,241,0.06);
+      border: 1px solid rgba(99,102,241,0.14);
+      border-radius: 12px;
+      cursor: pointer; outline: none;
+      text-align: left; width: 100%;
+      transition: all 0.18s ease;
+      animation: pqFadeIn 0.4s ease both;
+    }
+    .pq-chip:nth-child(1) { animation-delay: 0.05s; }
+    .pq-chip:nth-child(2) { animation-delay: 0.12s; }
+    .pq-chip:nth-child(3) { animation-delay: 0.19s; }
+    @keyframes pqFadeIn {
+      from { opacity:0; transform:translateY(5px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .pq-chip:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.28); }
+    .pq-chip:active { background: rgba(99,102,241,0.18); }
+    .pq-chip.answered { background: rgba(30,30,50,0.6); border-color: rgba(99,102,241,0.08); cursor: default; }
+    .pq-chip.loading  { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.18); cursor: default; }
+    .pq-num {
+      width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+      background: rgba(99,102,241,0.22); color: #a5b4fc;
+      font-size: 9px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+    }
+    .pq-content { flex: 1; min-width: 0; }
+    .pq-question {
+      font-size: 12px; font-weight: 600; color: rgba(200,210,240,0.85); line-height: 1.4;
+    }
+    .pq-chip.answered .pq-question,
+    .pq-chip.loading  .pq-question { color: rgba(165,180,252,0.6); font-size: 11px; }
+    .pq-answer {
+      margin-top: 7px;
+      font-size: 12px; color: #94a3b8; line-height: 1.55;
+      border-top: 1px solid rgba(99,102,241,0.09);
+      padding-top: 7px;
+    }
+    /* Skeleton shimmer */
+    .pq-skeleton {
+      margin-top: 7px; border-top: 1px solid rgba(99,102,241,0.09); padding-top: 8px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .pq-sk-line {
+      height: 10px; border-radius: 6px;
+      background: linear-gradient(90deg, rgba(99,102,241,0.08) 25%, rgba(165,180,252,0.14) 50%, rgba(99,102,241,0.08) 75%);
+      background-size: 200% 100%;
+      animation: skShimmer 1.4s ease infinite;
+    }
+    @keyframes skShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    /* Generating chips skeleton (before questions load) */
+    .pq-generating {
+      display: flex; flex-direction: column; gap: 6px; padding: 4px 2px;
+    }
+    .pq-gen-line {
+      height: 32px; border-radius: 12px;
+      background: linear-gradient(90deg, rgba(99,102,241,0.05) 25%, rgba(99,102,241,0.11) 50%, rgba(99,102,241,0.05) 75%);
+      background-size: 200% 100%;
+      animation: skShimmer 1.6s ease infinite;
+    }
+    .pq-gen-line:nth-child(2) { animation-delay: 0.2s; width: 90%; }
+    .pq-gen-line:nth-child(3) { animation-delay: 0.4s; width: 80%; }
+
+    /* ── Context / Usage Insight Cards ── */
+    .ctx-cards { display: flex; flex-direction: column; gap: 10px; }
+    .ctx-card {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      animation: ctxCardIn 0.38s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .ctx-card:nth-child(1) { animation-delay: 0.04s; background: rgba(99,102,241,0.07); border-color: rgba(99,102,241,0.15); }
+    .ctx-card:nth-child(2) { animation-delay: 0.10s; background: rgba(16,185,129,0.07); border-color: rgba(16,185,129,0.15); }
+    .ctx-card:nth-child(3) { animation-delay: 0.16s; background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.15); }
+    .ctx-card:nth-child(n+4) { animation-delay: 0.22s; background: rgba(139,92,246,0.07); border-color: rgba(139,92,246,0.15); }
+    @keyframes ctxCardIn {
+      from { opacity:0; transform:translateX(-8px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .ctx-num {
+      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900;
+    }
+    .ctx-card:nth-child(1) .ctx-num { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+    .ctx-card:nth-child(2) .ctx-num { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    .ctx-card:nth-child(3) .ctx-num { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    .ctx-card:nth-child(n+4) .ctx-num { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+    .ctx-text {
+      flex: 1; font-size: 13px; line-height: 1.65;
+      color: rgba(203,213,225,0.9);
+      font-family: 'Merriweather', 'Noto Serif Bengali', serif;
+    }
+    .ctx-text-bold { font-weight: 800; color: #fff; }
+
+    /* ── Entity Image Panel ── */
+    .entity-img-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      background: rgba(10,10,16,0.98);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .entity-img-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .entity-img-badge.person {
+      background: rgba(99,102,241,0.15); color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.25);
+    }
+    .entity-img-badge.place {
+      background: rgba(16,185,129,0.15); color: #6ee7b7;
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+    .entity-img-badge.other {
+      background: rgba(100,116,139,0.15); color: #94a3b8;
+      border: 1px solid rgba(100,116,139,0.2);
+    }
+    .entity-img-sources {
+      display: flex; gap: 4px; flex: 1;
+    }
+    .entity-img-src-btn {
+      padding: 5px 12px; border-radius: 8px; border: none; cursor: pointer;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+      background: rgba(255,255,255,0.04);
+      color: rgba(140,160,200,0.55);
+      transition: all 0.2s ease; outline: none;
+      white-space: nowrap;
+    }
+    .entity-img-src-btn:hover { background: rgba(255,255,255,0.08); color: rgba(200,220,255,0.85); }
+    .entity-img-src-btn.active {
+      background: rgba(99,102,241,0.2); color: #a5b4fc;
+      box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3);
+    }
+    .entity-img-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .entity-img-action-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      color: rgba(140,160,200,0.6); cursor: pointer; text-decoration: none;
+      transition: all 0.18s ease; outline: none;
+    }
+    .entity-img-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .entity-img-hint {
+      padding: 7px 14px;
+      font-size: 11px; color: rgba(120,140,180,0.55);
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      flex-shrink: 0;
+    }
+    .entity-img-hint-name {
+      font-weight: 700; color: rgba(165,180,252,0.8);
+    }
+
+    /* ── Smart Instant Action Button ── */
+    .smart-action-bar {
+      display: flex; align-items: stretch; gap: 0;
+      border-radius: 18px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      animation: smartActionIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes smartActionIn {
+      from { opacity:0; transform:translateY(8px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .smart-action-primary {
+      flex: 1; display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--sa-c1), var(--sa-c2));
+      color: #fff; font-size: 13px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      border: none; outline: none;
+      transition: filter 0.18s ease;
+    }
+    .smart-action-primary:hover { filter: brightness(1.12); }
+    .smart-action-primary:active { filter: brightness(0.92); }
+    .smart-action-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 18px;
+    }
+    .smart-action-text { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+    .smart-action-label { font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+    .smart-action-name { font-size: 15px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .smart-action-arrow {
+      width: 44px; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.2); flex-shrink: 0;
+      color: rgba(255,255,255,0.7); font-size: 18px;
+    }
+
     @keyframes slideInTop { from{transform:translateY(-0.5rem);opacity:0} to{transform:translateY(0);opacity:1} }
     .slide-in-from-top-2 { animation:slideInTop 0.3s ease-out; }
     @keyframes slideInFromBottom2 { from{transform:translateY(0.5rem);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -1563,7 +1890,15 @@ var pdfjsLib = window.pdfjsLib;
 var katex = window.katex;
 var GROQ_API_KEY = "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";
 var MAVERICK_KEY = "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";
+var GEMINI_KEYS = [
+    "AIzaSyAYZh4z6B7auyHj8LHNgTWWDUcevd6D1Tk",
+    "AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c",
+    "AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM",
+    "AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA",
+    "AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs"
+];
 var MODEL_LABELS = {
+    "gemini-lite": "Gemini 3.1 Flash-Lite",
     gemini: "Gemini 2.5 Flash",
     "gemini-3.0": "Gemini 3.0 Flash",
     kimi: "Kimi K2 Instruct",
@@ -1757,8 +2092,45 @@ function AnalysisModal(_a) {
     var shouldCloseOnLiftRef = useRef(false);
     var _k = useState(0), dragY = _k[0], setDragY = _k[1];
     var _l = useState(false), isDragging = _l[0], setIsDragging = _l[1];
+    var _ac = useState([]), analysisChatMessages = _ac[0], setAnalysisChatMessages = _ac[1];
+    var _ad = useState(''), analysisChatInput = _ad[0], setAnalysisChatInput = _ad[1];
+    var _ae = useState(false), isAnalysisChatLoading = _ae[0], setIsAnalysisChatLoading = _ae[1];
+    var _af = useState(''), imgSource = _af[0], setImgSource = _af[1];
+    var _pq1 = useState(null), preloadedQuestions = _pq1[0], setPreloadedQuestions = _pq1[1];
+    var _pq2 = useState({}), preloadedAnswers = _pq2[0], setPreloadedAnswers = _pq2[1];
+    var _pq3 = useState(null), loadingAnswerIdx = _pq3[0], setLoadingAnswerIdx = _pq3[1];
+    var _pq4 = useState(true), isGeneratingQuestions = _pq4[0], setIsGeneratingQuestions = _pq4[1];
+    var analysisChatEndRef = useRef(null);
     var startY = useRef(0);
-    useEffect(function () { setLocalAudio(null); setIsGeneratingAudio(false); setActiveTab('analysis'); setIframeFilterMode('dim'); }, [(data && data.word ? data.word : undefined)]);
+    useEffect(function () { setLocalAudio(null); setIsGeneratingAudio(false); setActiveTab('analysis'); setIframeFilterMode('dim'); setAnalysisChatMessages([]); setAnalysisChatInput(''); setPreloadedQuestions(null); setPreloadedAnswers({}); setLoadingAnswerIdx(null); setIsGeneratingQuestions(true); }, [(data && data.word ? data.word : undefined)]);
+    /* Generate 3 preloaded questions when data arrives */
+    useEffect(function() {
+        if (!data || !data.word || !isOpen) return;
+        setIsGeneratingQuestions(true);
+        setPreloadedQuestions(null);
+        setPreloadedAnswers({});
+        var modelKey = (typeof MAVERICK_KEY !== 'undefined') ? MAVERICK_KEY : GROQ_API_KEY;
+        var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+        var sys = 'You are a question generator. Given a selected word/phrase and its meaning, generate exactly 3 short, distinct, insightful questions that a curious reader would want answered. Questions should be in the same language as the meaning text (Bengali or English). Return ONLY valid JSON: {"questions":["q1","q2","q3"]}';
+        var userP = 'Word/phrase: "' + data.word + '"\nMeaning: ' + data.meaning + '\nContext clues: ' + (data.context || '');
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
+            body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}';
+            var clean = text.replace(/```json\n?|```/g, '').trim();
+            var parsed;
+            try { parsed = JSON.parse(clean); } catch(e) { parsed = {}; }
+            var qs = Array.isArray(parsed.questions) ? parsed.questions.slice(0,3) : [];
+            setPreloadedQuestions(qs.length > 0 ? qs : null);
+        }).catch(function() {
+            setPreloadedQuestions(null);
+        }).finally(function() {
+            setIsGeneratingQuestions(false);
+        });
+    }, [(data && data.word ? data.word : undefined), isOpen]);
+    useEffect(function() { analysisChatEndRef.current && analysisChatEndRef.current.scrollIntoView({ behavior: 'smooth' }); }, [analysisChatMessages]);
     useEffect(function () { if (isOpen) {
         setDragY(0);
         setIsDragging(false);
@@ -1871,28 +2243,104 @@ function AnalysisModal(_a) {
         window.addEventListener('pointerup', onUp);
         return function () { window.removeEventListener('pointerdown', onDown); window.removeEventListener('pointerup', onUp); };
     }, [isOpen, isAutoOpen, onClose]);
+    var handleAnalysisChatSend = function () { return __awaiter(_this, void 0, void 0, function () {
+        var userMsg, sysPrompt, userPrompt, r, d, aiText, e;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!analysisChatInput.trim() || isAnalysisChatLoading || !data) return [2];
+                    userMsg = analysisChatInput.trim();
+                    setAnalysisChatInput('');
+                    setAnalysisChatMessages(function(p) { return __spreadArray(__spreadArray([], p, true), [{ role: 'user', content: userMsg }], false); });
+                    setIsAnalysisChatLoading(true);
+                    sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the user\'s question.';
+                    userPrompt = 'The user is analyzing the selection: "' + (data.word || '') + '".\nMeaning/Translation: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nUser question: ' + userMsg;
+                    _b.label = 1;
+                case 1:
+                    _b.trys.push([1, 4, 5, 6]);
+                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'moonshotai/kimi-k2-instruct-0905' }) })];
+                case 2:
+                    r = _b.sent();
+                    return [4, r.json()];
+                case 3:
+                    d = _b.sent();
+                    aiText = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'No response.';
+                    setAnalysisChatMessages(function(p) { return __spreadArray(__spreadArray([], p, true), [{ role: 'ai', content: aiText }], false); });
+                    return [3, 6];
+                case 4:
+                    e = _b.sent();
+                    setAnalysisChatMessages(function(p) { return __spreadArray(__spreadArray([], p, true), [{ role: 'ai', content: 'Error: ' + e.message }], false); });
+                    return [3, 6];
+                case 5:
+                    setIsAnalysisChatLoading(false);
+                    return [7 /*endfinally*/];
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); };
     if (!isOpen || !data)
         return null;
+    var handlePreloadedTap = function(question, idx) {
+        if (loadingAnswerIdx !== null || preloadedAnswers[idx] !== undefined || isAnalysisChatLoading) return;
+        setLoadingAnswerIdx(idx);
+        var modelKey = (typeof MAVERICK_KEY !== 'undefined') ? MAVERICK_KEY : GROQ_API_KEY;
+        var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+        var sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the question. Keep the answer short — 2-4 sentences or a brief bullet list.';
+        var userPrompt = 'The user is analyzing: "' + (data.word || '') + '".\nMeaning: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nQuestion: ' + question;
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
+            body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId, max_tokens: 400 })
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'কোনো উত্তর পাওয়া যায়নি।';
+            setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]=text; return n; });
+        }).catch(function(e) {
+            setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]='Error: ' + e.message; return n; });
+        }).finally(function() {
+            setLoadingAnswerIdx(null);
+        });
+    };
     var renderMeaning = function (text) {
         var parts = text.split(/(\*\*.*?\*\*)/g);
         return parts.map(function (p, i) { return p.startsWith('**') && p.endsWith('**') ? React.createElement("span", { key: i, className: "font-bold text-white bg-emerald-500/20 px-1.5 rounded-md mx-0.5 border border-emerald-500/30" }, p.slice(2, -2)) : React.createElement("span", { key: i }, p); });
     };
     var renderContext = function (text) {
         var lines = String(text || '').split('\n').filter(function (l) { return l.trim(); });
-        return (React.createElement("ul", { className: "space-y-3" }, lines.map(function (line, i) {
+        var nums = ['①','②','③','④','⑤'];
+        return React.createElement("div", { className: "ctx-cards" }, lines.map(function (line, i) {
             var clean = line.replace(/^[-*•]\s+/, '');
             var parts = clean.split(/(\*\*.*?\*\*)/g);
-            return (React.createElement("li", { key: i, className: "relative pl-5" },
-                React.createElement("span", { className: "absolute left-0 top-2.5 w-1.5 h-1.5 rounded-full bg-indigo-600/70" }),
-                React.createElement("span", { className: "serif text-sm text-slate-300 leading-relaxed" }, parts.map(function (p, j) { return p.startsWith('**') && p.endsWith('**') ? React.createElement("span", { key: j, className: "bg-emerald-600/20 text-emerald-400 px-1 rounded font-bold" }, p.slice(2, -2)) : p; }))));
-        })));
+            return React.createElement("div", { key: i, className: "ctx-card" },
+                React.createElement("div", { className: "ctx-num" }, nums[i] || (i+1)),
+                React.createElement("div", { className: "ctx-text" },
+                    parts.map(function (p, j) {
+                        return p.startsWith('**') && p.endsWith('**')
+                            ? React.createElement("span", { key: j, className: "ctx-text-bold" }, p.slice(2,-2))
+                            : React.createElement("span", { key: j }, p);
+                    })));
+        }));
     };
     var wordCount = data.word.trim().split(/\s+/).length;
     var displayTitle = wordCount > 3 ? "\"".concat(data.word.trim().split(/\s+/).slice(0, 3).join(' '), "...\"") : "\"".concat(data.word, "\"");
+    var entityType = ((data.entityType) || 'other').toLowerCase();
     var searchTerm = data.searchQuery || data.word;
-    var googleSearchUrl = "https://www.google.com/search?igu=1&q=".concat(encodeURIComponent(searchTerm), "&tbm=isch");
-    var getFilter = function () { return iframeFilterMode === 'invert' ? 'invert(1) hue-rotate(180deg)' : iframeFilterMode === 'dim' ? 'brightness(0.7) contrast(1.2) grayscale(0.2)' : 'none'; };
-    var cycleFilter = function () { return setIframeFilterMode(function (p) { return p === 'dim' ? 'invert' : p === 'invert' ? 'normal' : 'dim'; }); };
+    var wikiTitle = data.wikiTitle || searchTerm;
+    var googleImgUrl = "https://www.google.com/search?igu=1&tbm=isch&q=" + encodeURIComponent(
+        entityType === 'person' ? searchTerm + ' portrait photo' :
+        entityType === 'place'  ? searchTerm + ' landmark' : searchTerm
+    );
+    var wikiUrl = "https://en.wikipedia.org/wiki/" + encodeURIComponent(wikiTitle.replace(/\s+/g,'_'));
+    var wikimediaUrl = "https://commons.wikimedia.org/w/index.php?search=" + encodeURIComponent(searchTerm) + "&title=Special:MediaSearch&type=image";
+    var googleMapsUrl = "https://www.google.com/maps/search/" + encodeURIComponent(searchTerm);
+    var googleAiUrl = "https://www.google.com/search?q=" + encodeURIComponent(searchTerm) + "&udm=50";
+    var imgSources = entityType === 'person'
+        ? [{ id:'wikimedia', label:'Wikimedia', icon:'\u{1F5BC}', url: wikimediaUrl }, { id:'aimode', label:'AI Mode', icon:'\u2728', url: googleAiUrl }, { id:'google', label:'Google', icon:'\u{1F50D}', url: googleImgUrl }]
+        : entityType === 'place'
+        ? [{ id:'wikimedia', label:'Wikimedia', icon:'\u{1F5BC}', url: wikimediaUrl }, { id:'aimode', label:'AI Mode', icon:'\u2728', url: googleAiUrl }, { id:'maps', label:'Maps', icon:'\u{1F5FA}', url: googleMapsUrl }]
+        : [{ id:'google', label:'Images', icon:'\u{1F50D}', url: googleImgUrl }, { id:'aimode', label:'AI Mode', icon:'\u2728', url: googleAiUrl }, { id:'wikimedia', label:'Wikimedia', icon:'\u{1F5BC}', url: wikimediaUrl }];
+    var activeImgSource = imgSources.find(function(s) { return s.id === imgSource; }) || imgSources[0];
+    var getFilter = function () { return iframeFilterMode === 'invert' ? 'invert(1) hue-rotate(180deg)' : iframeFilterMode === 'dim' ? 'brightness(0.7) contrast(1.1)' : 'none'; };
+    var cycleFilter = function () { return setIframeFilterMode(function (p) { return p === 'dim' ? 'normal' : p === 'normal' ? 'invert' : 'dim'; }); };
     return (React.createElement("div", { className: "fixed inset-0 z-[120] flex flex-col justify-end animate-in fade-in" },
         React.createElement("div", { className: "absolute inset-0 bg-black/60 backdrop-blur-sm ".concat(isAutoOpen ? 'pointer-events-none' : ''), onClick: onClose }),
         React.createElement("div", { ref: modalContentRef, className: "relative w-full max-w-4xl mx-auto h-[85vh] glass-dock rounded-t-[32px] border-b-0 border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.7)] slide-in-from-bottom-full flex flex-col pointer-events-auto", style: { transform: "translateY(".concat(dragY, "px)") }, onClick: function (e) { if (!e.target.closest('button,a,input,select,iframe'))
@@ -1930,6 +2378,41 @@ function AnalysisModal(_a) {
             React.createElement("div", { className: "flex-grow ".concat(activeTab === 'images' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto custom-scrollbar px-6 py-6 space-y-6') }, activeTab === 'analysis' ? (isLoading ? (React.createElement("div", { className: "flex-grow flex flex-col items-center justify-center p-10 space-y-4" },
                 React.createElement("div", { className: "w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" }),
                 React.createElement("p", { className: "text-[10px] text-indigo-400 font-bold uppercase tracking-widest animate-pulse" }, "Regenerating..."))) : (React.createElement(React.Fragment, null,
+                React.createElement("a", {
+                    href: entityType === 'place'
+                        ? 'https://www.google.com/maps/search/' + encodeURIComponent(searchTerm)
+                        : entityType === 'person'
+                        ? 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(searchTerm + ' photo')
+                        : 'https://www.google.com/search?q=' + encodeURIComponent(data.smartQuery || searchTerm) + '&udm=50',
+                    target: '_blank', rel: 'noopener noreferrer',
+                    className: 'smart-action-bar',
+                    onClick: function(e) { e.stopPropagation(); },
+                    style: {
+                        display: 'flex', alignItems: 'stretch', gap: 0,
+                        borderRadius: '18px', overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+                        textDecoration: 'none',
+                        background: entityType === 'place'
+                            ? 'linear-gradient(135deg,#065f46,#047857)'
+                            : entityType === 'person'
+                            ? 'linear-gradient(135deg,#1e1b4b,#3730a3)'
+                            : 'linear-gradient(135deg,#1e3a5f,#1d4ed8)'
+                    }
+                },
+                    React.createElement("div", { style:{flex:1,display:'flex',alignItems:'center',gap:'12px',padding:'14px 18px',color:'#fff'} },
+                        React.createElement("div", { style:{width:38,height:38,borderRadius:10,background:'rgba(255,255,255,0.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:20} },
+                            entityType === 'place' ? '🗺️' : entityType === 'person' ? '🔍' : '✨'),
+                        React.createElement("div", { style:{display:'flex',flexDirection:'column',gap:2,flex:1,overflow:'hidden'} },
+                            React.createElement("span", { style:{fontSize:10,fontWeight:900,letterSpacing:'0.1em',textTransform:'uppercase',opacity:0.7,color:'#fff'} },
+                                entityType === 'place' ? 'Open in Google Maps' : entityType === 'person' ? 'Search on Google Images' : 'Search in Google AI Mode'),
+                            React.createElement("span", { style:{fontSize:13,fontWeight:700,lineHeight:1.3,color:'#fff',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'} },
+                                entityType === 'place' ? searchTerm
+                                : entityType === 'person' ? searchTerm
+                                : (data.smartQuery || searchTerm))),
+                        React.createElement("div", { style:{fontSize:22,color:'rgba(255,255,255,0.7)',flexShrink:0,marginLeft:'auto'} }, '›')),
+                ),
+
                 React.createElement("div", { className: "relative" },
                     React.createElement("div", { className: "relative bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-6 min-h-[100px] flex flex-col justify-center backdrop-blur-md" },
                         React.createElement("div", { className: "flex items-center justify-between mb-3" },
@@ -1943,31 +2426,166 @@ function AnalysisModal(_a) {
                                     React.createElement("path", { d: "M15.54 8.46a5 5 0 0 1 0 7.07" })),
                                 React.createElement("span", { className: "text-[10px] font-bold uppercase" }, isGeneratingAudio ? 'Generating...' : isPlaying ? 'Playing' : 'Listen')))),
                         React.createElement("p", { className: "serif text-[15px] text-emerald-100 font-medium leading-relaxed" }, renderMeaning(data.meaning)))),
-                React.createElement("div", { className: "bg-white/5 border border-white/5 rounded-2xl p-6" },
-                    React.createElement("h4", { className: "text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center" },
-                        React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2" }),
-                        wordCount > 2 ? 'Contextual Analysis' : 'Usage'),
-                    React.createElement("div", { className: "pl-2" }, renderContext(data.context))),
-                React.createElement("div", { className: "h-8" })))) : (React.createElement("div", { className: "flex-grow flex flex-col bg-[#121214] rounded-t-2xl overflow-hidden border border-white/5" },
-                React.createElement("div", { className: "bg-[#1a1a1d] px-4 py-2 border-b border-white/5 flex items-center space-x-2 shrink-0" },
-                    React.createElement("div", { className: "flex space-x-1" },
-                        React.createElement("div", { className: "w-3 h-3 rounded-full bg-red-500/80" }),
-                        React.createElement("div", { className: "w-3 h-3 rounded-full bg-amber-500/80" }),
-                        React.createElement("div", { className: "w-3 h-3 rounded-full bg-emerald-500/80" })),
-                    React.createElement("div", { className: "flex-grow bg-[#0c0c0e] rounded-full px-3 py-1.5 flex items-center border border-white/5 mx-4 overflow-hidden" },
-                        React.createElement("span", { className: "text-xs text-slate-400 truncate font-mono" }, googleSearchUrl)),
-                    React.createElement("button", { onClick: function (e) { e.stopPropagation(); cycleFilter(); }, className: "p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-md" },
-                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("path", { d: "M2 12h2" }),
-                            React.createElement("path", { d: "M20 12h2" }),
-                            React.createElement("path", { d: "M12 2v2" }),
-                            React.createElement("path", { d: "M12 20v2" }))),
-                    React.createElement("a", { href: googleSearchUrl, target: "_blank", rel: "noopener noreferrer", onClick: function (e) { return e.stopPropagation(); }, className: "p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-md" },
-                        React.createElement("svg", { className: "w-4 h-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
-                            React.createElement("polyline", { points: "15 3 21 3 21 9" }),
-                            React.createElement("line", { x1: "10", y1: "14", x2: "21", y2: "3" })))),
-                React.createElement("iframe", { src: googleSearchUrl, className: "w-full flex-grow border-none bg-[#121214]", style: { filter: getFilter(), transition: 'filter 0.5s ease' }, title: "Google Search", sandbox: "allow-same-origin allow-scripts allow-popups allow-forms" })))))));
+                React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] flex items-center gap-2 px-1" },
+                        React.createElement("span", { className: "w-3 h-px bg-indigo-500/50 rounded-full" }),
+                        wordCount > 2 ? 'Contextual Analysis' : 'Usage',
+                        React.createElement("span", { className: "w-3 h-px bg-indigo-500/50 rounded-full" })),
+                    renderContext(data.context)),
+
+                /* ── Inline Chat Panel ── */
+                React.createElement("div", { className: "analysis-chat-panel" },
+                    /* Header */
+                    React.createElement("div", { className: "analysis-chat-header" },
+                        React.createElement("div", { className: "analysis-chat-header-icon" },
+                            React.createElement("svg", { xmlns:"http://www.w3.org/2000/svg", width:"14", height:"14", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.2" },
+                                React.createElement("path", { d:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" }))),
+                        React.createElement("span", { className: "analysis-chat-header-label" }, "Ask about this"),
+                        isAnalysisChatLoading && React.createElement("div", { className: "analysis-chat-thinking" },
+                            React.createElement("span", { className: "analysis-chat-thinking-dot" }),
+                            React.createElement("span", { className: "analysis-chat-thinking-dot" }),
+                            React.createElement("span", { className: "analysis-chat-thinking-dot" }))),
+
+                    /* Preloaded Questions */
+                    analysisChatMessages.length === 0 && React.createElement("div", { className: "preloaded-questions-wrap" },
+                        React.createElement("span", { className: "preloaded-qs-label" }, "Suggested questions"),
+                        isGeneratingQuestions
+                            ? React.createElement("div", { className: "pq-generating" },
+                                React.createElement("div", { className: "pq-gen-line" }),
+                                React.createElement("div", { className: "pq-gen-line" }),
+                                React.createElement("div", { className: "pq-gen-line" }))
+                            : preloadedQuestions && preloadedQuestions.length > 0
+                            ? React.createElement("div", { className: "pq-list" },
+                                preloadedQuestions.map(function(q, i) {
+                                    var ans = preloadedAnswers[i];
+                                    var isLoading = loadingAnswerIdx === i;
+                                    var isAnswered = ans !== undefined;
+                                    return React.createElement("button", {
+                                        key: i,
+                                        className: "pq-chip " + (isAnswered ? 'answered' : isLoading ? 'loading' : ''),
+                                        onClick: function() { handlePreloadedTap(q, i); },
+                                        disabled: isLoading || loadingAnswerIdx !== null
+                                    },
+                                        React.createElement("div", { className: "pq-num" }, i+1),
+                                        React.createElement("div", { className: "pq-content" },
+                                            React.createElement("div", { className: "pq-question" }, q),
+                                            isLoading && React.createElement("div", { className: "pq-skeleton" },
+                                                React.createElement("div", { className: "pq-sk-line", style:{width:'90%'} }),
+                                                React.createElement("div", { className: "pq-sk-line", style:{width:'75%',animationDelay:'0.15s'} }),
+                                                React.createElement("div", { className: "pq-sk-line", style:{width:'60%',animationDelay:'0.3s'} })),
+                                            isAnswered && React.createElement("div", { className: "pq-answer" },
+                                                React.createElement(FormattedContent, { content: ans }))));
+                                }))
+                            : React.createElement("div", { className: "analysis-chat-hint" },
+                                React.createElement("span", null, "Ask a follow-up question about this selection…"))),
+
+                    /* Messages (shown after user starts chatting) */
+                    analysisChatMessages.length > 0 && React.createElement("div", { className: "analysis-chat-messages" },
+                        analysisChatMessages.map(function(msg, i) {
+                            return React.createElement("div", { key:i, className: "analysis-chat-msg-row " + (msg.role === 'user' ? 'user' : 'ai') },
+                                msg.role === 'user'
+                                    ? React.createElement("div", { className: "analysis-chat-bubble user" }, msg.content)
+                                    : React.createElement("div", { className: "analysis-chat-bubble ai" }, React.createElement(FormattedContent, { content: msg.content })));
+                        }),
+                        React.createElement("div", { ref: analysisChatEndRef })),
+
+                    /* Input row */
+                    React.createElement("div", { className: "analysis-chat-input-row", onTouchStart: function(e) { e.stopPropagation(); } },
+                        React.createElement("input", {
+                            type: "text",
+                            className: "analysis-chat-input",
+                            placeholder: "Ask anything about this…",
+                            value: analysisChatInput,
+                            disabled: isAnalysisChatLoading,
+                            onChange: function(e) { return setAnalysisChatInput(e.target.value); },
+                            onKeyDown: function(e) { if (e.key === 'Enter' && !isAnalysisChatLoading) handleAnalysisChatSend(); }
+                        }),
+                        React.createElement("button", {
+                            className: "analysis-chat-send" + ((!analysisChatInput.trim() || isAnalysisChatLoading) ? ' disabled' : ''),
+                            disabled: !analysisChatInput.trim() || isAnalysisChatLoading,
+                            onClick: handleAnalysisChatSend
+                        },
+                            React.createElement("svg", { xmlns:"http://www.w3.org/2000/svg", width:"15", height:"15", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                                React.createElement("line", { x1:"22", y1:"2", x2:"11", y2:"13" }),
+                                React.createElement("polygon", { points:"22 2 15 22 11 13 2 9 22 2" }))))),
+
+                React.createElement("div", { className: "h-8" })))) : (React.createElement("div", { className: "flex-grow flex flex-col overflow-hidden" },
+
+                /* ── Entity badge + source tabs ── */
+                React.createElement("div", { className: "entity-img-header", onTouchStart: function(e){e.stopPropagation();} },
+                    React.createElement("div", { className: "entity-img-badge " + entityType },
+                        entityType === 'person' ? React.createElement(React.Fragment,null,
+                            React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5"},React.createElement("path",{d:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"}),React.createElement("circle",{cx:"12",cy:"7",r:"4"})),
+                            " Person")
+                        : entityType === 'place' ? React.createElement(React.Fragment,null,
+                            React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5"},React.createElement("path",{d:"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"}),React.createElement("circle",{cx:"12",cy:"10",r:"3"})),
+                            " Place")
+                        : React.createElement(React.Fragment,null,
+                            React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5"},React.createElement("circle",{cx:"11",cy:"11",r:"8"}),React.createElement("line",{x1:"21",y1:"21",x2:"16.65",y2:"16.65"})),
+                            " Search")),
+                    React.createElement("div", { className: "entity-img-sources" },
+                        imgSources.map(function(src) {
+                            return React.createElement("button", { key: src.id,
+                                className: "entity-img-src-btn" + (imgSource === src.id ? " active" : ""),
+                                onClick: function(){ setImgSource(src.id); } },
+                                src.icon, " ", src.label);
+                        })),
+                    React.createElement("div", { className: "entity-img-actions" },
+                        React.createElement("button", { onClick: function(e){e.stopPropagation();cycleFilter();}, className: "entity-img-action-btn", title: "Toggle filter" },
+                            React.createElement("svg",{width:"14",height:"14",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2"},
+                                React.createElement("circle",{cx:"12",cy:"12",r:"4"}),
+                                React.createElement("path",{d:"M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"}))),
+                        React.createElement("a", { href: activeImgSource.url, target: "_blank", rel: "noopener noreferrer",
+                            onClick: function(e){e.stopPropagation();}, className: "entity-img-action-btn", title: "Open in new tab" },
+                            React.createElement("svg",{width:"14",height:"14",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2"},
+                                React.createElement("path",{d:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"}),
+                                React.createElement("polyline",{points:"15 3 21 3 21 9"}),
+                                React.createElement("line",{x1:"10",y1:"14",x2:"21",y2:"3"}))))),
+
+                /* ── Smart entity hint ── */
+                entityType !== 'other' && React.createElement("div", { className: "entity-img-hint" },
+                    entityType === 'person'
+                        ? React.createElement(React.Fragment,null, React.createElement("span",{className:"entity-img-hint-name"}, searchTerm), " — portraits, AI overview & images. Switch tabs for more.")
+                        : React.createElement(React.Fragment,null, React.createElement("span",{className:"entity-img-hint-name"}, searchTerm), " — landmark photos, AI overview & maps. Switch tabs for more.")),
+
+                /* ── Open-in-browser card (replaces iframe — blocked by X-Frame-Options) ── */
+                React.createElement("div", {
+                    key: activeImgSource.url,
+                    className: "w-full flex-grow flex flex-col items-center justify-center gap-5 px-6",
+                    style: { background: 'linear-gradient(135deg,#0e0e18 0%,#12121f 100%)' }
+                },
+                    React.createElement("div", { style: { fontSize: '3rem', lineHeight: 1 } }, activeImgSource.icon),
+                    React.createElement("div", { style: { textAlign:'center' } },
+                        React.createElement("div", { style: { color:'#e2e8f0', fontWeight:700, fontSize:'1.15rem', marginBottom:'0.3rem' } },
+                            activeImgSource.label),
+                        React.createElement("div", { style: { color:'#64748b', fontSize:'0.75rem', wordBreak:'break-all', maxWidth:'280px', margin:'0 auto' } },
+                            activeImgSource.url.length > 60 ? activeImgSource.url.slice(0,60)+'…' : activeImgSource.url)
+                    ),
+                    React.createElement("a", {
+                        href: activeImgSource.url,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        onClick: function(e){ e.stopPropagation(); },
+                        style: {
+                            display:'inline-flex', alignItems:'center', gap:'0.5rem',
+                            background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                            color:'#fff', fontWeight:600, fontSize:'0.95rem',
+                            padding:'0.75rem 1.75rem', borderRadius:'999px',
+                            textDecoration:'none', boxShadow:'0 4px 20px rgba(99,102,241,0.4)'
+                        }
+                    },
+                        React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5"},
+                            React.createElement("path",{d:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"}),
+                            React.createElement("polyline",{points:"15 3 21 3 21 9"}),
+                            React.createElement("line",{x1:"10",y1:"14",x2:"21",y2:"3"})),
+                        "Open in Browser"
+                    ),
+                    React.createElement("div", { style:{ color:'#475569', fontSize:'0.7rem', textAlign:'center', maxWidth:'260px', lineHeight:1.5 } },
+                        activeImgSource.id === 'wikimedia' ? "Wikimedia Commons blocks embedding — tap to open in your browser." :
+                        activeImgSource.id === 'aimode'   ? "Google AI Mode blocks embedding — tap to open in your browser." :
+                        "This site blocks embedding — tap to open in your browser."
+                    )
+                )))))));
 }
 // ============================================================
 // MAX DRAWER
@@ -1983,8 +2601,8 @@ function MaxDrawer(_a) {
     var _j = useState(''), chatInput = _j[0], setChatInput = _j[1];
     var _k = useState([]), messages = _k[0], setMessages = _k[1];
     var _l = useState(false), isChatLoading = _l[0], setIsChatLoading = _l[1];
-    var _m = useState('kimi-2'), activeChatModel = _m[0], setActiveChatModel = _m[1];
-    var _o = useState('kimi-2'), activeSummaryModel = _o[0], setActiveSummaryModel = _o[1];
+    var _m = useState('gemini-lite'), activeChatModel = _m[0], setActiveChatModel = _m[1];
+    var _o = useState('gemini-lite'), activeSummaryModel = _o[0], setActiveSummaryModel = _o[1];
     var _p = useState(false), isModelMenuOpen = _p[0], setIsModelMenuOpen = _p[1];
     var _q = useState(0), dragY = _q[0], setDragY = _q[1];
     var _r = useState(false), isDragging = _r[0], setIsDragging = _r[1];
@@ -2024,7 +2642,7 @@ function MaxDrawer(_a) {
         else
             setDragY(0); },
     };
-    var MODEL_NAMES = { 'gemini-3.0': 'Gemini 3.0 Flash', 'gemini-flash': 'Gemini 2.5 Flash', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
+    var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'gemini-3.0': 'Gemini 3.0 Flash', 'gemini-flash': 'Gemini 2.5 Flash', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
     useEffect(function () { (messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })); }, [messages]);
     useEffect(function () { if (drawerStateRef)
         drawerStateRef.current.isChatActive = (activeTab === 'chat'); }, [activeTab, drawerStateRef]);
@@ -2070,8 +2688,8 @@ function MaxDrawer(_a) {
                 case 1:
                     _b.trys.push([1, 7, 8, 9]);
                     result_1 = '';
-                    if (!(mToUse === 'gemini-flash' || mToUse === 'gemini-3.0')) return [3 /*break*/, 3];
-                    gemApiModel = mToUse === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : 'gemini-2.0-flash';
+                    if (!(mToUse === 'gemini-flash' || mToUse === 'gemini-3.0' || mToUse === 'gemini-lite')) return [3 /*break*/, 3];
+                    gemApiModel = mToUse === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, srcText, { systemInstruction: promptCtx })];
                 case 2:
                     r = _b.sent();
@@ -2122,8 +2740,8 @@ function MaxDrawer(_a) {
                 case 1:
                     _b.trys.push([1, 7, 8, 9]);
                     aiText_1 = '';
-                    if (!(activeChatModel === 'gemini-flash' || activeChatModel === 'gemini-3.0')) return [3 /*break*/, 3];
-                    gemApiModel = activeChatModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : 'gemini-2.0-flash';
+                    if (!(activeChatModel === 'gemini-flash' || activeChatModel === 'gemini-3.0' || activeChatModel === 'gemini-lite')) return [3 /*break*/, 3];
+                    gemApiModel = activeChatModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : activeChatModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, userPrompt, { systemInstruction: sysPrompt })];
                 case 2:
                     r = _b.sent();
@@ -2155,7 +2773,7 @@ function MaxDrawer(_a) {
     }); };
     if (!isOpen && !closing)
         return null;
-    var isSummary = activeTab === 'summary';
+    var isSummary = true;
     return (React.createElement("div", { className: "fixed inset-0 z-[100] flex flex-col justify-end" },
         React.createElement("div", { className: "bottom-drawer-backdrop".concat(closing ? ' closing' : ''), onClick: handleClose }),
         React.createElement("div", { className: "bottom-drawer-shell".concat(closing ? ' slide-out-down' : ' slide-in-from-bottom-full'), style: { height: '82vh', transform: "translateY(".concat(dragY, "px)") } },
@@ -2202,18 +2820,13 @@ function MaxDrawer(_a) {
                                 })))),
                     /* Tab switcher */
                     React.createElement("div", { className: "max-drawer-tab-bar", style:{ marginLeft:'auto', flexShrink:0 } },
-                        React.createElement("button", { className: "max-drawer-tab-btn tab-summary ".concat(isSummary ? 'active' : ''),
-                            onClick: function() { setActiveTab('summary'); setIsModelMenuOpen(false); onTabChange && onTabChange('summary'); } },
+                        React.createElement("button", { className: "max-drawer-tab-btn tab-summary active",
+                            onClick: function() { setIsModelMenuOpen(false); } },
                             React.createElement("svg", { width:"13", height:"13", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.2" },
                                 React.createElement("path", { d:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
                                 React.createElement("path", { d:"M14 2v6h6" }),
                                 React.createElement("line", { x1:"16", y1:"13", x2:"8", y2:"13" })),
-                            "Summary"),
-                        React.createElement("button", { className: "max-drawer-tab-btn tab-chat ".concat(!isSummary ? 'active' : ''),
-                            onClick: function() { setActiveTab('chat'); setIsModelMenuOpen(false); onTabChange && onTabChange('chat'); } },
-                            React.createElement("svg", { width:"13", height:"13", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.2" },
-                                React.createElement("path", { d:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" })),
-                            "Chat")),
+                            "Summary")),
                     /* Close */
                     React.createElement("button", { onClick: handleClose, className: "max-drawer-close-btn" },
                         React.createElement("svg", { xmlns:"http://www.w3.org/2000/svg", width:"16", height:"16", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
@@ -2255,37 +2868,15 @@ function MaxDrawer(_a) {
 
                 /* Chat tab */
                 !isSummary && React.createElement("div", { style:{ display:'flex', flexDirection:'column', minHeight:'100%' } },
-                    messages.length === 0 && React.createElement("div", { className: "max-drawer-empty-state" },
+                    React.createElement("div", { className: "max-drawer-empty-state" },
                         React.createElement("div", { className: "max-drawer-empty-icon" },
                             React.createElement("svg", { xmlns:"http://www.w3.org/2000/svg", width:"28", height:"28", viewBox:"0 0 24 24", fill:"none", stroke:"#a5b4fc", strokeWidth:"1.5" },
                                 React.createElement("path", { d:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" }))),
                         React.createElement("div", null,
-                            React.createElement("p", { style:{ margin:0, fontSize:'15px', fontWeight:600, color:'rgba(180,200,240,0.7)', fontFamily:"'Playfair Display',serif" } }, "Ask anything"),
-                            React.createElement("p", { style:{ margin:'4px 0 0', fontSize:'12px', color:'rgba(100,130,180,0.5)', lineHeight:1.5 } }, "Ask questions, explore themes, or dig deeper into this content."))),
-                    messages.map(function(msg, i) {
-                        return React.createElement("div", { key:i, style:{ display:'flex', marginBottom:'12px', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' } },
-                            msg.role === 'user'
-                                ? React.createElement("div", { className: "max-drawer-user-bubble" }, msg.content)
-                                : React.createElement("div", { className: "max-drawer-ai-bubble" }, React.createElement(FormattedContent, { content: msg.content })));
-                    }),
-                    isChatLoading && React.createElement("div", { style:{ display:'flex', justifyContent:'flex-start', marginBottom:'12px' } },
-                        React.createElement("div", { className: "max-drawer-typing" },
-                            [0, 0.18, 0.36].map(function(d, i) {
-                                return React.createElement("div", { key:i, className:"max-drawer-typing-dot", style:{ animationDelay: d+'s' } });
-                            }))),
-                    React.createElement("div", { ref: messagesEndRef }))),
+                            React.createElement("p", { style:{ margin:0, fontSize:'14px', fontWeight:600, color:'rgba(180,200,240,0.6)' } }, "Chat moved to Selection Analysis"),
+                            React.createElement("p", { style:{ margin:'4px 0 0', fontSize:'11px', color:'rgba(100,130,180,0.45)', lineHeight:1.5 } }, "Select text in the reader to open the analysis panel, then ask questions there.")))),
 
-            /* ── Chat input bar ── */
-            !isSummary && React.createElement("div", { className: "max-drawer-input-bar" },
-                React.createElement("div", { className: "max-drawer-input-wrap" },
-                    React.createElement("input", { type:"text", value: chatInput, className: "max-drawer-input",
-                        placeholder:"Ask about this content…", disabled: isChatLoading,
-                        onChange: function(e) { return setChatInput(e.target.value); },
-                        onKeyDown: function(e) { if (e.key === 'Enter' && !isChatLoading) handleSend(); } }),
-                    React.createElement("button", { className: "max-drawer-send-btn", onClick: handleSend, disabled: !chatInput.trim() || isChatLoading },
-                        React.createElement("svg", { xmlns:"http://www.w3.org/2000/svg", width:"16", height:"16", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
-                            React.createElement("line", { x1:"22", y1:"2", x2:"11", y2:"13" }),
-                            React.createElement("polygon", { points:"22 2 15 22 11 13 2 9 22 2" }))))))));
+            ))));
 }
 // ============================================================
 // SETTINGS
@@ -2333,12 +2924,14 @@ function Settings(_a) {
     if (!isOpen && !closing)
         return null;
     var MODEL_OPTIONS = [
+        { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google · Default', color: 'from-indigo-500/20 to-indigo-900/5' },
         { id: 'gemini-3.0', label: 'Gemini 3.0 Flash', provider: 'Google', color: 'from-fuchsia-500/20 to-fuchsia-900/5' },
         { id: 'gemini', label: 'Gemini 2.5 Flash', provider: 'Google', color: 'from-rose-500/20 to-rose-900/5' },
         { id: 'kimi', label: 'Kimi K2', provider: 'Moonshot/Groq', color: 'from-emerald-500/20 to-emerald-900/5' },
         { id: 'llama-maverick', label: 'Llama Maverick', provider: 'Meta/Groq', color: 'from-blue-500/20 to-blue-900/5' },
     ];
     var SCANNING_OPTIONS = [
+        { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google Vision · Default', color: 'from-indigo-600/30 to-indigo-900/10' },
         { id: 'gemini-3.0-flash', label: 'Gemini 3.0 Flash', provider: 'Google Vision', color: 'from-fuchsia-600/30 to-fuchsia-900/10' },
         { id: 'gemini-flash', label: 'Gemini 2.5 Flash', provider: 'Google Vision', color: 'from-rose-600/30 to-rose-900/10' },
         { id: 'llama', label: 'Llama 4 Maverick', provider: 'Meta/Groq Vision', color: 'from-blue-600/30 to-blue-900/10' },
@@ -2410,19 +3003,22 @@ function Settings(_a) {
                         React.createElement("label", { className: "text-xs font-bold text-amber-400 uppercase tracking-widest block" }, "Reading Atmosphere"),
                         React.createElement("div", { className: "grid grid-cols-5 gap-3" }, THEMES.map(function (theme) { return (React.createElement("button", { key: theme.id, onClick: function () { return onSelectTheme(theme.id); }, className: "aspect-square rounded-2xl border-2 transition-all flex items-center justify-center ".concat(theme.color, " ").concat(readerTheme === theme.id ? 'scale-110 ' + theme.border + ' shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'), title: theme.label }, readerTheme === theme.id && React.createElement("div", { className: "w-2 h-2 rounded-full ".concat(theme.id === 'light' || theme.id === 'sepia' ? 'bg-slate-900' : 'bg-white') }))); }))))),
                 activeTab === 'api' && (React.createElement("div", { className: "space-y-6 animate-in fade-in" },
-                    React.createElement("div", { className: "bg-[#121214] rounded-3xl p-6 border border-white/5 space-y-5 max-w-xl" },
-                        [{ label: 'Primary API Key (Key 1)', val: apiKey1, idx: 0, onChange: onSetApiKey1, ph: 'Enter Primary Gemini API Key' }, { label: 'Secondary API Key (Key 2)', val: apiKey2, idx: 1, onChange: onSetApiKey2, ph: 'Enter Backup Gemini API Key' }].map(function (_a) {
-                            var label = _a.label, val = _a.val, idx = _a.idx, onChange = _a.onChange, ph = _a.ph;
-                            return (React.createElement("div", { key: idx },
-                                React.createElement("label", { className: "text-[10px] font-bold uppercase tracking-wider mb-2 block ".concat(activeKeyIndex === idx ? 'text-indigo-400' : 'text-slate-600') }, label),
+                    React.createElement("div", { className: "bg-[#121214] rounded-3xl p-6 border border-white/5 space-y-4 max-w-xl" },
+                        GEMINI_KEYS.map(function(key, idx) {
+                            var isActive = activeKeyIndex % GEMINI_KEYS.length === idx;
+                            var masked = key.slice(0,8) + '••••••••••••••••' + key.slice(-4);
+                            return React.createElement("div", { key: idx },
+                                React.createElement("label", { className: "text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-2 " + (isActive ? 'text-indigo-400' : 'text-slate-600') },
+                                    "Gemini Key " + (idx+1),
+                                    isActive && React.createElement("span", { className: "text-[8px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30" }, "ACTIVE")),
                                 React.createElement("div", { className: "relative" },
-                                    React.createElement("input", { type: "password", value: val, onChange: function (e) { return onChange(e.target.value); }, className: "w-full bg-black/40 border rounded-xl px-4 py-3 text-slate-200 focus:outline-none font-mono text-xs placeholder-slate-700 ".concat(activeKeyIndex === idx ? 'border-indigo-500/30' : 'border-white/10'), placeholder: ph }),
-                                    activeKeyIndex === idx && React.createElement("div", { className: "absolute right-3 top-1/2 -translate-y-1/2" },
-                                        React.createElement("div", { className: "w-2 h-2 bg-indigo-500 rounded-full animate-pulse" })))));
+                                    React.createElement("div", { className: "w-full bg-black/40 border rounded-xl px-4 py-3 font-mono text-xs " + (isActive ? 'border-indigo-500/30 text-slate-200' : 'border-white/5 text-slate-500') }, masked),
+                                    isActive && React.createElement("div", { className: "absolute right-3 top-1/2 -translate-y-1/2" },
+                                        React.createElement("div", { className: "w-2 h-2 bg-indigo-500 rounded-full animate-pulse" }))));
                         }),
                         React.createElement("p", { className: "text-[10px] text-slate-500 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5" },
-                            React.createElement("span", { className: "text-white font-bold block mb-1" }, "Failover System Active"),
-                            "Auto-rotates between Key 1 and Key 2 when quota is exceeded.")))),
+                            React.createElement("span", { className: "text-white font-bold block mb-1" }, "5-Key Failover System Active"),
+                            "Auto-rotates through all 5 Gemini API keys when quota is exceeded.")))),
                 activeTab === 'ocr' && (React.createElement("div", { className: "space-y-4 animate-in fade-in" },
                     React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500" }, "Select Scanning Model"),
                     React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
@@ -2561,7 +3157,7 @@ function Reader(_a) {
         else
             setCustDragY(0); },
     };
-    var _t = useState('kimi'), customizerModel = _t[0], setCustomizerModel = _t[1];
+    var _t = useState('gemini-lite'), customizerModel = _t[0], setCustomizerModel = _t[1];
     var _u = useState('Bengali'), customizerLanguage = _u[0], setCustomizerLanguage = _u[1];
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
@@ -2644,12 +3240,20 @@ function Reader(_a) {
                         return [4 /*yield*/, pdfDoc.getPage(pageNum)];
                     case 1:
                         page = _a.sent();
-                        viewport = page.getViewport({ scale: pdfViewerZoom * 1.5 });
+                        var dpr = window.devicePixelRatio || 1;
+                        var baseScale = window.innerWidth / page.getViewport({ scale: 1 }).width;
+                        var renderScale = baseScale * pdfViewerZoom * dpr;
+                        viewport = page.getViewport({ scale: renderScale });
                         canvas = pdfCanvasRef.current;
                         if (!canvas)
                             return [2 /*return*/];
+                        /* Canvas internal pixels = full resolution */
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
+                        /* CSS display size = zoom * screen fit (no dpr multiply — browser handles density) */
+                        var displayW = window.innerWidth * pdfViewerZoom;
+                        canvas.style.width = displayW + 'px';
+                        canvas.style.height = (viewport.height / dpr) + 'px';
                         ctx = canvas.getContext('2d');
                         return [4 /*yield*/, page.render({ canvasContext: ctx, viewport: viewport }).promise];
                     case 2:
@@ -2673,7 +3277,7 @@ function Reader(_a) {
             clearInterval(autoScrollRef.current); };
     }, [isAutoScrolling, autoScrollSpeed]);
     // PDF OCR scanning
-    var OCR_ROTATION = ['gemini-flash', 'gemini-3.0-flash'];
+    var OCR_ROTATION = ['gemini-lite', 'gemini-flash', 'gemini-3.0-flash'];
     useEffect(function () {
         if (!pdfDoc)
             return;
@@ -2707,7 +3311,7 @@ function Reader(_a) {
                             currentModel = modelOverride || (activeScanningModel.includes('gemini') ? OCR_ROTATION[pageIndex % OCR_ROTATION.length] : activeScanningModel);
                             _a.label = 1;
                         case 1:
-                            _a.trys.push([1, 10, , 13]);
+                            _a.trys.push([1, 10, , 15]);
                             pdfPageNum = startPage + pageIndex;
                             return [4 /*yield*/, pdfDoc.getPage(pdfPageNum)];
                         case 2:
@@ -2724,15 +3328,17 @@ function Reader(_a) {
                             _a.sent();
                             base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
                             boldingMap = { lower: 'Bold ONLY proper nouns (minimal).', upper_medium: 'Bold key nouns and main verbs.', medium: 'Bold key entities, verbs, numbers.', medium_high: 'Bold most nouns, verbs, adjectives.', high: 'Bold almost every significant word.' };
-                            boldingInstruction = boldingMap[boldingLevel] || boldingMap.high;
+                            boldingInstruction = (boldingMap[boldingLevel] || boldingMap.high) + ' CRITICAL: When bolding a word, always include its attached suffixes and prefixes inside the ** markers. Example: write **শাহ ফাহাদকে** not **শাহ ফাহাদ**কে, write **সৌদির** not **সৌদি**র. The suffix/prefix must be inside the closing **.';
                             structureInstruction = structureMode === 'original' ? '1. STRUCTURE: Transcribe verbatim. Fix punctuation/spacing only.' : '1. STRUCTURE: Create organized version with headers and bullets.';
                             prevText = (extractedPages[pageIndex - 1] ? extractedPages[pageIndex - 1].body : '') || '';
                             contextPrompt = prevText ? "PREVIOUS: \"...".concat(prevText.slice(-800), "\". Continue flow naturally.") : 'First page.';
-                            prompt_1 = "Perform OCR on this document image. RULES:\n".concat(structureInstruction, "\n2. After sentence-ending punctuation (. | \u0964), ensure a space.\n3. BOLDING: ").concat(boldingInstruction, "\n4. ").concat(contextPrompt, "\n5. Footer/junk lines: prefix with '^^ '.\n6. Math: LaTeX $formula$. Tables: Markdown.\n7. Return ONLY valid JSON: {\"header\":\"...\",\"pageNumber\":\"...\",\"body\":\"full formatted text\"}");
+                            prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
                             geminiModel = 'gemini-2.0-flash';
                             if (currentModel === 'gemini-3.0-flash')
                                 geminiModel = 'gemini-2.5-flash-preview-05-20';
+                            else if (currentModel === 'gemini-lite')
+                                geminiModel = 'gemini-3.1-flash-lite-preview';
                             else if (currentModel === 'gemini-flash')
                                 geminiModel = 'gemini-2.0-flash';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
@@ -2781,31 +3387,31 @@ function Reader(_a) {
                         case 10:
                             e_4 = _a.sent();
                             console.error("Scan error page ".concat(pageIndex), e_4);
-                            isQuota = (e_4.message && e_4.message.includes('429')) || (e_4.message && e_4.message.includes('403')) || (e_4.message && e_4.message.includes('RESOURCE_EXHAUSTED'));
-                            if (isQuota && retryCount < 1) {
-                                onRotateKey();
-                                setScanningStatus(function (p) {
-                                    var _a;
-                                    return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'pending', _a)));
-                                });
-                                return [2 /*return*/];
-                            }
-                            if (!(activeScanningModel.includes('gemini') && !modelOverride && retryCount < 3)) return [3 /*break*/, 12];
-                            idx = OCR_ROTATION.indexOf(currentModel);
-                            if (!(idx !== -1)) return [3 /*break*/, 12];
-                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, OCR_ROTATION[(idx + 1) % OCR_ROTATION.length])];
+                            isQuota = (e_4.message && (e_4.message.includes('429') || e_4.message.includes('403') || e_4.message.includes('RESOURCE_EXHAUSTED') || e_4.message.includes('quota')));
+                            if (!(isQuota && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
+                            /* Rotate to next key and immediately retry with same model */
+                            onRotateKey();
+                            /* Use next key directly from array (don't wait for state update) */
+                            apiKeyRef.current = GEMINI_KEYS[(GEMINI_KEYS.indexOf(apiKeyRef.current) + 1) % GEMINI_KEYS.length];
+                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, currentModel)];
                         case 11:
                             _a.sent();
                             return [2 /*return*/];
                         case 12:
+                            if (!(activeScanningModel.includes('gemini') && !modelOverride && retryCount < 3 && !isQuota)) return [3 /*break*/, 14];
+                            idx = OCR_ROTATION.indexOf(currentModel);
+                            if (!(idx !== -1)) return [3 /*break*/, 14];
+                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, OCR_ROTATION[(idx + 1) % OCR_ROTATION.length])];
+                        case 13:
+                            _a.sent();
+                            return [2 /*return*/];
+                        case 14:
                             setScanningStatus(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'error', _a)));
                             });
-                            if (isQuota)
-                                setNotification({ message: 'Quota exceeded — switched API key. Tap Retry to continue.', type: 'error' });
-                            return [3 /*break*/, 13];
-                        case 13: return [2 /*return*/];
+                            return [3 /*break*/, 15];
+                        case 15: return [2 /*return*/];
                     }
                 });
             });
@@ -2869,8 +3475,8 @@ function Reader(_a) {
                         cleanText = selection.text.replace(/^(\*\*|__)|(\*\*|__)$/g, '').trim();
                         wc = cleanText.split(/\s+/).length;
                         isSentence = wc > 2;
-                        wordSys = "You are a dictionary assistant. 'meaning': Direct Bengali meaning/synonyms. 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI. 'searchQuery': Google Image Search query. Output ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"searchQuery\":\"...\"}";
-                        sentSys = "You are an explanatory assistant. 'meaning': Explain in simple Bengali (\u09AD\u09BE\u09AC\u09BE\u09B0\u09CD\u09A5). 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI. 'searchQuery': Main subject for Google Image Search. Output ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"searchQuery\":\"...\"}";
+                        wordSys = "You are a dictionary and entity-detection assistant with deep contextual understanding.\n\nFor the given word/phrase, use the surrounding context to understand EXACTLY who/what it refers to:\n1. Detect if it is a PERSON name, PLACE name, or OTHER.\n2. Provide 'meaning': direct Bengali meaning/synonyms (or short description if it's a name).\n3. Provide 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. Provide 'entityType': exactly one of 'person', 'place', or 'other'.\n5. If entityType is 'person': Use the context to identify the FULL real name with disambiguating details. 'searchQuery' must be specific enough to find this exact person — include their role/title/era/nationality if needed (e.g. 'Shah Jahan Mughal Emperor', 'Saddam Hussein Iraqi President', 'Sheikh Jaber Al-Ahmad Al-Sabah Kuwait Emir'). Also provide 'wikiTitle': the exact Wikipedia article title for this specific person.\n6. If entityType is 'place': 'searchQuery' must be the place name in English with country/region for specificity (e.g. 'Dhaka Bangladesh capital'). Also provide 'wikiTitle': exact Wikipedia article title.\n7. If entityType is 'other': 'searchQuery' is a descriptive Google Image search query.\n8. Provide 'smartQuery': a natural, context-aware question in Bengali or English that captures what a reader would want to know.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
+                        sentSys = "You are an explanatory and entity-detection assistant with deep contextual understanding.\n\nFor the given phrase, use the surrounding context to understand EXACTLY who/what it refers to:\n1. Detect if the main subject is a PERSON name, PLACE name, or OTHER concept.\n2. Provide 'meaning': explain in simple Bengali.\n3. Provide 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. Provide 'entityType': exactly one of 'person', 'place', or 'other'.\n5. If entityType is 'person': Use the context to identify the FULL real name with disambiguating details. 'searchQuery' must be specific enough to find this exact person — include their role/title/era/nationality (e.g. 'Shah Jahan Mughal Emperor India', 'King Fahd Saudi Arabia ruler'). Also provide 'wikiTitle': exact Wikipedia article title for this specific person.\n6. If entityType is 'place': 'searchQuery' = place name in English with region/country. Also 'wikiTitle': exact Wikipedia article title.\n7. Otherwise: 'searchQuery' = main subject for Google Image Search.\n8. Provide 'smartQuery': a natural context-aware question a curious reader would ask.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
                         sys = isSentence ? sentSys : wordSys;
                         userP = "Context: \"".concat(fullContext, "\"\nAnalyze: \"").concat(cleanText, "\"");
                         _a.label = 1;
@@ -2878,37 +3484,36 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         analysis = {};
                         modelName = MODEL_LABELS[selectedModel] || 'AI';
-                        if (!selectedModel.includes('gemini')) return [3 /*break*/, 3];
-                        geminiM = selectedModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : 'gemini-2.0-flash';
-                        return [4 /*yield*/, geminiGenerate(apiKeyRef.current, geminiM, userP, { systemInstruction: sys, responseMimeType: 'application/json' })];
+                        /* Try Llama Maverick first, fallback to Kimi K2 */
+                        return [4 /*yield*/, (function() {
+                            var tryFetch = function(apiKey, modelId) {
+                                return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
+                            };
+                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-maverick-17b-128e-instruct').then(function(res) {
+                                if (!res.ok && (res.status === 401 || res.status === 429 || res.status === 403)) {
+                                    return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
+                                }
+                                return res;
+                            }).catch(function() {
+                                return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
+                            });
+                        })()];
                     case 2:
                         r = _a.sent();
                         if (ctrl.signal.aborted)
                             throw new Error('Aborted');
-                        analysis = safeExtractJSON(r.text || '{}') || {};
-                        return [3 /*break*/, 6];
-                    case 3:
-                        modelId = '', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                        if (selectedModel === 'kimi')
-                            modelId = 'moonshotai/kimi-k2-instruct-0905';
-                        else if (selectedModel === 'llama-maverick') {
-                            modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
-                            key = MAVERICK_KEY;
-                        }
-                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal })];
-                    case 4:
-                        r = _a.sent();
-                        if (ctrl.signal.aborted)
-                            throw new Error('Aborted');
                         return [4 /*yield*/, r.json()];
-                    case 5:
+                    case 3:
                         d = _a.sent();
                         analysis = safeExtractJSON((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}') || {};
+                        return [3 /*break*/, 6];
+                    case 4: return [3 /*break*/, 6];
+                    case 5: return [3 /*break*/, 6];
                         _a.label = 6;
                     case 6:
                         if (ctrl.signal.aborted)
                             return [2 /*return*/];
-                        result = { word: cleanText, meaning: String((analysis && analysis.meaning ? analysis.meaning : '') || 'নির্ধারিত নয়'), context: String((analysis && analysis.explanation ? analysis.explanation : '') || 'বিশ্লেষণ পাওয়া যায়নি।'), searchQuery: (analysis ? analysis.searchQuery : undefined), modelName: modelName, modelId: selectedModel, rawSelection: selection };
+                        result = { word: cleanText, meaning: String((analysis && analysis.meaning ? analysis.meaning : '') || 'নির্ধারিত নয়'), context: String((analysis && analysis.explanation ? analysis.explanation : '') || 'বিশ্লেষণ পাওয়া যায়নি।'), searchQuery: (analysis ? analysis.searchQuery : undefined), entityType: (analysis ? analysis.entityType : 'other') || 'other', wikiTitle: (analysis ? analysis.wikiTitle : undefined), smartQuery: (analysis ? analysis.smartQuery : undefined), modelName: modelName, modelId: selectedModel, rawSelection: selection };
                         newHL_1 = { pageIndex: selection.pageIndex, start: selection.start, end: selection.end, data: result, id: selection.id };
                         setHighlights(function (p) { return __spreadArray(__spreadArray([], p.filter(function (h) { return h.id !== selection.id; }), true), [newHL_1], false); });
                         setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
@@ -2920,12 +3525,13 @@ function Reader(_a) {
                         err_2 = _a.sent();
                         if (err_2.name === 'AbortError' || err_2.message === 'Aborted')
                             return [2 /*return*/];
-                        if (((err_2.message && err_2.message.includes('429')) || (err_2.message && err_2.message.includes('403'))) && retryCount < 1) {
+                        if (err_2.name === 'AbortError' || err_2.message === 'Aborted') return [2 /*return*/];
+                        if (retryCount < 1) {
                             onRotateKey();
-                            setTimeout(function () { return analyzeText(selection, fullContext, selectedModel, retryCount + 1); }, 500);
+                            setTimeout(function () { return analyzeText(selection, fullContext, selectedModel, retryCount + 1); }, 800);
                         }
                         else {
-                            setNotification({ message: err_2.message || 'Connection error', type: 'error' });
+                            setNotification({ message: 'API error — check your keys or try again.', type: 'error' });
                             setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         }
                         return [3 /*break*/, 9];
@@ -3050,7 +3656,7 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         newText_1 = '';
                         if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = 'gemini-2.5-flash-preview-05-20';
+                        gemM = customizerModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, fullP)];
                     case 2:
                         r = _a.sent();
@@ -3146,11 +3752,11 @@ function Reader(_a) {
                     _a.trys.push([1, 7, 8, 9]);
                     newChunk = '';
                     if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                    gemM = 'gemini-2.5-flash-preview-05-20';
+                    gemM = customizerModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 2:
                     r = _a.sent();
-                    newChunk = r.text || '';
+                    newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
                     modelId = 'moonshotai/kimi-k2-instruct-0905'; key = GROQ_API_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
@@ -3252,7 +3858,8 @@ function Reader(_a) {
                             }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase" }, "Retry"));
                 if (!ext) {
                     var pageLabel = ((pdfRange ? pdfRange.start : 1) || 1) + currentPage;
-                    var modelLabel = activeScanningModel.includes('3.0') ? 'Gemini 3.0 Flash' : activeScanningModel.includes('gemini') ? 'Gemini 2.5 Flash' : 'Llama 4 Maverick';
+                    var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : activeScanningModel.includes('3.0') ? 'Gemini 3.0 Flash' : activeScanningModel.includes('gemini') ? 'Gemini 2.5 Flash' : 'Llama 4 Maverick';
+                    var keyNum = GEMINI_KEYS.indexOf(apiKeyRef.current) + 1 || 1;
                     return (React.createElement("div", { className: "flex flex-col items-center justify-center pt-16 space-y-6" },
                         React.createElement("div", { className: "ocr-upload" },
                             React.createElement("div", { className: "ocr-up-head" },
@@ -3272,7 +3879,10 @@ function Reader(_a) {
                                 React.createElement("span", { className: "ocr-footer-page" },
                                     "Folio ",
                                     pageLabel),
-                                React.createElement("span", { className: "ocr-footer-model" }, modelLabel)))));
+                                React.createElement("span", { className: "ocr-footer-model" },
+                                    modelLabel,
+                                    " · K",
+                                    keyNum)))));
                 }
                 pageText = ext.body;
             }
@@ -3509,35 +4119,54 @@ function Reader(_a) {
     return (React.createElement("div", { className: "w-full flex flex-col min-h-screen px-4 pb-40 overflow-x-hidden animate-in fade-in" },
         React.createElement(AnalysisModal, { isOpen: isModalOpen, isAutoOpen: isAutoOpen, data: modalData, isLoading: isRegenerating, autoPlayTTS: autoPlayTTS, onClose: function () { return setIsModalOpen(false); }, onModelChange: handleModelChange, googleApiKey: googleApiKey }),
         React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab }),
-        isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col" },
-            React.createElement("div", { className: "absolute inset-0 overflow-auto bg-[#0c0c0e]/95 backdrop-blur-xl flex" },
-                React.createElement("div", { className: "m-auto p-6 flex items-center justify-center" },
-                    React.createElement("canvas", { ref: pdfCanvasRef, className: "shadow-2xl rounded-lg block" }))),
-            React.createElement("div", { className: "absolute top-6 right-6 z-[210] flex space-x-3" },
-                React.createElement("div", { className: "flex bg-[#1a1a1e] rounded-full border border-white/10 p-1" },
-                    React.createElement("button", { onClick: function () { return setPdfViewerZoom(function (z) { return Math.max(0.1, z - 0.1); }); }, className: "p-3 hover:bg-white/5 rounded-full text-slate-400" },
-                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))),
-                    React.createElement("span", { className: "flex items-center w-12 justify-center text-xs font-bold text-slate-300" },
-                        Math.round(pdfViewerZoom * 100),
-                        "%"),
-                    React.createElement("button", { onClick: function () { return setPdfViewerZoom(function (z) { return Math.min(3.0, z + 0.1); }); }, className: "p-3 hover:bg-white/5 rounded-full text-slate-400" },
-                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }),
-                            React.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" })))),
-                React.createElement("button", { onClick: function () { return setIsOriginalPdfOpen(false); }, className: "p-4 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-full" },
-                    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                        React.createElement("line", { x1: "18", y1: "6", x2: "6", y2: "18" }),
-                        React.createElement("line", { x1: "6", y1: "6", x2: "18", y2: "18" })))),
-            React.createElement("button", { onClick: function () { return currentPage > 0 && setCurrentPage(function (p) { return p - 1; }); }, disabled: currentPage === 0, className: "fixed left-6 top-1/2 -translate-y-1/2 p-4 bg-black/50 hover:bg-black/80 rounded-full text-white backdrop-blur-md border border-white/10 z-[205] disabled:opacity-30" },
-                React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                    React.createElement("path", { d: "m15 18-6-6 6-6" }))),
-            React.createElement("button", { onClick: function () { return currentPage < totalPages - 1 && setCurrentPage(function (p) { return p + 1; }); }, disabled: currentPage === totalPages - 1, className: "fixed right-6 top-1/2 -translate-y-1/2 p-4 bg-black/50 hover:bg-black/80 rounded-full text-white backdrop-blur-md border border-white/10 z-[205] disabled:opacity-30" },
-                React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                    React.createElement("path", { d: "m9 18 6-6-6-6" }))),
-            React.createElement("div", { className: "fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-2 rounded-full backdrop-blur-md border border-white/10 text-xs font-bold text-slate-300 uppercase tracking-widest z-[205]" },
-                "Original PDF Page ",
-                ((pdfRange ? pdfRange.start : 1) || 1) + currentPage))),
+        isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
+            /* Scrollable canvas area */
+            React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'center', minHeight: '100%', padding: '12px' } },
+                    React.createElement("canvas", { ref: pdfCanvasRef, style: {
+                        display: 'block',
+                        borderRadius: '6px',
+                        boxShadow: '0 8px 48px rgba(0,0,0,0.8)',
+                        filter: 'brightness(0.92) contrast(1.08)'
+                    } }))),
+            /* Top bar */
+            React.createElement("div", { style: {
+                position: 'absolute', top: 0, left: 0, right: 0, height: '56px',
+                background: 'rgba(10,10,14,0.95)', backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '0 16px', zIndex: 10
+            } },
+                /* Page info */
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                    React.createElement("span", { style: { fontSize: '11px', fontWeight: 800, color: 'rgba(148,163,184,0.7)', letterSpacing: '0.12em', textTransform: 'uppercase' } },
+                        "Page ", ((pdfRange ? pdfRange.start : 1) || 1) + currentPage,
+                        " / ", (pdfRange ? pdfRange.end : (pdfDoc ? pdfDoc.numPages : 1)) || 1)),
+                /* Zoom controls */
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                    React.createElement("button", { onClick: function() { setPdfViewerZoom(function(z) { return Math.max(0.5, z - 0.15); }); }, style: { width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px', fontWeight: 300 } }, "−"),
+                    React.createElement("span", { style: { fontSize: '11px', fontWeight: 800, color: '#94a3b8', minWidth: '38px', textAlign: 'center' } }, Math.round(pdfViewerZoom * 100) + "%"),
+                    React.createElement("button", { onClick: function() { setPdfViewerZoom(function(z) { return Math.min(3.0, z + 0.15); }); }, style: { width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px', fontWeight: 300 } }, "+"),
+                    React.createElement("button", { onClick: function() { setPdfViewerZoom(1.0); }, style: { height: '34px', padding: '0 10px', borderRadius: '10px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#a5b4fc', fontSize: '10px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.08em' } }, "FIT"),
+                    React.createElement("button", { onClick: function() { setIsOriginalPdfOpen(false); }, style: { width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginLeft: '4px' } },
+                        React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                            React.createElement("path", { d: "M18 6 6 18" }),
+                            React.createElement("path", { d: "m6 6 12 12" }))))),
+            /* Bottom page nav */
+            React.createElement("div", { style: {
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '62px',
+                background: 'rgba(10,10,14,0.95)', backdropFilter: 'blur(12px)',
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', zIndex: 10
+            } },
+                React.createElement("button", { onClick: function() { currentPage > 0 && setCurrentPage(function(p) { return p - 1; }); }, disabled: currentPage === 0, style: { width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: currentPage === 0 ? 0.25 : 1 } },
+                    React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                        React.createElement("path", { d: "m15 18-6-6 6-6" }))),
+                React.createElement("span", { style: { fontSize: '12px', fontWeight: 700, color: 'rgba(148,163,184,0.6)', minWidth: '80px', textAlign: 'center' } },
+                    "Folio ", currentPage + 1),
+                React.createElement("button", { onClick: function() { currentPage < totalPages - 1 && setCurrentPage(function(p) { return p + 1; }); }, disabled: currentPage === totalPages - 1, style: { width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: currentPage === totalPages - 1 ? 0.25 : 1 } },
+                    React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                        React.createElement("path", { d: "m9 18 6-6-6-6" })))))),
         notification && (React.createElement("div", { className: "fixed top-20 left-1/2 -translate-x-1/2 z-[150] slide-in-from-top-2" },
             React.createElement("div", { className: "".concat(notification.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-200' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200', " border px-5 py-3 rounded-full shadow-2xl flex items-center space-x-3 backdrop-blur-md") },
                 notification.type === 'error' ? React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
@@ -3582,7 +4211,7 @@ function Reader(_a) {
         /* ── Portion Selection Mode Banner ── */
         isSelectingPortion && React.createElement("div", {
             style:{
-                position:'fixed', bottom:0, left:0, right:0, zIndex:150,
+                position:'fixed', bottom:'120px', left:0, right:0, zIndex:150,
                 padding:'16px', background:'linear-gradient(to top, #0a0f1a, transparent)'
             }
         },
@@ -3882,7 +4511,7 @@ function Editor(_a) {
                         _a.trys.push([1, 9, 10, 11]);
                         result = '';
                         if (!activeStructureModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = activeStructureModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : 'gemini-2.0-flash';
+                        gemM = activeStructureModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : activeStructureModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, text, { systemInstruction: systemPrompt, temperature: 0.3, maxOutputTokens: 16384 })];
                     case 2:
                         r = _a.sent();
@@ -4286,9 +4915,9 @@ function App() {
     var _f = useState(0), lastPageIndex = _f[0], setLastPageIndex = _f[1];
     var _g = useState([]), history = _g[0], setHistory = _g[1];
     var _h = useState(false), isSettingsOpen = _h[0], setIsSettingsOpen = _h[1];
-    var _j = useState('kimi'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
-    var _k = useState('kimi'), activeStructureModel = _k[0], setActiveStructureModel = _k[1]; // default: Kimi K2
-    var _l = useState('gemini-flash'), activeScanningModel = _l[0], setActiveScanningModel = _l[1];
+    var _j = useState('gemini-lite'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
+    var _k = useState('gemini-lite'), activeStructureModel = _k[0], setActiveStructureModel = _k[1];
+    var _l = useState('gemini-lite'), activeScanningModel = _l[0], setActiveScanningModel = _l[1];
     var _m = useState('original'), structureMode = _m[0], setStructureMode = _m[1];
     var _o = useState('dark'), readerTheme = _o[0], setReaderTheme = _o[1];
     var _p = useState('lower'), boldingLevel = _p[0], setBoldingLevel = _p[1];
@@ -4296,11 +4925,9 @@ function App() {
     var _r = useState(0.8), boldness = _r[0], setBoldness = _r[1];
     var _s = useState(2), autoScrollSpeed = _s[0], setAutoScrollSpeed = _s[1];
     var _t = useState(false), autoPlayTTS = _t[0], setAutoPlayTTS = _t[1];
-    var _u = useState('AIzaSyCewtkpKtx0Fl1T90A4id3ARm80_0tWV28'), apiKey1 = _u[0], setApiKey1 = _u[1];
-    var _v = useState('AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c'), apiKey2 = _v[0], setApiKey2 = _v[1];
-    var _w = useState(0), activeKeyIndex = _w[0], setActiveKeyIndex = _w[1];
-    var googleApiKey = activeKeyIndex === 0 ? apiKey1 : apiKey2;
-    var handleRotateKey = function () { var next = activeKeyIndex === 0 ? 1 : 0; setActiveKeyIndex(next); console.log("Switched to API Key #".concat(next + 1)); };
+    var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
+    var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
+    var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
     var addToHistory = function (finalLastPage, finalExtracted, file, range, text) {
         var item = { id: crypto.randomUUID(), type: file ? 'pdf' : 'text', title: file ? file.name : (text.slice(0, 30) + '...'), timestamp: Date.now(), data: { rawText: text, pdfFile: file, pdfRange: range, extractedPages: finalExtracted, lastPageIndex: finalLastPage } };
         setHistory(function (p) { return __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10); });
@@ -4332,7 +4959,7 @@ function App() {
     };
     return (React.createElement("div", { className: "min-h-screen transition-colors duration-700 font-sans ".concat(getBg()) },
         React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey }))),
-        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: apiKey1, apiKey2: apiKey2, activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: setApiKey1, onSetApiKey2: setApiKey2, onSetAutoScrollSpeed: setAutoScrollSpeed, onClose: function () { return setIsSettingsOpen(false); } })));
+        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onClose: function () { return setIsSettingsOpen(false); } })));
 }
 var container = document.getElementById('root');
 ReactDOM.render(React.createElement(App, null), container);
@@ -4341,74 +4968,5 @@ ReactDOM.render(React.createElement(App, null), container);
 </script>
 
   
-<!-- PWA Install Banner -->
-<div id="pwa-install-banner" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;animation:fadeIn 0.4s ease;">
-  <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:16px;background:rgba(15,15,20,0.97);border:1px solid rgba(99,102,241,0.3);box-shadow:0 8px 48px rgba(0,0,0,0.8),0 0 0 1px rgba(99,102,241,0.1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);max-width:340px;width:calc(100vw - 48px);">
-    <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">📄</div>
-    <div style="flex:1;min-width:0;">
-      <p style="margin:0;font-size:13px;font-weight:700;color:#e2e8f0;font-family:'Inter',sans-serif;">Install MaxOfPdf</p>
-      <p style="margin:2px 0 0;font-size:11px;color:#64748b;font-family:'Inter',sans-serif;">Add to home screen for offline use</p>
-    </div>
-    <div style="display:flex;gap:8px;flex-shrink:0;">
-      <button id="pwa-dismiss-btn" style="padding:6px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#64748b;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;font-weight:500;">Later</button>
-      <button id="pwa-install-btn" style="padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;color:#fff;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;font-weight:600;box-shadow:0 2px 12px rgba(79,70,229,0.4);">Install</button>
-    </div>
-  </div>
-</div>
-
-<!-- PWA Service Worker + Install Prompt -->
-<script>
-(function() {
-  var deferredPrompt = null;
-  var banner = document.getElementById('pwa-install-banner');
-  var installBtn = document.getElementById('pwa-install-btn');
-  var dismissBtn = document.getElementById('pwa-dismiss-btn');
-
-  // Register Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(reg) {
-        console.log('[PWA] Service worker registered, scope:', reg.scope);
-      }).catch(function(err) {
-        console.warn('[PWA] SW registration failed:', err);
-      });
-    });
-  }
-
-  // Capture the install prompt
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Only show if not already dismissed this session
-    if (!sessionStorage.getItem('pwa-dismissed')) {
-      banner.style.display = 'block';
-    }
-  });
-
-  // Install button click
-  installBtn.addEventListener('click', async function() {
-    if (!deferredPrompt) return;
-    banner.style.display = 'none';
-    deferredPrompt.prompt();
-    var result = await deferredPrompt.userChoice;
-    console.log('[PWA] Install outcome:', result.outcome);
-    deferredPrompt = null;
-  });
-
-  // Dismiss button click
-  dismissBtn.addEventListener('click', function() {
-    banner.style.display = 'none';
-    sessionStorage.setItem('pwa-dismissed', '1');
-  });
-
-  // Hide after install
-  window.addEventListener('appinstalled', function() {
-    banner.style.display = 'none';
-    deferredPrompt = null;
-    console.log('[PWA] App installed successfully!');
-  });
-})();
-</script>
-
 </body>
 </html>
