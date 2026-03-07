@@ -1,69 +1,95 @@
-const CACHE_NAME = 'maxofpdf-v1';
+const CACHE_NAME = 'maxofpdf-v2';
 
-// Files to cache for offline use
 const PRECACHE_URLS = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/style.css',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
-// Install: cache core files
-self.addEventListener('install', function(event) {
+// ── Install: pre-cache core assets ───────────────────────────────────────────
+self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(PRECACHE_URLS);
-    }).then(function() {
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME)
+      .then(function (cache) {
+        return cache.addAll(PRECACHE_URLS);
+      })
+      .then(function () {
+        return self.skipWaiting();
+      })
   );
 });
 
-// Activate: clean up old caches
-self.addEventListener('activate', function(event) {
+// ── Activate: remove old caches ──────────────────────────────────────────────
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames
-          .filter(function(name) { return name !== CACHE_NAME; })
-          .map(function(name) { return caches.delete(name); })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
+    caches.keys()
+      .then(function (cacheNames) {
+        return Promise.all(
+          cacheNames
+            .filter(function (name) { return name !== CACHE_NAME; })
+            .map(function (name) { return caches.delete(name); })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
+      })
   );
 });
 
-// Fetch: serve from cache, fallback to network
-self.addEventListener('fetch', function(event) {
-  // Skip non-GET and cross-origin requests
+// ── Fetch: network-first, fallback to cache ──────────────────────────────────
+self.addEventListener('fetch', function (event) {
+  // Only handle GET requests to our own origin
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith(self.location.origin)) return;
 
+  // For navigation requests (HTML pages) — network first, cache fallback
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(function (response) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(event.request, clone);
+          });
+          return response;
+        })
+        .catch(function () {
+          return caches.match('/index.html');
+        })
+    );
+    return;
+  }
+
+  // For all other assets — cache first, network fallback
   event.respondWith(
-    caches.match(event.request).then(function(cachedResponse) {
-      if (cachedResponse) {
-        // Serve from cache, refresh in background
-        var fetchPromise = fetch(event.request).then(function(networkResponse) {
-          if (networkResponse && networkResponse.status === 200) {
-            var responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then(function(cache) {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        }).catch(function() {});
-        return cachedResponse;
-      }
-      // Not in cache: fetch from network and cache it
-      return fetch(event.request).then(function(networkResponse) {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
+    caches.match(event.request)
+      .then(function (cached) {
+        if (cached) {
+          // Refresh cache in background
+          fetch(event.request).then(function (response) {
+            if (response && response.status === 200) {
+              caches.open(CACHE_NAME).then(function (cache) {
+                cache.put(event.request, response);
+              });
+            }
+          }).catch(function () {});
+          return cached;
         }
-        var responseClone = networkResponse.clone();
-        caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, responseClone);
+
+        // Not in cache — fetch and store
+        return fetch(event.request).then(function (response) {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(event.request, clone);
+          });
+          return response;
         });
-        return networkResponse;
-      });
-    })
+      })
   );
 });
