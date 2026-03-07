@@ -1,95 +1,138 @@
-const CACHE_NAME = 'maxofpdf-v2';
+/* ============================================================
+   MaxOfPdf Service Worker  –  v1.0.0
+   Strategy:
+     • App shell (HTML, fonts, KaTeX, PDF.js, React) → Cache-First
+     • Gemini / external API calls                   → Network-Only
+     • Everything else                               → Network-First w/ cache fallback
+   ============================================================ */
 
+const CACHE_NAME      = 'maxofpdf-v1';
+const OFFLINE_URL     = '/';
+
+/* Resources to pre-cache on install (app shell) */
 const PRECACHE_URLS = [
   '/',
-  '/index.html',
-  '/style.css',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
 ];
 
-// ── Install: pre-cache core assets ───────────────────────────────────────────
-self.addEventListener('install', function (event) {
+/* Domains that should NEVER be intercepted (live API calls) */
+const NETWORK_ONLY_ORIGINS = [
+  'generativelanguage.googleapis.com',
+  'googleapis.com',
+];
+
+/* CDN origins we cache aggressively */
+const CDN_ORIGINS = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'cdn.jsdelivr.net',
+  'cdnjs.cloudflare.com',
+  'unpkg.com',
+];
+
+// ── Install ──────────────────────────────────────────────────
+self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function (cache) {
-        return cache.addAll(PRECACHE_URLS);
-      })
-      .then(function () {
-        return self.skipWaiting();
-      })
+      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: remove old caches ──────────────────────────────────────────────
-self.addEventListener('activate', function (event) {
+// ── Activate ─────────────────────────────────────────────────
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(function (cacheNames) {
-        return Promise.all(
-          cacheNames
-            .filter(function (name) { return name !== CACHE_NAME; })
-            .map(function (name) { return caches.delete(name); })
-        );
-      })
-      .then(function () {
-        return self.clients.claim();
-      })
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: network-first, fallback to cache ──────────────────────────────────
-self.addEventListener('fetch', function (event) {
-  // Only handle GET requests to our own origin
-  if (event.request.method !== 'GET') return;
-  if (!event.request.url.startsWith(self.location.origin)) return;
+// ── Fetch ────────────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // For navigation requests (HTML pages) — network first, cache fallback
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(function (response) {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
-          return response;
-        })
-        .catch(function () {
-          return caches.match('/index.html');
-        })
-    );
+  // Skip non-GET and chrome-extension requests
+  if (request.method !== 'GET') return;
+  if (url.protocol === 'chrome-extension:') return;
+
+  // Network-only: Gemini API and other live APIs
+  if (NETWORK_ONLY_ORIGINS.some(o => url.hostname.includes(o))) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // For all other assets — cache first, network fallback
-  event.respondWith(
-    caches.match(event.request)
-      .then(function (cached) {
-        if (cached) {
-          // Refresh cache in background
-          fetch(event.request).then(function (response) {
-            if (response && response.status === 200) {
-              caches.open(CACHE_NAME).then(function (cache) {
-                cache.put(event.request, response);
-              });
-            }
-          }).catch(function () {});
-          return cached;
-        }
+  // Cache-first: CDN resources (fonts, libraries)
+  if (CDN_ORIGINS.some(o => url.hostname.includes(o))) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
 
-        // Not in cache — fetch and store
-        return fetch(event.request).then(function (response) {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
-          return response;
-        });
-      })
-  );
+  // Cache-first: same-origin static assets (icons, manifest, scripts)
+  if (url.origin === self.location.origin) {
+    const ext = url.pathname.split('.').pop().toLowerCase();
+    const staticExts = ['png','jpg','jpeg','svg','webp','ico','woff','woff2','ttf','css','js','json'];
+    if (staticExts.includes(ext)) {
+      event.respondWith(cacheFirst(request));
+      return;
+    }
+    // HTML navigation → Network-first, fallback to cache
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Default → Network-first
+  event.respondWith(networkFirst(request));
 });
+
+// ── Strategies ───────────────────────────────────────────────
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200 && response.type !== 'opaque') {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return cachedFallback(request);
+  }
+}
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    // Last resort: serve the app shell for navigation requests
+    if (request.mode === 'navigate') {
+      return caches.match(OFFLINE_URL);
+    }
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+async function cachedFallback(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  if (request.mode === 'navigate') {
+    return caches.match(OFFLINE_URL);
+  }
+  return new Response('Offline', { status: 503 });
+}
