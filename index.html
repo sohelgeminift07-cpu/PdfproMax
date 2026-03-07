@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>MaxOfPdf – Premium Reader</title>
 
   <!-- ── PWA Manifest ── -->
@@ -12,7 +12,8 @@
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-touch-fullscreen" content="yes" />
   <meta name="apple-mobile-web-app-title" content="MaxOfPdf" />
   <meta name="application-name" content="MaxOfPdf" />
   <meta name="description" content="A premium PDF and text reader with AI-powered features." />
@@ -55,6 +56,12 @@
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -6383,7 +6390,32 @@ function App() {
 var container = document.getElementById('root');
 ReactDOM.render(React.createElement(App, null), container);
 
-/* ── Service Worker Registration ── */
+/* ── Screen Orientation Lock (portrait) ── */
+if (screen.orientation && screen.orientation.lock) {
+  screen.orientation.lock('portrait-primary').catch(function () {
+    /* Silently ignore — lock only works when app is fullscreen/standalone */
+  });
+}
+
+/* ── Screen Orientation Lock (portrait) ── */
+(function () {
+  function lockPortrait() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('portrait-primary').catch(function () {});
+    } else if (window.screen.lockOrientation) {
+      window.screen.lockOrientation('portrait-primary');
+    } else if (window.screen.mozLockOrientation) {
+      window.screen.mozLockOrientation('portrait-primary');
+    } else if (window.screen.msLockOrientation) {
+      window.screen.msLockOrientation('portrait-primary');
+    }
+  }
+  lockPortrait();
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) lockPortrait();
+  });
+})();
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
