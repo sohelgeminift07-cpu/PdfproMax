@@ -1,7 +1,0 @@
-body {
-    font-size: 15pt;
-}
-
-textarea::placeholder {
-    font-style: italic;
-}
