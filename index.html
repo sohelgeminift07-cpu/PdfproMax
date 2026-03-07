@@ -71,6 +71,20 @@
       -webkit-tap-highlight-color: transparent;
       font-synthesis: none;
     }
+
+    /* ── Force portrait via CSS rotation trick ── */
+    @media screen and (orientation: landscape) {
+      html {
+        transform: rotate(-90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        overflow-x: hidden;
+        position: absolute;
+        top: 100%;
+        left: 0;
+      }
+    }
     .serif { font-family: 'Merriweather', 'Noto Serif Bengali', 'Amiri', serif; }
     .display-serif { font-family: 'Playfair Display', 'Noto Serif Bengali', 'Amiri', serif; }
     .caps-spacing { letter-spacing: 0.2em; }
@@ -6390,30 +6404,7 @@ function App() {
 var container = document.getElementById('root');
 ReactDOM.render(React.createElement(App, null), container);
 
-/* ── Screen Orientation Lock ── */
-(function () {
-  var locked = false;
-  function lockPortrait() {
-    if (locked) return;
-    if (screen.orientation && typeof screen.orientation.lock === 'function') {
-      screen.orientation.lock('portrait-primary')
-        .then(function () { locked = true; })
-        .catch(function () {});
-    }
-  }
-  /* Try on first user interaction — required by browser security policy */
-  ['touchstart', 'touchend', 'click', 'pointerdown'].forEach(function (evt) {
-    document.addEventListener(evt, function handler() {
-      lockPortrait();
-    }, { passive: true });
-  });
-  /* Try immediately (works in fullscreen PWA mode) */
-  lockPortrait();
-  /* Re-try when app returns to foreground */
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) { locked = false; lockPortrait(); }
-  });
-})();
+
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
