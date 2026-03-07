@@ -60,7 +60,7 @@
       text-rendering:optimizeLegibility;
       white-space:normal; word-break:break-word; overflow-wrap:break-word; max-width:100%;
     }
-    .premium-highlight { display:inline; padding:2px 0!important; margin:0!important; border:none!important; color:#000!important; border-radius:3px; box-decoration-break:clone; -webkit-box-decoration-break:clone; line-height:inherit; vertical-align:baseline; position:relative; z-index:1; }
+    .premium-highlight { display:inline; padding:0!important; margin:0!important; border:none!important; color:#000!important; border-radius:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
     .premium-highlight .md-bold-text { color:inherit!important; }
     .highlight-final { background-color:#b45309!important; cursor:pointer; }
     .highlight-pending { background-color:rgba(254,240,138,0.35)!important; animation:pulse-soft 2s infinite; }
@@ -69,6 +69,7 @@
     .md-h1 { font-size:2.5rem; color:#e2e8f0; font-weight:800; line-height:1.2; margin-bottom:1.5rem; font-family:'Noto Serif Bengali','Playfair Display',serif; }
     .md-h2 { font-size:2rem; color:#cbd5e1; font-weight:700; line-height:1.3; margin-bottom:1.25rem; font-family:'Noto Serif Bengali','Playfair Display',serif; }
     .md-h3 { font-size:1.5rem; color:#94a3b8; font-weight:700; line-height:1.4; margin-bottom:1rem; }
+    .md-h4 { font-size:1.15rem; color:#6b7280; font-weight:700; line-height:1.5; margin-bottom:0.75rem; letter-spacing:0.01em; }
     .md-list-item { position:relative; padding-left:1.75rem; margin-bottom:0.75rem; display:block; }
     .md-list-bullet { position:absolute; left:0.25rem; top:0.85rem; width:0.4rem; height:0.4rem; border-radius:50%; background-color:#4f46e5; box-shadow:0 0 6px rgba(79,70,229,0.3); }
     .md-bold-text { font-weight:800!important; }
@@ -97,8 +98,415 @@
     .animate-in { animation:fadeIn 0.3s ease-out; }
     @keyframes slideInBottom { from{transform:translateY(100%);opacity:0.6} to{transform:translateY(0);opacity:1} }
     .slide-in-from-bottom-full { animation:slideInBottom 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+
+    /* ── X-Ray Panel ── */
+    @keyframes xrayReveal { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .xray-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 55;
+      pointer-events: none;
+    }
+    .xray-panel.open { pointer-events: auto; }
+    .xray-sheet {
+      max-width: 720px; margin: 0 auto;
+      background: linear-gradient(160deg, #080d1a 0%, #060b16 60%, #040810 100%);
+      border: 1px solid rgba(56,189,248,0.12);
+      border-bottom: none;
+      border-radius: 28px 28px 0 0;
+      box-shadow:
+        0 -32px 80px rgba(0,0,0,0.9),
+        inset 0 1px 0 rgba(56,189,248,0.08);
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.42s cubic-bezier(0.22,1,0.36,1);
+      max-height: 72vh; display: flex; flex-direction: column;
+    }
+    .xray-sheet.open { transform: translateY(0); }
+    .xray-handle-zone {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 12px 0 8px; cursor: grab; user-select: none; flex-shrink: 0;
+    }
+    .xray-handle-bar {
+      width: 38px; height: 3px; border-radius: 99px;
+      background: rgba(56,189,248,0.18);
+      transition: width 0.25s, background 0.25s;
+    }
+    .xray-handle-zone:hover .xray-handle-bar { width: 54px; background: rgba(56,189,248,0.4); }
+    .xray-header {
+      padding: 0 20px 14px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(56,189,248,0.07);
+    }
+    .xray-title-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .xray-title {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .xray-icon-badge {
+      width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(56,189,248,0.18), rgba(14,165,233,0.1));
+      border: 1px solid rgba(56,189,248,0.2);
+      box-shadow: 0 0 16px rgba(56,189,248,0.12);
+    }
+    .xray-badge-label {
+      font-size: 9px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(56,189,248,0.5); margin-bottom: 2px;
+    }
+    .xray-heading {
+      font-size: 18px; font-weight: 800; color: #e0f2fe; letter-spacing: -0.01em;
+      font-family: 'Playfair Display', serif;
+    }
+    .xray-close-btn {
+      width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(56,189,248,0.1);
+      background: rgba(255,255,255,0.03); color: rgba(100,150,200,0.5);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; outline: none; transition: all 0.2s;
+    }
+    .xray-close-btn:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+    .xray-scroll { flex: 1; overflow-y: auto; padding: 16px 20px 24px; }
+    .xray-scroll::-webkit-scrollbar { width: 3px; }
+    .xray-scroll::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.15); border-radius: 99px; }
+    .xray-loading {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 0; gap: 14px;
+    }
+    .xray-spinner {
+      width: 32px; height: 32px; border: 2px solid rgba(56,189,248,0.15);
+      border-top-color: rgba(56,189,248,0.8); border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    .xray-loading-text {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(56,189,248,0.45); animation: pulse 2s ease-in-out infinite;
+    }
+    .xray-section-title {
+      font-size: 9px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(56,189,248,0.4); margin-bottom: 10px; margin-top: 18px;
+    }
+    .xray-section-title:first-child { margin-top: 0; }
+    .xray-card {
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(56,189,248,0.08);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+      animation: xrayReveal 0.35s cubic-bezier(0.22,1,0.36,1) both;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+    }
+    .xray-card:hover { background: rgba(56,189,248,0.06); border-color: rgba(56,189,248,0.18); }
+    .xray-card-header { display: flex; align-items: flex-start; gap: 12px; }
+    .xray-entity-icon {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .xray-entity-icon.person { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.2); }
+    .xray-entity-icon.place { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.2); }
+    .xray-entity-icon.concept { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.2); }
+    .xray-entity-icon.org { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.2); }
+    .xray-entity-icon.term { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.2); }
+    .xray-entity-icon.other { background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.15); }
+    .xray-entity-name {
+      font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: 'Playfair Display', serif;
+      line-height: 1.3;
+    }
+    .xray-entity-type-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 8px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 99px; margin-top: 3px;
+    }
+    .xray-entity-type-pill.person { background: rgba(167,139,250,0.12); color: rgba(167,139,250,0.8); border: 1px solid rgba(167,139,250,0.15); }
+    .xray-entity-type-pill.place { background: rgba(52,211,153,0.12); color: rgba(52,211,153,0.8); border: 1px solid rgba(52,211,153,0.15); }
+    .xray-entity-type-pill.concept { background: rgba(251,191,36,0.12); color: rgba(251,191,36,0.8); border: 1px solid rgba(251,191,36,0.15); }
+    .xray-entity-type-pill.org { background: rgba(248,113,113,0.12); color: rgba(248,113,113,0.8); border: 1px solid rgba(248,113,113,0.15); }
+    .xray-entity-type-pill.term { background: rgba(56,189,248,0.12); color: rgba(56,189,248,0.8); border: 1px solid rgba(56,189,248,0.15); }
+    .xray-entity-type-pill.other { background: rgba(148,163,184,0.08); color: rgba(148,163,184,0.6); border: 1px solid rgba(148,163,184,0.1); }
+    .xray-entity-desc {
+      font-size: 12px; line-height: 1.65; color: rgba(148,163,184,0.75);
+      font-family: 'Merriweather', serif; margin-top: 8px;
+      border-top: 1px solid rgba(56,189,248,0.06); padding-top: 8px;
+    }
+    .xray-empty { text-align: center; padding: 40px 20px; }
+    .xray-empty-icon { font-size: 36px; opacity: 0.25; margin-bottom: 10px; }
+    .xray-empty-text { font-size: 12px; color: rgba(100,140,180,0.4); font-style: italic; }
+    .xray-btn {
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 2px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(56,189,248,0.2);
+      background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(14,165,233,0.07));
+      color: rgba(56,189,248,0.85); cursor: pointer; outline: none;
+      transition: all 0.25s ease; position: relative; overflow: hidden;
+    }
+    .xray-btn:hover { background: linear-gradient(135deg, rgba(56,189,248,0.22), rgba(14,165,233,0.15)); border-color: rgba(56,189,248,0.4); color: #7dd3fc; box-shadow: 0 0 18px rgba(56,189,248,0.2); }
+    .xray-btn.active { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(14,165,233,0.18)); border-color: rgba(56,189,248,0.55); color: #38bdf8; box-shadow: 0 0 24px rgba(56,189,248,0.3), inset 0 1px 0 rgba(56,189,248,0.2); animation: pulse 2s ease-in-out infinite; }
+    .xray-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+    .xray-filter-bar { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+    .xray-filter-chip {
+      padding: 4px 10px; border-radius: 99px; font-size: 9px; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+      border: 1px solid rgba(56,189,248,0.12); background: rgba(255,255,255,0.03);
+      color: rgba(100,140,180,0.5); outline: none; transition: all 0.2s;
+    }
+    .xray-filter-chip.active { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); color: rgba(56,189,248,0.9); }
+    .xray-page-note { font-size: 10px; color: rgba(56,189,248,0.3); font-weight: 600; margin-top: 2px; letter-spacing: 0.05em; }
     @keyframes slideOutDown { from{transform:translateY(0);opacity:1} to{transform:translateY(100%);opacity:0} }
     .slide-out-down { animation:slideOutDown 0.36s cubic-bezier(0.32,0,0.67,0) forwards; }
+
+    /* ── Interlinear Translation Mode ── */
+    @keyframes interlinearFadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+    .interlinear-line {
+      display: block;
+      font-size: 0.82em;
+      line-height: 1.75;
+      color: rgba(99,179,237,0.7);
+      font-family: 'Noto Serif Bengali', 'Merriweather', serif;
+      font-style: normal;
+      letter-spacing: 0.01em;
+      margin-top: 0.15em;
+      margin-bottom: 0.75em;
+      border-left: 2px solid rgba(99,179,237,0.22);
+      padding-left: 10px;
+      animation: interlinearFadeIn 0.4s ease-out both;
+      pointer-events: none;
+      user-select: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .interlinear-skeleton {
+      display: block;
+      height: 0.75em;
+      margin-top: -0.25em;
+      margin-bottom: 0.7em;
+      border-radius: 4px;
+      background: linear-gradient(90deg, rgba(99,179,237,0.06) 25%, rgba(99,179,237,0.14) 50%, rgba(99,179,237,0.06) 75%);
+      background-size: 200% 100%;
+      animation: interlinear-shimmer 1.6s ease-in-out infinite;
+      width: 80%;
+    }
+    @keyframes interlinear-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .intl-btn {
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 2px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(99,179,237,0.2);
+      background: linear-gradient(135deg, rgba(99,179,237,0.1), rgba(56,152,200,0.07));
+      color: rgba(99,179,237,0.8); cursor: pointer; outline: none;
+      transition: all 0.25s ease;
+    }
+    .intl-btn:hover { background: linear-gradient(135deg, rgba(99,179,237,0.2), rgba(56,152,200,0.14)); border-color: rgba(99,179,237,0.4); color: #63b3ed; box-shadow: 0 0 18px rgba(99,179,237,0.2); }
+    .intl-btn.active { background: linear-gradient(135deg, rgba(99,179,237,0.25), rgba(56,152,200,0.18)); border-color: rgba(99,179,237,0.55); color: #90cdf4; box-shadow: 0 0 24px rgba(99,179,237,0.3), inset 0 1px 0 rgba(99,179,237,0.2); animation: pulse 2.5s ease-in-out infinite; }
+    .intl-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+
+    /* ── Entity Highlight (Binocular Mode) ── */
+    .eh {
+      border-radius: 3px;
+      padding: 0.05em 0.25em;
+      margin: 0 0.02em;
+      cursor: pointer;
+      transition: filter 0.15s, opacity 0.15s;
+      text-decoration: none;
+    }
+    .eh:hover { filter: brightness(1.3); opacity: 1 !important; }
+    .eh.person  { background: rgba(167,139,250,0.13); border-bottom: 1.5px solid rgba(167,139,250,0.35); color: inherit; }
+    .eh.place   { background: rgba(52,211,153,0.10);  border-bottom: 1.5px solid rgba(52,211,153,0.32);  color: inherit; }
+    .eh.org     { background: rgba(248,113,113,0.10); border-bottom: 1.5px solid rgba(248,113,113,0.30); color: inherit; }
+    .eh.concept { background: rgba(251,191,36,0.09);  border-bottom: 1.5px solid rgba(251,191,36,0.28);  color: inherit; }
+    .eh.term    { background: rgba(56,189,248,0.09);  border-bottom: 1.5px solid rgba(56,189,248,0.28);  color: inherit; }
+    .eh.other   { background: rgba(148,163,184,0.07); border-bottom: 1.5px solid rgba(148,163,184,0.2);  color: inherit; }
+    /* Entity tooltip */
+    .eh-tooltip-wrap { position: fixed; z-index: 999; pointer-events: none; }
+    .eh-tooltip {
+      background: linear-gradient(160deg, #10182a, #0d1422);
+      border: 1px solid rgba(99,130,200,0.18);
+      border-radius: 12px;
+      padding: 10px 13px;
+      max-width: 220px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      animation: interlinearFadeIn 0.18s ease-out both;
+    }
+    .eh-tooltip-type { font-size: 8px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
+    .eh-tooltip-name { font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: 'Playfair Display', serif; margin-bottom: 5px; line-height: 1.3; }
+    .eh-tooltip-desc { font-size: 11px; color: rgba(148,163,184,0.8); line-height: 1.55; font-family: 'Merriweather', serif; }
+    .eh-tooltip-type.person  { color: rgba(167,139,250,0.9); }
+    .eh-tooltip-type.place   { color: rgba(52,211,153,0.9); }
+    .eh-tooltip-type.org     { color: rgba(248,113,113,0.9); }
+    .eh-tooltip-type.concept { color: rgba(251,191,36,0.9); }
+    .eh-tooltip-type.term    { color: rgba(56,189,248,0.9); }
+    .eh-tooltip-type.other   { color: rgba(148,163,184,0.7); }
+    /* Binocular button */
+    /* ── Dock Corner Glow (Uiverse by Lakshay-art, adapted) ── */
+    /* ── Dock Poda Glow Border (Uiverse by Lakshay-art, adapted for pill dock) ── */
+    .dock-glow-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* All the layered glow divs sit absolutely behind the glass-dock */
+    .dock-poda-layer {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      overflow: hidden;
+      z-index: 0;
+      border-radius: 60px;
+      pointer-events: none;
+    }
+    /* glow — large blurry outer halo */
+    .dock-poda-glow {
+      filter: blur(22px);
+      opacity: 0;
+      max-height: 220px;
+      max-width: calc(100% + 80px);
+      border-radius: 60px;
+      transition: opacity 0.4s ease;
+    }
+    .dock-poda-glow::before {
+      content: "";
+      z-index: -2;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(60deg);
+      position: absolute;
+      width: 999px; height: 999px;
+      background-image: conic-gradient(#000, #5533ee 5%, #000 38%, #000 50%, #e030bb 60%, #000 87%);
+      transition: all 2s;
+    }
+    /* darkBorderBg */
+    .dock-poda-dark {
+      max-height: calc(100% + 16px);
+      max-width: calc(100% + 16px);
+      filter: blur(3px);
+    }
+    .dock-poda-dark::before {
+      content: "";
+      z-index: -2;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(82deg);
+      position: absolute;
+      width: 800px; height: 800px;
+      background-image: conic-gradient(rgba(0,0,0,0), #2a1a88, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #8e2278, rgba(0,0,0,0) 60%);
+      transition: all 2s;
+    }
+    /* white sheen */
+    .dock-poda-white {
+      max-height: calc(100% + 4px);
+      max-width: calc(100% + 4px);
+      filter: blur(2px);
+    }
+    .dock-poda-white::before {
+      content: "";
+      z-index: -2;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(83deg);
+      position: absolute;
+      width: 800px; height: 800px;
+      filter: brightness(1.6);
+      background-image: conic-gradient(rgba(0,0,0,0) 0%, #b8aef0, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #f0aaec, rgba(0,0,0,0) 58%);
+      transition: all 2s;
+    }
+    /* sharp border */
+    .dock-poda-border {
+      max-height: 100%;
+      max-width: 100%;
+      filter: blur(0.5px);
+    }
+    .dock-poda-border::before {
+      content: "";
+      z-index: -2;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(70deg);
+      position: absolute;
+      width: 800px; height: 800px;
+      filter: brightness(1.5);
+      background-image: conic-gradient(#1c191c, #5533ee 5%, #1c191c 14%, #1c191c 50%, #e030bb 60%, #1c191c 64%);
+      transition: all 2s;
+    }
+    /* glass-dock sits on top */
+    .dock-glow-wrap > .glass-dock {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === IDLE: visible glow always === */
+    .dock-poda-glow { opacity: 0.5; }
+
+    /* === ACTIVE: rotate all layers (triggered by JS class) === */
+    .dock-glow-wrap.dg-active .dock-poda-dark::before {
+      transform: translate(-50%, -50%) rotate(262deg);
+      transition: all 2s;
+    }
+    .dock-glow-wrap.dg-active .dock-poda-glow::before {
+      transform: translate(-50%, -50%) rotate(240deg);
+      transition: all 2s;
+    }
+    .dock-glow-wrap.dg-active .dock-poda-white::before {
+      transform: translate(-50%, -50%) rotate(263deg);
+      transition: all 2s;
+    }
+    .dock-glow-wrap.dg-active .dock-poda-border::before {
+      transform: translate(-50%, -50%) rotate(250deg);
+      transition: all 2s;
+    }
+    .dock-glow-wrap.dg-active .dock-poda-glow {
+      opacity: 0.85;
+      transition: opacity 0.3s ease;
+    }
+    /* Reset when not active */
+    .dock-glow-wrap:not(.dg-active) .dock-poda-dark::before   { transform: translate(-50%, -50%) rotate(82deg);  transition: all 1.5s; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-glow::before   { transform: translate(-50%, -50%) rotate(60deg);  transition: all 1.5s; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-white::before  { transform: translate(-50%, -50%) rotate(83deg);  transition: all 1.5s; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-border::before { transform: translate(-50%, -50%) rotate(70deg);  transition: all 1.5s; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-glow           { opacity: 0.5; transition: opacity 1s ease; }
+
+    .bino-btn {
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 2px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(167,139,250,0.2);
+      background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(139,92,246,0.07));
+      color: rgba(167,139,250,0.8); cursor: pointer; outline: none;
+      transition: all 0.25s ease;
+    }
+    .bino-btn:hover { background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(139,92,246,0.14)); border-color: rgba(167,139,250,0.4); color: #a78bfa; box-shadow: 0 0 18px rgba(167,139,250,0.2); }
+    .bino-btn.active { background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(139,92,246,0.18)); border-color: rgba(167,139,250,0.55); color: #c4b5fd; box-shadow: 0 0 24px rgba(167,139,250,0.3), inset 0 1px 0 rgba(167,139,250,0.2); animation: pulse 2.5s ease-in-out infinite; }
+    .bino-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+
+    /* ── LENS Scanning Overlay Animation ── */
+    .lens-scan-overlay {
+      position: fixed; inset: 0; z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .lens-loader {
+      --fill-color: #7c3aed;
+      --shine-color: #7c3aed44;
+      width: 72px; height: 72px;
+      position: relative;
+      filter: drop-shadow(0 0 14px var(--shine-color));
+      animation: lensOverlayIn 0.3s ease-out both;
+    }
+    @keyframes lensOverlayIn { from{opacity:0;transform:scale(0.6)} to{opacity:1;transform:scale(1)} }
+    .lens-loader svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .lens-loader svg g path:first-child { fill: var(--fill-color); }
+    .lens-loader #lp1 { animation: flowe-one 1s linear infinite; }
+    .lens-loader #lp2 { opacity: 0; transform: scale(0) translateY(-200px) translateX(-100px); animation: flowe-two 1s linear infinite; animation-delay: 0.3s; }
+    .lens-loader #lp3 { opacity: 0; transform: scale(0) translateY(-200px) translateX(100px); animation: flowe-three 1s linear infinite; animation-delay: 0.6s; }
+    @keyframes flowe-one {
+      0%   { transform: scale(0.5) translateY(-200px); opacity: 0; }
+      25%  { transform: scale(0.75) translateY(-100px); opacity: 1; }
+      50%  { transform: scale(1) translateY(0px); opacity: 1; }
+      75%  { transform: scale(0.5) translateY(50px); opacity: 1; }
+      100% { transform: scale(0) translateY(100px); opacity: 0; }
+    }
+    @keyframes flowe-two {
+      0%   { transform: scale(0.5) rotateZ(-10deg) translateY(-200px) translateX(-100px); opacity: 0; }
+      25%  { transform: scale(1) rotateZ(-5deg) translateY(-100px) translateX(-50px); opacity: 1; }
+      50%  { transform: scale(1) rotateZ(0deg) translateY(0px) translateX(-25px); opacity: 1; }
+      75%  { transform: scale(0.5) rotateZ(5deg) translateY(50px) translateX(0px); opacity: 1; }
+      100% { transform: scale(0) rotateZ(10deg) translateY(100px) translateX(25px); opacity: 0; }
+    }
+    @keyframes flowe-three {
+      0%   { transform: scale(0.5) rotateZ(10deg) translateY(-200px) translateX(100px); opacity: 0; }
+      25%  { transform: scale(1) rotateZ(5deg) translateY(-100px) translateX(50px); opacity: 1; }
+      50%  { transform: scale(1) rotateZ(0deg) translateY(0px) translateX(25px); opacity: 1; }
+      75%  { transform: scale(0.5) rotateZ(-5deg) translateY(50px) translateX(0px); opacity: 1; }
+      100% { transform: scale(0) rotateZ(-10deg) translateY(100px) translateX(-25px); opacity: 0; }
+    }
 
     /* ── Shared Bottom Drawer Shell ── */
     .bottom-drawer-backdrop {
@@ -1408,31 +1816,30 @@
       box-shadow: 0 1px 1px 0 rgba(255,255,255,.5), inset 0 2px 2px rgba(0,0,0,.3);
     }
 
-    /* ── Gem / Diamond SVG (Uiverse by Juanes200122) ── */
-    @keyframes bounce {
+    /* ── Isometric Cube SVG (Uiverse by alexs_8179) ── */
+    @keyframes iso-bounce {
       0%, 100% { translate: 0px 36px; }
       50%       { translate: 0px 46px; }
     }
-    @keyframes bounce2 {
+    @keyframes iso-bounce2 {
       0%, 100% { translate: 0px 46px; }
       50%       { translate: 0px 56px; }
     }
-    @keyframes umbral {
-      0%   { stop-color: #d3a5102e; }
-      50%  { stop-color: rgba(211,165,16,0.519); }
-      100% { stop-color: #d3a5102e; }
+    @keyframes iso-umbral {
+      0%   { stop-color: #10bcd32e; }
+      50%  { stop-color: #2fcad8; }
+      100% { stop-color: #10d3982e; }
     }
-    @keyframes partciles {
+    @keyframes iso-particles {
       0%, 100% { translate: 0px 16px; }
       50%       { translate: 0px 6px; }
     }
-    #gem-particles { animation: partciles 4s ease-in-out infinite; }
-    #gem-particles2 { animation: partciles 4s ease-in-out infinite 0.8s; }
-    #gem-particles3 { animation: partciles 4s ease-in-out infinite 1.6s; }
-    #gem-animatedStop  { animation: umbral 4s infinite; }
-    #gem-animatedStop2 { animation: umbral 4s infinite 1s; }
-    #gem-bounce  { animation: bounce  4s ease-in-out infinite; translate: 0px 36px; }
-    #gem-bounce2 { animation: bounce2 4s ease-in-out infinite 0.5s; translate: 0px 46px; }
+    #iso-particles  { animation: iso-particles 4s ease-in-out infinite; }
+    #iso-particles2 { animation: iso-particles 4s ease-in-out infinite 0.8s; }
+    #iso-particles3 { animation: iso-particles 4s ease-in-out infinite 1.6s; }
+    #iso-animStop   { animation: iso-umbral 4s infinite; }
+    #iso-bounce     { animation: iso-bounce  4s ease-in-out infinite; translate: 0px 36px; }
+    #iso-bounce2    { animation: iso-bounce2 4s ease-in-out infinite 0.5s; translate: 0px 46px; }
 
     /* ── Cyber Tab Switch (Uiverse by pharmacist-sabot) ── */
     .cyber-switch-wrap {
@@ -1453,7 +1860,7 @@
       overflow: hidden;
       height: 52px;
       width: 100%;
-      max-width: 420px;
+      max-width: 460px;
     }
     .cyber-switch-wrap input[type="radio"] {
       position: absolute; width: 1px; height: 1px;
@@ -2592,14 +2999,14 @@ function AnalysisModal(_a) {
 // ============================================================
 function MaxDrawer(_a) {
     var _this = this;
-    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange, sessionId = _a.sessionId, initialMessages = _a.initialMessages;
+    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange;
     var _c = useState('summary'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState('current'), contextScope = _d[0], setContextScope = _d[1];
     var _f = useState(''), summary = _f[0], setSummary = _f[1];
     var _g = useState({}), summaryCache = _g[0], setSummaryCache = _g[1];
     var _h = useState(false), isSummaryLoading = _h[0], setIsSummaryLoading = _h[1];
     var _j = useState(''), chatInput = _j[0], setChatInput = _j[1];
-    var _k = useState(initialMessages || []), messages = _k[0], setMessages = _k[1];
+    var _k = useState([]), messages = _k[0], setMessages = _k[1];
     var _l = useState(false), isChatLoading = _l[0], setIsChatLoading = _l[1];
     var _m = useState('gemini-lite'), activeChatModel = _m[0], setActiveChatModel = _m[1];
     var _o = useState('gemini-lite'), activeSummaryModel = _o[0], setActiveSummaryModel = _o[1];
@@ -2644,16 +3051,6 @@ function MaxDrawer(_a) {
     };
     var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'gemini-3.0': 'Gemini 3.0 Flash', 'gemini-flash': 'Gemini 2.5 Flash', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
     useEffect(function () { (messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })); }, [messages]);
-    // Persist chat messages into session extras
-    useEffect(function () {
-        if (!sessionId || messages.length === 0) return;
-        try {
-            var saved = localStorage.getItem('maxofpdf_session_' + sessionId);
-            var extras = saved ? JSON.parse(saved) : {};
-            extras.chatMessages = messages;
-            localStorage.setItem('maxofpdf_session_' + sessionId, JSON.stringify(extras));
-        } catch(e) {}
-    }, [messages, sessionId]);
     useEffect(function () { if (drawerStateRef)
         drawerStateRef.current.isChatActive = (activeTab === 'chat'); }, [activeTab, drawerStateRef]);
     /* Auto-generate summary when drawer opens or page/scope changes */
@@ -2953,7 +3350,7 @@ function Settings(_a) {
         { id: 'midnight', label: 'Midnight', color: 'bg-[#020617]', border: 'border-blue-900' },
         { id: 'forest', label: 'Forest', color: 'bg-[#052e16]', border: 'border-emerald-900' },
     ];
-    var TABS = ['general', 'customization', 'api', 'ocr', 'reader', 'structure'];
+    var TABS = ['general', 'ocr', 'reader', 'structure', 'history', 'vocab'];
     var BOLD_MAP = { lower: 0, 'lower-medium': 1, medium: 2, 'medium-high': 3, high: 4 };
     var BOLD_REV = ['lower', 'lower-medium', 'medium', 'medium-high', 'high'];
     return (React.createElement("div", { className: "fixed inset-0 z-[100] flex flex-col justify-end" },
@@ -2966,11 +3363,11 @@ function Settings(_a) {
                 React.createElement("div", { className: "cyber-switch-wrap mx-auto md:mx-0" },
                     [
                         { id: 'cst-1', tab: 'general', icon: '⌂', label: 'General' },
-                        { id: 'cst-2', tab: 'api', icon: '⚿', label: 'API' },
-                        { id: 'cst-3', tab: 'ocr', icon: '⊡', label: 'OCR' },
-                        { id: 'cst-4', tab: 'reader', icon: '◉', label: 'Reader' },
-                        { id: 'cst-5', tab: 'structure', icon: '⬡', label: 'Structure' },
-                        { id: 'cst-6', tab: 'history', icon: '◷', label: 'History' },
+                        { id: 'cst-2', tab: 'ocr', icon: '⊡', label: 'OCR' },
+                        { id: 'cst-3', tab: 'reader', icon: '◉', label: 'Reader' },
+                        { id: 'cst-4', tab: 'structure', icon: '⬡', label: 'Structure' },
+                        { id: 'cst-5', tab: 'history', icon: '◷', label: 'History' },
+                        { id: 'cst-6', tab: 'vocab', icon: '✦', label: 'Vocab' },
                     ].map(function (t) { return (React.createElement(React.Fragment, { key: t.id },
                         React.createElement("input", { type: "radio", id: t.id, name: "settings-cyber-tab", checked: activeTab === t.tab, onChange: function () { return setActiveTab(t.tab); } }),
                         React.createElement("label", { htmlFor: t.id, className: "cyber-tab-label" },
@@ -2980,7 +3377,8 @@ function Settings(_a) {
                     React.createElement("div", { className: "cyber-highlight" },
                         React.createElement("div", { className: "cyber-highlight-inner" })))),
             React.createElement("div", { className: "flex-grow overflow-y-auto custom-scrollbar p-6" },
-                activeTab === 'general' && (React.createElement("div", { className: "space-y-8 animate-in fade-in" },
+                (function() {
+                if (activeTab === 'general') return React.createElement("div", { className: "space-y-8 animate-in fade-in" },
                     React.createElement("div", { className: "bg-[#121214] rounded-3xl p-5 border border-white/5 max-w-lg" },
                         React.createElement("div", { className: "flex items-center justify-between" },
                             React.createElement("div", { className: "flex items-center space-x-4" },
@@ -3011,25 +3409,8 @@ function Settings(_a) {
                         })),
                     React.createElement("div", { className: "space-y-3 max-w-xl" },
                         React.createElement("label", { className: "text-xs font-bold text-amber-400 uppercase tracking-widest block" }, "Reading Atmosphere"),
-                        React.createElement("div", { className: "grid grid-cols-5 gap-3" }, THEMES.map(function (theme) { return (React.createElement("button", { key: theme.id, onClick: function () { return onSelectTheme(theme.id); }, className: "aspect-square rounded-2xl border-2 transition-all flex items-center justify-center ".concat(theme.color, " ").concat(readerTheme === theme.id ? 'scale-110 ' + theme.border + ' shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'), title: theme.label }, readerTheme === theme.id && React.createElement("div", { className: "w-2 h-2 rounded-full ".concat(theme.id === 'light' || theme.id === 'sepia' ? 'bg-slate-900' : 'bg-white') }))); }))))),
-                activeTab === 'api' && (React.createElement("div", { className: "space-y-6 animate-in fade-in" },
-                    React.createElement("div", { className: "bg-[#121214] rounded-3xl p-6 border border-white/5 space-y-4 max-w-xl" },
-                        GEMINI_KEYS.map(function(key, idx) {
-                            var isActive = activeKeyIndex % GEMINI_KEYS.length === idx;
-                            var masked = key.slice(0,8) + '••••••••••••••••' + key.slice(-4);
-                            return React.createElement("div", { key: idx },
-                                React.createElement("label", { className: "text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-2 " + (isActive ? 'text-indigo-400' : 'text-slate-600') },
-                                    "Gemini Key " + (idx+1),
-                                    isActive && React.createElement("span", { className: "text-[8px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30" }, "ACTIVE")),
-                                React.createElement("div", { className: "relative" },
-                                    React.createElement("div", { className: "w-full bg-black/40 border rounded-xl px-4 py-3 font-mono text-xs " + (isActive ? 'border-indigo-500/30 text-slate-200' : 'border-white/5 text-slate-500') }, masked),
-                                    isActive && React.createElement("div", { className: "absolute right-3 top-1/2 -translate-y-1/2" },
-                                        React.createElement("div", { className: "w-2 h-2 bg-indigo-500 rounded-full animate-pulse" }))));
-                        }),
-                        React.createElement("p", { className: "text-[10px] text-slate-500 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5" },
-                            React.createElement("span", { className: "text-white font-bold block mb-1" }, "5-Key Failover System Active"),
-                            "Auto-rotates through all 5 Gemini API keys when quota is exceeded.")))),
-                activeTab === 'ocr' && (React.createElement("div", { className: "space-y-4 animate-in fade-in" },
+                        React.createElement("div", { className: "grid grid-cols-5 gap-3" }, THEMES.map(function (theme) { return (React.createElement("button", { key: theme.id, onClick: function () { return onSelectTheme(theme.id); }, className: "aspect-square rounded-2xl border-2 transition-all flex items-center justify-center ".concat(theme.color, " ").concat(readerTheme === theme.id ? 'scale-110 ' + theme.border + ' shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'), title: theme.label }, readerTheme === theme.id && React.createElement("div", { className: "w-2 h-2 rounded-full ".concat(theme.id === 'light' || theme.id === 'sepia' ? 'bg-slate-900' : 'bg-white') }))); }))));
+                if (activeTab === 'ocr') return React.createElement("div", { className: "space-y-4 animate-in fade-in" },
                     React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500" }, "Select Scanning Model"),
                     React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                         React.createElement("div", { className: "radio-container scanning-radio", style: { '--total-radio': 3 } },
@@ -3046,26 +3427,27 @@ function Settings(_a) {
                                             React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
                             }),
                             React.createElement("div", { className: "glider-container" },
-                                React.createElement("div", { className: "glider" })))))),
-                activeTab === 'reader' && (React.createElement("div", { className: "space-y-4 animate-in fade-in" },
-                    React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500" }, "Select Reader AI Model"),
-                    React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
-                        React.createElement("div", { className: "radio-container" },
-                            MODEL_OPTIONS.map(function (m, i) {
-                                var icons = { 'gemini-3.0': '✦', 'gemini': '✦', 'kimi': '◈', 'llama-maverick': '⬡' };
-                                var subs = { 'gemini-3.0': 'Google · Fastest', 'gemini': 'Google · Smart', 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
-                                var rid = "reader-radio-".concat(m.id);
-                                return (React.createElement(React.Fragment, { key: m.id },
-                                    React.createElement("input", { id: rid, name: "reader-model-radio", type: "radio", checked: activeReaderModel === m.id, onChange: function () { return onSelectReaderModel(m.id); } }),
-                                    React.createElement("label", { htmlFor: rid },
-                                        React.createElement("span", { className: "r-icon" }, icons[m.id] || '◉'),
-                                        React.createElement("span", null,
-                                            m.label,
-                                            React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
-                            }),
-                            React.createElement("div", { className: "glider-container" },
-                                React.createElement("div", { className: "glider" })))))),
-                activeTab === 'structure' && (React.createElement("div", { className: "space-y-6 animate-in fade-in" },
+                                React.createElement("div", { className: "glider" })))));
+                if (activeTab === 'reader') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Select Reader AI Model"),
+                        React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
+                            React.createElement("div", { className: "radio-container" },
+                                MODEL_OPTIONS.map(function (m, i) {
+                                    var icons = { 'gemini-3.0': '✦', 'gemini': '✦', 'kimi': '◈', 'llama-maverick': '⬡' };
+                                    var subs = { 'gemini-3.0': 'Google · Fastest', 'gemini': 'Google · Smart', 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
+                                    var rid = "reader-radio-".concat(m.id);
+                                    return (React.createElement(React.Fragment, { key: m.id },
+                                        React.createElement("input", { id: rid, name: "reader-model-radio", type: "radio", checked: activeReaderModel === m.id, onChange: function () { return onSelectReaderModel(m.id); } }),
+                                        React.createElement("label", { htmlFor: rid },
+                                            React.createElement("span", { className: "r-icon" }, icons[m.id] || '◉'),
+                                            React.createElement("span", null,
+                                                m.label,
+                                                React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
+                                }),
+                                React.createElement("div", { className: "glider-container" },
+                                    React.createElement("div", { className: "glider" }))))));
+                if (activeTab === 'structure') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl" }, [{ id: 'original', color: 'amber', icon: React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                                 React.createElement("path", { d: "M4 7V4h16v3" }),
                                 React.createElement("path", { d: "M9 20h6" }),
@@ -3098,8 +3480,8 @@ function Settings(_a) {
                                                 React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
                                 }),
                                 React.createElement("div", { className: "glider-container" },
-                                    React.createElement("div", { className: "glider" }))))))),
-                activeTab === 'history' && (React.createElement("div", { className: "space-y-4 animate-in fade-in" }, (!history || history.length === 0) ? (React.createElement("div", { className: "flex flex-col items-center justify-center py-16 space-y-3" },
+                                    React.createElement("div", { className: "glider" }))))));
+                if (activeTab === 'history') return React.createElement("div", { className: "space-y-4 animate-in fade-in" }, (!history || history.length === 0) ? (React.createElement("div", { className: "flex flex-col items-center justify-center py-16 space-y-3" },
                     React.createElement("div", { className: "text-4xl opacity-20" }, "\u25F7"),
                     React.createElement("p", { className: "text-sm font-serif italic text-slate-600" }, "No reading history yet."),
                     React.createElement("p", { className: "text-[10px] text-slate-700 uppercase tracking-widest" }, "Start reading to see your history here"))) : (React.createElement("div", { className: "space-y-3 max-w-xl" },
@@ -3107,7 +3489,6 @@ function Settings(_a) {
                         React.createElement("span", { style:{fontSize:'10px', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(100,120,160,0.5)'} }, history.length + " saved sessions"),
                         React.createElement("button", { onClick: function() {
                             try { localStorage.removeItem('maxofpdf_history'); } catch(e) {}
-                            // Signal parent to clear - using a workaround via window event
                             window.dispatchEvent(new CustomEvent('maxofpdf_clear_history'));
                         }, style:{fontSize:'10px', color:'rgba(239,68,68,0.6)', background:'none', border:'none', cursor:'pointer', fontWeight:700, padding:'4px 8px', borderRadius:'6px'} }, "Clear All")),
                     history.map(function (item) {
@@ -3127,23 +3508,168 @@ function Settings(_a) {
                                     React.createElement("div", { style:{display:'flex', gap:'10px', flexWrap:'wrap'} },
                                         React.createElement("span", { style:{fontSize:'10px', color:'rgba(100,116,139,0.8)', textTransform:'uppercase', letterSpacing:'0.08em'} }, new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })),
                                         wordCount > 0 && React.createElement("span", { style:{fontSize:'10px', color:'rgba(99,102,241,0.7)', fontWeight:700} }, wordCount.toLocaleString() + ' words'),
-                                        wordCount > 0 && React.createElement("span", { style:{fontSize:'10px', color:'rgba(110,231,183,0.6)', fontWeight:700} }, readMins + ' min read')
+                                        wordCount > 0 && React.createElement("span", { style:{fontSize:'10px', color:'rgba(110,231,183,0.6)', fontWeight:700} }, readMins + ' min read'),
+                                        (item.data.highlights && item.data.highlights.length > 0) && React.createElement("span", { style:{fontSize:'10px', color:'rgba(251,191,36,0.7)', fontWeight:700} }, '✦ ' + item.data.highlights.length + ' highlights'),
+                                        (item.data.xrayCache && Object.keys(item.data.xrayCache).length > 0) && React.createElement("span", { style:{fontSize:'10px', color:'rgba(56,189,248,0.7)', fontWeight:700} }, '⬡ X-Ray'),
+                                        (item.data.rewrittenPages && Object.keys(item.data.rewrittenPages).length > 0) && React.createElement("span", { style:{fontSize:'10px', color:'rgba(167,139,250,0.7)', fontWeight:700} }, '✎ Rewritten')
                                     ))),
                             React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", style:{color:'rgba(100,116,139,0.4)', flexShrink:0} },
                                 React.createElement("path", { d: "m9 18 6-6-6-6" }))
                         ));
                     })
-                ))))))));
+                )));
+                if (activeTab === 'vocab') return React.createElement(VocabTab, null);
+                return null;
+                }())))));
+}
+function VocabTab() {
+    var _a = useState([]), vocab = _a[0], setVocab = _a[1];
+    var _b = useState('all'), filter = _b[0], setFilter = _b[1];
+    var _c = useState(''), search = _c[0], setSearch = _c[1];
+    var _d = useState(false), showClearConfirm = _d[0], setShowClearConfirm = _d[1];
+    var _e = useState(null), deleteTarget = _e[0], setDeleteTarget = _e[1];
+
+    var loadVocab = function() {
+        try {
+            var raw = localStorage.getItem('maxofpdf_vocab') || '{}';
+            var store = JSON.parse(raw);
+            var items = Object.values(store).sort(function(a, b) { return (b.ts || b.timestamp || 0) - (a.ts || a.timestamp || 0); });
+            setVocab(items);
+        } catch(e) { setVocab([]); }
+    };
+
+    useEffect(function() { loadVocab(); }, []);
+
+    /* Reload whenever localStorage changes (new word added from reader) */
+    useEffect(function() {
+        var onStorage = function() { loadVocab(); };
+        window.addEventListener('maxofpdf_vocab_updated', onStorage);
+        return function() { window.removeEventListener('maxofpdf_vocab_updated', onStorage); };
+    }, []);
+
+    var entityColor = function(type) {
+        if (type === 'person') return { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', text: '#a5b4fc', dot: '#6366f1' };
+        if (type === 'place') return { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)', text: '#6ee7b7', dot: '#10b981' };
+        if (type === 'org') return { bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.22)', text: '#fca5a5', dot: '#ef4444' };
+        if (type === 'concept') return { bg: 'rgba(251,191,36,0.10)', border: 'rgba(251,191,36,0.22)', text: '#fcd34d', dot: '#f59e0b' };
+        if (type === 'term') return { bg: 'rgba(56,189,248,0.10)', border: 'rgba(56,189,248,0.22)', text: '#7dd3fc', dot: '#0ea5e9' };
+        return { bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.18)', text: '#94a3b8', dot: '#64748b' };
+    };
+
+    var handleDeleteWord = function(wordKey) {
+        try {
+            var raw = localStorage.getItem('maxofpdf_vocab') || '{}';
+            var store = JSON.parse(raw);
+            delete store[wordKey];
+            localStorage.setItem('maxofpdf_vocab', JSON.stringify(store));
+        } catch(e) {}
+        setDeleteTarget(null);
+        loadVocab();
+    };
+
+    var handleClearAll = function() {
+        try { localStorage.removeItem('maxofpdf_vocab'); } catch(e) {}
+        setVocab([]);
+        setShowClearConfirm(false);
+    };
+
+    var filtered = vocab.filter(function(v) {
+        var matchFilter = filter === 'all' || v.entityType === filter || (filter === 'other' && (!v.entityType || v.entityType === 'other' || v.entityType === 'concept'));
+        var matchSearch = !search || (v.word && v.word.toLowerCase().includes(search.toLowerCase())) || (v.meaning && v.meaning.toLowerCase().includes(search.toLowerCase()));
+        return matchFilter && matchSearch;
+    });
+
+    var counts = { person: 0, place: 0, org: 0, concept: 0, term: 0, other: 0 };
+    vocab.forEach(function(v) { var t = v.entityType || 'other'; if (counts[t] !== undefined) counts[t]++; else counts.other++; });
+
+    var statTabs = [
+        { label: 'All', val: vocab.length, color: '#e2e8f0', bg: 'rgba(255,255,255,0.04)', tab: 'all' },
+        { label: 'People', val: counts.person, color: '#a5b4fc', bg: 'rgba(99,102,241,0.08)', tab: 'person' },
+        { label: 'Places', val: counts.place, color: '#6ee7b7', bg: 'rgba(16,185,129,0.08)', tab: 'place' },
+        { label: 'Concepts', val: counts.concept + counts.other, color: '#fcd34d', bg: 'rgba(245,158,11,0.08)', tab: 'other' },
+    ];
+
+    return React.createElement("div", { className: "animate-in fade-in", style: { maxWidth: '680px' } },
+        /* Confirm clear all overlay */
+        showClearConfirm && React.createElement("div", { style: { position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' } },
+            React.createElement("div", { style: { background: '#0f1218', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '20px', padding: '28px', maxWidth: '320px', width: '90%', textAlign: 'center' } },
+                React.createElement("div", { style: { fontSize: '28px', marginBottom: '12px' } }, '🗑️'),
+                React.createElement("div", { style: { fontSize: '15px', fontWeight: 700, color: '#e2e8f0', marginBottom: '8px' } }, 'Delete all vocab?'),
+                React.createElement("div", { style: { fontSize: '12px', color: 'rgba(148,163,184,0.6)', marginBottom: '20px' } }, 'This will permanently remove all ' + vocab.length + ' saved words.'),
+                React.createElement("div", { style: { display: 'flex', gap: '10px' } },
+                    React.createElement("button", { onClick: function() { setShowClearConfirm(false); }, style: { flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(148,163,184,0.7)', fontWeight: 700, fontSize: '13px', cursor: 'pointer' } }, 'Cancel'),
+                    React.createElement("button", { onClick: handleClearAll, style: { flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(239,68,68,0.85)', color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer' } }, 'Delete All')
+                )
+            )
+        ),
+        /* Confirm delete single word overlay */
+        deleteTarget && React.createElement("div", { style: { position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' } },
+            React.createElement("div", { style: { background: '#0f1218', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '20px', padding: '24px', maxWidth: '300px', width: '90%', textAlign: 'center' } },
+                React.createElement("div", { style: { fontSize: '14px', fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' } }, 'Remove word?'),
+                React.createElement("div", { style: { fontSize: '16px', fontWeight: 800, color: '#fcd34d', fontFamily: 'Noto Serif Bengali, serif', marginBottom: '18px', padding: '8px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '10px' } }, deleteTarget.word),
+                React.createElement("div", { style: { display: 'flex', gap: '10px' } },
+                    React.createElement("button", { onClick: function() { setDeleteTarget(null); }, style: { flex: 1, padding: '11px', borderRadius: '11px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(148,163,184,0.7)', fontWeight: 700, fontSize: '12px', cursor: 'pointer' } }, 'Cancel'),
+                    React.createElement("button", { onClick: function() { handleDeleteWord(deleteTarget.key); }, style: { flex: 1, padding: '11px', borderRadius: '11px', border: 'none', background: 'rgba(239,68,68,0.8)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer' } }, 'Remove')
+                )
+            )
+        ),
+        /* Stat tabs */
+        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginBottom: '16px' } },
+            statTabs.map(function(s) {
+                return React.createElement("button", { key: s.label, onClick: function() { setFilter(s.tab); }, style: { background: filter === s.tab ? s.bg : 'rgba(255,255,255,0.02)', border: '1px solid ' + (filter === s.tab ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'), borderRadius: '14px', padding: '12px 8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' } },
+                    React.createElement("div", { style: { fontSize: '24px', fontWeight: 800, color: s.color, fontFamily: 'Playfair Display, serif', lineHeight: 1 } }, s.val),
+                    React.createElement("div", { style: { fontSize: '8px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(100,120,160,0.5)', marginTop: '4px' } }, s.label)
+                );
+            })
+        ),
+        /* Search */
+        vocab.length > 0 && React.createElement("div", { style: { marginBottom: '12px' } },
+            React.createElement("input", { type: 'text', placeholder: 'Search words or meanings...', value: search, onChange: function(e) { setSearch(e.target.value); }, style: { width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 14px', color: '#e2e8f0', fontSize: '13px', outline: 'none', fontFamily: 'inherit' } })
+        ),
+        /* Empty state */
+        vocab.length === 0
+            ? React.createElement("div", { style: { textAlign: 'center', padding: '60px 20px' } },
+                React.createElement("div", { style: { fontSize: '3rem', opacity: 0.1, marginBottom: '12px' } }, '✦'),
+                React.createElement("p", { style: { fontFamily: 'Merriweather, serif', fontStyle: 'italic', color: 'rgba(100,116,139,0.5)', fontSize: '14px' } }, 'No words yet.'),
+                React.createElement("p", { style: { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(100,116,139,0.3)', marginTop: '6px' } }, 'Select & analyze text while reading')
+              )
+            : React.createElement("div", null,
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+                    React.createElement("span", { style: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(100,120,160,0.4)' } }, filtered.length + ' of ' + vocab.length + ' words'),
+                    React.createElement("button", { onClick: function() { setShowClearConfirm(true); }, style: { fontSize: '10px', color: 'rgba(239,68,68,0.55)', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, padding: '5px 10px' } }, '🗑 Clear All')
+                ),
+                filtered.length === 0
+                    ? React.createElement("p", { style: { textAlign: 'center', padding: '30px', color: 'rgba(100,116,139,0.4)', fontSize: '13px' } }, 'No matches')
+                    : React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+                        filtered.map(function(v, i) {
+                            var wordKey = (v.word || '').trim().toLowerCase();
+                            var c = entityColor(v.entityType);
+                            return (function(wk, vWord) {
+                                return React.createElement("div", { key: wk + i, style: { display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '13px 15px', borderRadius: '14px', background: c.bg, border: '1px solid ' + c.border, position: 'relative' } },
+                                    React.createElement("div", { style: { width: '6px', height: '6px', borderRadius: '50%', background: c.dot, flexShrink: 0, marginTop: '8px', boxShadow: '0 0 6px ' + c.dot } }),
+                                    React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                                        React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' } },
+                                            React.createElement("span", { style: { fontSize: '14px', fontWeight: 700, color: '#e2e8f0', fontFamily: 'Noto Serif Bengali, Merriweather, serif' } }, vWord),
+                                            React.createElement("span", { style: { fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.text, opacity: 0.75 } }, v.entityType || 'concept')
+                                        ),
+                                        (v.m || v.meaning) && React.createElement("div", { style: { fontSize: '12px', color: 'rgba(148,163,184,0.8)', lineHeight: 1.5, fontFamily: 'Noto Serif Bengali, serif' } }, v.m || v.meaning)
+                                    ),
+                                    React.createElement("button", { onClick: function() { setDeleteTarget({ word: vWord, key: wk }); }, style: { width: '28px', height: '28px', borderRadius: '8px', border: 'none', background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px' } }, '✕')
+                                );
+                            })(wordKey, v.word);
+                        })
+                      )
+              )
+    );
 }
 // ============================================================
 // READER COMPONENT
 // ============================================================
 function Reader(_a) {
     var _this = this;
-    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, sessionId = _a.sessionId, initialSessionExtras = _a.initialSessionExtras;
+    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
-    var _initExtras = initialSessionExtras || {};
-    var _c = useState(_initExtras.highlights || []), highlights = _c[0], setHighlights = _c[1];
+    var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
     var _f = useState(null), modalData = _f[0], setModalData = _f[1];
     var _g = useState(false), isModalOpen = _g[0], setIsModalOpen = _g[1];
@@ -3151,7 +3677,7 @@ function Reader(_a) {
     var _j = useState(false), isMaxDrawerOpen = _j[0], setIsMaxDrawerOpen = _j[1];
     var _k = useState(null), notification = _k[0], setNotification = _k[1];
     var _l = useState(false), isRegenerating = _l[0], setIsRegenerating = _l[1];
-    var _m = useState(_initExtras.rewrittenPages || {}), rewrittenPages = _m[0], setRewrittenPages = _m[1];
+    var _m = useState(initialRewrittenPages || {}), rewrittenPages = _m[0], setRewrittenPages = _m[1];
     var _o = useState({}), rewritingStatus = _o[0], setRewritingStatus = _o[1];
     var _p = useState(false), isCustomizerOpen = _p[0], setIsCustomizerOpen = _p[1];
     var _q = useState(false), isCustomizerClosing = _q[0], setIsCustomizerClosing = _q[1];
@@ -3223,16 +3749,72 @@ function Reader(_a) {
     var drawerStateRef = useRef({ isChatActive: false, lastTranscribed: '', isInputStructured: false });
     var drawerActionsRef = useRef({ structureText: function () { }, revertText: function () { } });
     var autoScrollRef = useRef(null);
+    /* ── X-Ray state ── */
+    var _xr0 = useState(false), isXRayOpen = _xr0[0], setIsXRayOpen = _xr0[1];
+    var _xr1 = useState(false), isXRayLoading = _xr1[0], setIsXRayLoading = _xr1[1];
+    var _xr2 = useState(initialXrayCache || {}), xrayCache = _xr2[0], setXrayCache = _xr2[1];
+    var _xr3 = useState('all'), xrayFilter = _xr3[0], setXrayFilter = _xr3[1];
+    var _xr4 = useState(null), expandedXrayCard = _xr4[0], setExpandedXrayCard = _xr4[1];
+    var xrayAbortRef = useRef(null);
+    /* ── Interlinear Translation state ── */
+    var _il0 = useState(false), interlinearMode = _il0[0], setInterlinearMode = _il0[1];
+    var _il1 = useState({}), interlinearCache = _il1[0], setInterlinearCache = _il1[1];
+    var _il2 = useState(false), interlinearLoading = _il2[0], setInterlinearLoading = _il2[1];
+    var interlinearAbortRef = useRef(null);
+    /* ── Entity Highlight (Binocular) state ── */
+    var _eh0 = useState(false), entityHighlightMode = _eh0[0], setEntityHighlightMode = _eh0[1];
+    var _eh1 = useState(null), ehTooltip = _eh1[0], setEhTooltip = _eh1[1];
+    var _agb = useState(null), activeGlowBtn = _agb[0], setActiveGlowBtn = _agb[1];
+    var glowTimerRef = useRef(null);
+    var triggerGlow = function(btnId) {
+        if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
+        setActiveGlowBtn(btnId);
+        glowTimerRef.current = setTimeout(function() { setActiveGlowBtn(null); }, 2100);
+    };
+    var ehTooltipTimer = useRef(null);
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
-    // Auto-save session extras (highlights + rewrites) whenever they change
+    /* Close X-Ray panel on page navigation */
+    useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
+    /* Auto-save rich session state to parent whenever key state changes */
     useEffect(function () {
-        if (!sessionId) return;
-        try {
-            localStorage.setItem('maxofpdf_session_' + sessionId, JSON.stringify({ highlights: highlights, rewrittenPages: rewrittenPages }));
-        } catch(e) {}
-    }, [highlights, rewrittenPages, sessionId]);
+        if (onStateChange) {
+            onStateChange({
+                currentPage: currentPage,
+                extractedPages: extractedPages,
+                highlights: highlights,
+                rewrittenPages: rewrittenPages,
+                xrayCache: xrayCache
+            });
+        }
+    }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages]);
     var displayPages = useMemo(function () { return text ? splitIntoPages(text) : []; }, [text]);
     var totalPages = pdfFile ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1)) : displayPages.length;
+    /* ── Shared markdown sanitizer: strips hallucinated syntax from AI output ── */
+    var sanitizeMarkdown = function(b) {
+        if (!b) return b;
+        /* 1. *** triple-asterisk bold+italic → ** bold only */
+        b = b.replace(/\*\*\*(.*?)\*\*\*/g, '**$1**');
+        /* 2. Stray lone * not part of ** and not a list bullet → remove */
+        b = b.replace(/(?<!\*)\*(?!\*)(?!\s)/g, '');
+        /* 3. __ double-underscore bold → ** */
+        b = b.replace(/__(.*?)__/g, '**$1**');
+        /* 4. ##### or deeper headings → strip entirely, make plain text */
+        b = b.replace(/^#{5,}\s+/gm, '');
+        /* 5. ### used as decorative separator (only dashes/stars/spaces after) → remove */
+        b = b.replace(/^#{1,3}\s*[-=*_]{2,}\s*$/gm, '');
+        /* 6. # ## ### with NO space after the hashes → strip hashes, treat as plain */
+        b = b.replace(/^(#{1,3})([^\s#\n])/gm, '$2');
+        /* 7. Lone heading lines that are just a number e.g. "# 3" → plain */
+        b = b.replace(/^#{1,3}\s+(\d+\.?\s*)$/gm, '$1');
+        /* 8. Unclosed ** (odd number of **) on a single line → strip all ** on that line */
+        b = b.replace(/^([^\n]*)\*\*([^\n]*)$/gm, function(line) {
+            var count = (line.match(/\*\*/g) || []).length;
+            return count % 2 !== 0 ? line.replace(/\*\*/g, '') : line;
+        });
+        /* 9. Collapse 3+ blank lines → 2 */
+        b = b.replace(/\n{3,}/g, '\n\n');
+        return b;
+    };
     // Load PDF
     useEffect(function () {
         if (!pdfFile || !pdfjsLib)
@@ -3370,7 +3952,7 @@ function Reader(_a) {
                             structureInstruction = structureMode === 'original' ? '1. STRUCTURE: Transcribe verbatim. Fix punctuation/spacing only.' : '1. STRUCTURE: Create organized version with headers and bullets.';
                             prevText = (extractedPages[pageIndex - 1] ? extractedPages[pageIndex - 1].body : '') || '';
                             contextPrompt = prevText ? "PREVIOUS: \"...".concat(prevText.slice(-800), "\". Continue flow naturally.") : 'First page.';
-                            prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
+                            prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
                             geminiModel = 'gemini-2.0-flash';
                             if (currentModel === 'gemini-3.0-flash')
@@ -3413,6 +3995,8 @@ function Reader(_a) {
                             cleanH_1 = (result_2.header || '').replace(/(www\.|https?:\/\/)[^\s]+|[\w-]+\.(com|net|org|edu|gov|io)/gi, '').trim();
                             if (result_2.body)
                                 result_2.body = result_2.body.replace(/(\||\.)(?=[^\s\n"''])/g, '$1 ').replace(/  +/g, ' ');
+                            /* ── Sanitize hallucinated markdown syntax ── */
+                            if (result_2.body) result_2.body = sanitizeMarkdown(result_2.body);
                             setExtractedPages(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = { body: result_2.body || '', header: cleanH_1, pageNumber: cleanPN_1, model: currentModel }, _a)));
@@ -3472,11 +4056,13 @@ function Reader(_a) {
         }
     }, [pdfDoc, currentPage, scanningStatus, pdfRange, activeScanningModel, googleApiKey, boldingLevel, structureMode]);
     var getSelectionOffsets = function (container) {
+        if (!container) return null;
         var sel = window.getSelection();
         if (!sel || sel.rangeCount === 0 || sel.isCollapsed)
             return null;
-        var range = sel.getRangeAt(0);
-        if (!container.contains(range.commonAncestorContainer))
+        var range;
+        try { range = sel.getRangeAt(0); } catch(e) { return null; }
+        if (!range || !container.contains(range.commonAncestorContainer))
             return null;
         var getOffset = function (node, offset) {
             var el = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
@@ -3555,6 +4141,7 @@ function Reader(_a) {
                         newHL_1 = { pageIndex: selection.pageIndex, start: selection.start, end: selection.end, data: result, id: selection.id };
                         setHighlights(function (p) { return __spreadArray(__spreadArray([], p.filter(function (h) { return h.id !== selection.id; }), true), [newHL_1], false); });
                         setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
+                        try { var _vRaw = localStorage.getItem('maxofpdf_vocab'); var _vStore = _vRaw ? JSON.parse(_vRaw) : {}; var _vKey = cleanText.trim().toLowerCase(); _vStore[_vKey] = { word: result.word, meaning: result.meaning, m: result.meaning, entityType: result.entityType, ts: Date.now() }; localStorage.setItem('maxofpdf_vocab', JSON.stringify(_vStore)); window.dispatchEvent(new CustomEvent('maxofpdf_vocab_updated')); } catch(_e) {}
                         setModalData(result);
                         setIsAutoOpen(true);
                         setIsModalOpen(true);
@@ -3620,12 +4207,13 @@ function Reader(_a) {
     }, [isSelectingPortion, currentPage, rewrittenPages, extractedPages, pdfFile, displayPages]);
 
     var processSelection = function () {
-        if (!containerRef.current || isPointerDownRef.current)
+        var container = containerRef.current;
+        if (!container || isPointerDownRef.current)
             return;
         /* Don't analyze while in portion-select mode (use ref for sync check) */
         if (isSelectingPortionRef.current)
             return;
-        var sel = getSelectionOffsets(containerRef.current);
+        var sel = getSelectionOffsets(container);
         if (sel && sel.text.trim().length > 0) {
             var already = highlights.some(function (h) { return h.pageIndex === currentPage && h.start === sel.start && h.end === sel.end; });
             var pending = pendingHighlights.some(function (p) { return p.id === sel.id; });
@@ -3718,7 +4306,7 @@ function Reader(_a) {
                         if (newText_1)
                             setRewrittenPages(function (p) {
                                 var _a;
-                                return (__assign(__assign({}, p), (_a = {}, _a[targetPage] = newText_1, _a)));
+                                return (__assign(__assign({}, p), (_a = {}, _a[targetPage] = sanitizeMarkdown(newText_1), _a)));
                             });
                         return [3 /*break*/, 9];
                     case 7:
@@ -3750,6 +4338,153 @@ function Reader(_a) {
         closeCustomizer();
     };
     var handleRestoreOriginal = function () { setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; }); setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); }); closeCustomizer(); };
+    /* ── Interlinear Translation ── */
+    /* ── Interlinear Translation (indexed array approach) ── */
+    var performInterlinearTranslation = function(pageIdx) {
+        if (interlinearCache[pageIdx]) return;
+        var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
+        if (!pageText.trim()) return;
+        var allLines = pageText.split('\n');
+        var nonEmptyLines = allLines.filter(function(l) { return l.trim().length > 3; });
+        if (nonEmptyLines.length === 0) return;
+        setInterlinearLoading(true);
+        if (interlinearAbortRef.current) try { interlinearAbortRef.current.abort(); } catch(_e) {}
+        interlinearAbortRef.current = new AbortController();
+        var isBangla = /[\u0980-\u09FF]/.test(nonEmptyLines[0] || '');
+        var sysMsg = isBangla
+            ? 'You are a Bengali language expert and educator. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a deeper, more vivid Bengali paraphrase that adds clarity and context — NOT a shortened version\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
+            : 'You are an expert Bengali translator and educator. Given an array of text lines (may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length where each element is a rich, detailed Bengali translation of the corresponding input line.\n- Preserve markdown formatting: use **bold** for key terms, keep heading levels, keep bullet structure\n- For technical or complex lines, add brief clarifying context in Bengali\n- Write naturally flowing Bengali, not robotic\nRespond with ONLY a raw JSON array: ["translation 1","translation 2",...]. No explanation, no markdown fences.';
+        var userMsg = JSON.stringify(nonEmptyLines);
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+            body: JSON.stringify({
+                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: userMsg }],
+                model: 'moonshotai/kimi-k2-instruct-0905',
+                max_tokens: 4096,
+                temperature: 0.2
+            }),
+            signal: interlinearAbortRef.current.signal
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+            /* Strip markdown fences */
+            var clean = raw.replace(/```json\n?|```/g, '').trim();
+            /* Try parse as array */
+            var parsed = null;
+            try { parsed = JSON.parse(clean); } catch(_e) {
+                /* Try extracting array */
+                var ai = clean.indexOf('['), ei = clean.lastIndexOf(']');
+                if (ai !== -1 && ei !== -1) try { parsed = JSON.parse(clean.substring(ai, ei+1)); } catch(_e2) {}
+            }
+            if (Array.isArray(parsed)) {
+                /* Build map: original line trim -> translation */
+                var lineMap = {};
+                nonEmptyLines.forEach(function(l, i) {
+                    if (parsed[i]) lineMap[l.trim()] = parsed[i];
+                });
+                setInterlinearCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = lineMap; return n; });
+            }
+        }).catch(function(e) {
+            if (e && e.name !== 'AbortError') console.error('Interlinear error:', e);
+        }).finally(function() {
+            setInterlinearLoading(false);
+        });
+    };
+    /* Toggle interlinear mode */
+    var toggleInterlinear = function() {
+        var next = !interlinearMode;
+        setInterlinearMode(next);
+        if (next && !interlinearCache[currentPage]) {
+            performInterlinearTranslation(currentPage);
+        }
+    };
+    useEffect(function() {
+        if (interlinearMode && !interlinearCache[currentPage] && !interlinearLoading) {
+            performInterlinearTranslation(currentPage);
+        }
+    }, [currentPage, interlinearMode]);
+
+    /* ── Entity Highlight (independent from X-Ray) ── */
+    var _es0 = useState(false), entityScanLoading = _es0[0], setEntityScanLoading = _es0[1];
+    var _es1 = useState({}), entityCache = _es1[0], setEntityCache = _es1[1];
+    var entityAbortRef = useRef(null);
+    var performEntityScan = function(pageIdx) {
+        if (entityCache[pageIdx]) return;
+        var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
+        if (!pageText.trim()) return;
+        setEntityScanLoading(true);
+        if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
+        entityAbortRef.current = new AbortController();
+        var sysMsg = 'You are a named entity recognition engine. Given a page of text (which may be in Bengali, English, or mixed), extract ALL important named entities and key terms. Include: people (person), places (place), organizations (org), important concepts (concept), technical terms (term), historical events (concept), laws/treaties (term), and any other significant named items. For EVERY entity found, provide:\n- "name": the exact string as it appears in the text (do not translate or modify)\n- "type": one of person|place|org|concept|term\n- "description": a 1-sentence explanation written in BENGALI (বাংলায় লিখুন)\nReturn ONLY a raw JSON array with NO markdown, NO code fences, NO explanation. Extract up to 30 entities — do NOT skip any important name, term, or concept.';
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+            body: JSON.stringify({
+                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: 'Text:\n' + pageText.slice(0, 5000) }],
+                model: 'moonshotai/kimi-k2-instruct-0905',
+                max_tokens: 3000,
+                temperature: 0.1
+            }),
+            signal: entityAbortRef.current.signal
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+            console.log('[LENS] raw response:', raw.slice(0, 300));
+            var clean = raw.replace(/```json\n?|```/g, '').trim();
+            var parsed = null;
+            /* 1) Try clean parse first */
+            try { parsed = JSON.parse(clean); } catch(_e) {}
+            /* 2) Try extracting array slice */
+            if (!Array.isArray(parsed)) {
+                var ai = clean.indexOf('[');
+                var ei = clean.lastIndexOf(']');
+                if (ai !== -1 && ei !== -1 && ei > ai) {
+                    try { parsed = JSON.parse(clean.substring(ai, ei + 1)); } catch(_e2) {}
+                }
+            }
+            /* 3) Response was truncated — extract every complete {...} object individually */
+            if (!Array.isArray(parsed)) {
+                var ai = clean.indexOf('[');
+                var start = ai !== -1 ? ai : 0;
+                var recovered = [];
+                var depth = 0, objStart = -1;
+                for (var ci = start; ci < clean.length; ci++) {
+                    if (clean[ci] === '{') { if (depth === 0) objStart = ci; depth++; }
+                    else if (clean[ci] === '}') {
+                        depth--;
+                        if (depth === 0 && objStart !== -1) {
+                            try {
+                                var obj = JSON.parse(clean.substring(objStart, ci + 1));
+                                if (obj && obj.name && obj.type) recovered.push(obj);
+                            } catch(_e3) {}
+                            objStart = -1;
+                        }
+                    }
+                }
+                if (recovered.length > 0) { parsed = recovered; console.log('[LENS] recovered', recovered.length, 'entities from truncated JSON'); }
+                else { console.log('[LENS] parse failed: could not recover any entities'); }
+            }
+            console.log('[LENS] parsed entities:', parsed);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                setEntityCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
+            }
+        }).catch(function(e) {
+            if (e && e.name !== 'AbortError') console.error('[LENS] entity scan error:', e);
+        }).finally(function() {
+            setEntityScanLoading(false);
+        });
+    };
+    var toggleEntityHighlight = function() {
+        var next = !entityHighlightMode;
+        setEntityHighlightMode(next);
+        if (next && !entityCache[currentPage]) {
+            performEntityScan(currentPage);
+        }
+    };
+    useEffect(function() {
+        if (entityHighlightMode && !entityCache[currentPage] && !entityScanLoading) {
+            performEntityScan(currentPage);
+        }
+    }, [currentPage, entityHighlightMode]);
     /* ── Partial (selection-based) rewrite ── */
     var performPartialRewrite = function (mode, instruction) { return __awaiter(_this, void 0, void 0, function () {
         var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, r, modelId, key, endpoint, rr, d, e_sel;
@@ -3821,7 +4556,7 @@ function Reader(_a) {
                             newLines.splice.apply(newLines, [startLine, endLine - startLine + 1].concat(chunkLines));
                             newPageText = newLines.join('\n');
                         }
-                        setRewrittenPages(function (p) { var _a = {}; _a[currentPage] = newPageText; return __assign(__assign({}, p), _a); });
+                        setRewrittenPages(function (p) { var _a = {}; _a[currentPage] = sanitizeMarkdown(newPageText); return __assign(__assign({}, p), _a); });
                         /* Find char offset of the rewritten chunk in the new page text for highlight */
                         var cleanedForHL = cleaned;
                         var hlStart = newPageText.indexOf(cleanedForHL);
@@ -3838,6 +4573,52 @@ function Reader(_a) {
                     setPartialRewritePending(null);
                     return [7 /*endfinally*/];
                 case 9: return [2 /*return*/];
+            }
+        });
+    }); };
+    /* ── X-Ray: scan current page for key entities ── */
+    var performXRay = function () { return __awaiter(_this, void 0, void 0, function () {
+        var pageText, cached, sysPrompt, userMsg, xrayModelId, xrayKey, xrayEndpoint, r, d, rawText, clean, parsed, entities, xErr;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    pageText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
+                    if (!pageText.trim()) return [2 /*return*/];
+                    cached = xrayCache[currentPage];
+                    if (cached) { setIsXRayOpen(true); return [2 /*return*/]; }
+                    setIsXRayOpen(true);
+                    setIsXRayLoading(true);
+                    if (xrayAbortRef.current) { try { xrayAbortRef.current.abort(); } catch(e2) {} }
+                    xrayAbortRef.current = new AbortController();
+                    sysPrompt = 'You are a Kindle X-Ray engine. Given a page of text, extract the key entities (characters, places, organizations, concepts, technical terms, acronyms) that appear on this page. For each entity, provide a brief, helpful reminder of who/what they are — as if helping a reader who might have forgotten them from earlier in the book. Return ONLY a valid JSON object with this structure: {"entities":[{"name":"...","type":"person|place|org|concept|term|other","description":"1-2 sentence reminder"},...]}. Extract 5-12 entities max. Be concise. No markdown, no preamble, just the JSON object.';
+                    userMsg = 'Page text:\n\n' + pageText.slice(0, 3000);
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, 5, 6]);
+                    xrayModelId = 'moonshotai/kimi-k2-instruct-0905';
+                    xrayKey = GROQ_API_KEY;
+                    xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
+                case 2:
+                    r = _a.sent();
+                    return [4 /*yield*/, r.json()];
+                case 3:
+                    d = _a.sent();
+                    rawText = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}';
+                    clean = rawText.replace(/```json\n?|```/g, '').trim();
+                    try { parsed = JSON.parse(clean); } catch(e3) { parsed = {}; }
+                    entities = Array.isArray(parsed.entities) ? parsed.entities : [];
+                    setXrayCache(function(prev) { var n = Object.assign({}, prev); n[currentPage] = entities; return n; });
+                    return [3 /*break*/, 6];
+                case 4:
+                    xErr = _a.sent();
+                    if (xErr.name !== 'AbortError') { setNotification({ message: 'X-Ray failed: ' + xErr.message, type: 'error' }); setIsXRayOpen(false); }
+                    return [3 /*break*/, 6];
+                case 5:
+                    setIsXRayLoading(false);
+                    xrayAbortRef.current = null;
+                    return [7 /*endfinally*/];
+                case 6: return [2 /*return*/];
             }
         });
     }); };
@@ -3967,9 +4748,11 @@ function Reader(_a) {
             blocks.push({ type: 'table', content: tableRows, offset: offset });
             offset += tc.length + 1;
         }
+        /* ── Page-level entity hit counter: max 2 highlights per entity per page ── */
+        var entityHitCount = {};
         return blocks.map(function (block, bi) {
             if (block.type === 'text')
-                return renderTextLine(block.content, block.lineIndex, block.offset, pageText, isViewOrig);
+                return renderTextLine(block.content, block.lineIndex, block.offset, pageText, isViewOrig, entityHitCount);
             if (block.type === 'table')
                 return renderTable(block.content, bi, block.offset);
             if (block.type === 'figure')
@@ -4017,7 +4800,7 @@ function Reader(_a) {
                     React.createElement("tr", { className: "border-b border-white/10 ".concat(readerTheme === 'light' ? 'bg-slate-100 text-slate-900' : 'bg-white/10 text-slate-200') }, headerRow.map(function (c, i) { return React.createElement("th", { key: i, className: "p-3 text-xs font-bold border-r border-white/5 last:border-0" }, renderCell(c)); }))),
                 React.createElement("tbody", null, bodyRows.map(function (row, ri) { return React.createElement("tr", { key: ri, className: "border-b border-white/5 last:border-0 ".concat(readerTheme === 'light' ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-white/5 text-slate-400') }, row.map(function (c, ci) { return React.createElement("td", { key: ci, className: "p-3 text-xs border-r border-white/5 last:border-0 font-serif" }, renderCell(c)); })); })))));
     };
-    var renderTextLine = function (line, lineIdx, lineStart, textContent, isViewOrig) {
+    var renderTextLine = function (line, lineIdx, lineStart, textContent, isViewOrig, entityHitCount) {
         var type = 'p', markerLength = 0;
         var cl = line.trim();
         if (cl.startsWith('# ')) {
@@ -4031,6 +4814,10 @@ function Reader(_a) {
         else if (cl.startsWith('### ')) {
             type = 'h3';
             markerLength = 4;
+        }
+        else if (cl.startsWith('#### ')) {
+            type = 'h4';
+            markerLength = 5;
         }
         else if (cl.match(/^[-*]\s/)) {
             type = 'li';
@@ -4126,37 +4913,198 @@ function Reader(_a) {
             _loop_1(i);
         }
         var nlNode = lineIdx < textContent.split('\n').length - 1 ? React.createElement("span", { className: "md-hidden-nl" }, '\n') : null;
+        /* ── Entity Highlight: re-parse nodes if entityHighlightMode ── */
+        if (entityHighlightMode) {
+            var pageEntities = entityCache[currentPage];
+            if (pageEntities && pageEntities.length > 0) {
+                var plainLine = line.replace(/\*\*(.*?)\*\*/g, '$1').replace(/^(#+\s|[-*]\s)/, '');
+                /* Use Array.from for correct Unicode (Bangla) character counting */
+                var charsLine = Array.from(plainLine);
+                var charsLineLower = Array.from(plainLine.toLowerCase());
+                var ehSpans = [];
+                pageEntities.forEach(function(ent) {
+                    var name = (ent.name || '').trim();
+                    if (!name || name.length < 2) return;
+                    var entKey = name.toLowerCase();
+                    var charsName = Array.from(entKey);
+                    var nameLen = charsName.length;
+                    var lineLen = charsLineLower.length;
+                    for (var ci = 0; ci <= lineLen - nameLen; ci++) {
+                        /* Stop if this entity already hit max 2 on the page */
+                        if (entityHitCount && (entityHitCount[entKey] || 0) >= 2) break;
+                        var match = true;
+                        for (var ni = 0; ni < nameLen; ni++) {
+                            if (charsLineLower[ci + ni] !== charsName[ni]) { match = false; break; }
+                        }
+                        if (match) {
+                            /* Allow match if followed by end, space, punctuation, (, ), –, -, or Bengali suffix chars */
+                            var afterIdx = ci + nameLen;
+                            var afterChar = afterIdx < lineLen ? charsLineLower[afterIdx] : '';
+                            /* Skip if it's a mid-word Latin continuation (e.g. "Claude" inside "Claudette") */
+                            var isLatinName = /^[a-z]/.test(charsName[0]);
+                            if (isLatinName && afterChar && /[a-z0-9]/.test(afterChar)) { continue; }
+                            /* Convert char index back to string index */
+                            var strStart = charsLine.slice(0, ci).join('').length;
+                            var strEnd = charsLine.slice(0, ci + nameLen).join('').length;
+                            ehSpans.push({ start: strStart, end: strEnd, entity: ent, matched: plainLine.substring(strStart, strEnd) });
+                            /* Increment hit counter */
+                            if (entityHitCount) entityHitCount[entKey] = (entityHitCount[entKey] || 0) + 1;
+                            ci += nameLen - 1;
+                        }
+                    }
+                });
+                if (ehSpans.length > 0) {
+                    ehSpans.sort(function(a,b){ return a.start - b.start; });
+                    var dedupedSpans = [];
+                    var lastEnd2 = -1;
+                    ehSpans.forEach(function(sp) {
+                        if (sp.start >= lastEnd2) { dedupedSpans.push(sp); lastEnd2 = sp.end; }
+                    });
+                    var newNodes = [];
+                    var cursor2 = 0;
+                    dedupedSpans.forEach(function(sp, si) {
+                        if (sp.start > cursor2) newNodes.push(plainLine.substring(cursor2, sp.start));
+                        var etype = (sp.entity.type || 'other').toLowerCase();
+                        var spEntity = sp.entity;
+                        var handleEhTap = function(e) {
+                            e.stopPropagation();
+                            /* Capture rect synchronously before React clears the event */
+                            var target = e.currentTarget;
+                            var rect = target ? target.getBoundingClientRect() : null;
+                            /* Toggle: if same entity already shown, hide it */
+                            setEhTooltip(function(prev) {
+                                if (prev && prev.entity === spEntity) return null;
+                                if (!rect) return prev;
+                                if (ehTooltipTimer.current) clearTimeout(ehTooltipTimer.current);
+                                return { entity: spEntity, x: rect.left, y: rect.top };
+                            });
+                        };
+                        newNodes.push(React.createElement("span", {
+                            key: "eh"+lineIdx+"-"+si,
+                            className: "eh " + etype,
+                            onClick: handleEhTap
+                        }, sp.matched));
+                        cursor2 = sp.end;
+                    });
+                    if (cursor2 < plainLine.length) newNodes.push(plainLine.substring(cursor2));
+                    nodes = newNodes;
+                }
+            }
+        }
         var bk = "blk".concat(lineIdx);
         var h1c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-900' : 'text-[#e2e8f0]';
         var h2c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-800' : 'text-[#cbd5e1]';
         var h3c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-700' : 'text-[#94a3b8]';
         var rewriteGlow = '';
+        /* ── Interlinear injection ── */
+        var lineKey = line.replace(/^(#+\s|[-*]\s|\^\^\s?)/, '').trim();
+        var ilPageCache = interlinearCache[currentPage];
+        var ilText = ilPageCache ? (ilPageCache[lineKey] || ilPageCache[line.trim()] || '') : '';
+        var showIlSkeleton = interlinearMode && interlinearLoading && !ilPageCache && line.trim().length > 2;
+        var ilNode = null;
+        if (interlinearMode && line.trim().length > 2) {
+            if (ilText) {
+                /* Render markdown in interlinear: parse **bold** into <strong> */
+                var ilParts = ilText.split(/(\*\*.*?\*\*)/g);
+                var ilRendered = ilParts.map(function(p, pi) {
+                    if (p.startsWith('**') && p.endsWith('**')) {
+                        return React.createElement('strong', { key: pi, style: { fontWeight: 800, fontStyle: 'normal', color: 'rgba(147,197,253,0.85)' } }, p.slice(2, -2));
+                    }
+                    return p;
+                });
+                ilNode = React.createElement("span", { key: bk+"-il", className: "interlinear-line" }, ilRendered);
+            } else if (showIlSkeleton) {
+                ilNode = React.createElement("span", { key: bk+"-ilsk", className: "interlinear-skeleton", style:{width: (55 + Math.abs(lineIdx * 7) % 35) + '%'} });
+            }
+        }
         switch (type) {
-            case 'h1': return React.createElement("h1", { key: bk, "data-offset": lineStart, className: ("md-h1 ".concat(h1c) + rewriteGlow) },
-                nodes,
-                nlNode);
-            case 'h2': return React.createElement("h2", { key: bk, "data-offset": lineStart, className: ("md-h2 ".concat(h2c) + rewriteGlow) },
-                nodes,
-                nlNode);
-            case 'h3': return React.createElement("h3", { key: bk, "data-offset": lineStart, className: ("md-h3 ".concat(h3c) + rewriteGlow) },
-                nodes,
-                nlNode);
-            case 'li': return React.createElement("div", { key: bk, "data-offset": lineStart, className: ("md-list-item" + rewriteGlow) },
-                React.createElement("span", { className: "md-list-bullet" }),
-                React.createElement("div", { className: "inline" }, nodes),
-                nlNode);
-            case 'ref': return React.createElement("p", { key: bk, "data-offset": lineStart, className: ("text-[10px] text-slate-500 leading-relaxed mb-2 opacity-75" + rewriteGlow) },
-                nodes,
-                nlNode);
-            default: return React.createElement("p", { key: bk, "data-offset": lineStart, className: ("mb-4" + rewriteGlow) },
-                nodes,
-                nlNode);
+            case 'h1': return React.createElement(React.Fragment, { key: bk },
+                React.createElement("h1", { "data-offset": lineStart, className: ("md-h1 ".concat(h1c) + rewriteGlow) }, nodes, nlNode),
+                ilNode);
+            case 'h2': return React.createElement(React.Fragment, { key: bk },
+                React.createElement("h2", { "data-offset": lineStart, className: ("md-h2 ".concat(h2c) + rewriteGlow) }, nodes, nlNode),
+                ilNode);
+            case 'h3': return React.createElement(React.Fragment, { key: bk },
+                React.createElement("h3", { "data-offset": lineStart, className: ("md-h3 ".concat(h3c) + rewriteGlow) }, nodes, nlNode),
+                ilNode);
+            case 'h4':
+                var h4c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-600' : 'text-slate-500';
+                return React.createElement(React.Fragment, { key: bk },
+                React.createElement("h4", { "data-offset": lineStart, className: ("md-h4 ".concat(h4c) + rewriteGlow) }, nodes, nlNode),
+                ilNode);
+            case 'li': return React.createElement(React.Fragment, { key: bk },
+                React.createElement("div", { "data-offset": lineStart, className: ("md-list-item" + rewriteGlow) },
+                    React.createElement("span", { className: "md-list-bullet" }),
+                    React.createElement("div", { className: "inline" }, nodes),
+                    nlNode),
+                ilNode);
+            case 'ref': return React.createElement(React.Fragment, { key: bk },
+                React.createElement("p", { "data-offset": lineStart, className: ("text-[10px] text-slate-500 leading-relaxed mb-2 opacity-75" + rewriteGlow) }, nodes, nlNode),
+                ilNode);
+            default: return React.createElement(React.Fragment, { key: bk },
+                React.createElement("p", { "data-offset": lineStart, className: ("mb-4" + rewriteGlow) }, nodes, nlNode),
+                ilNode);
         }
     };
+    /* Dismiss entity tooltip on scroll */
+    useEffect(function() {
+        if (!ehTooltip) return;
+        var dismiss = function() { setEhTooltip(null); if (ehTooltipTimer.current) clearTimeout(ehTooltipTimer.current); };
+        window.addEventListener('scroll', dismiss, { passive: true });
+        document.addEventListener('touchmove', dismiss, { passive: true });
+        return function() {
+            window.removeEventListener('scroll', dismiss);
+            document.removeEventListener('touchmove', dismiss);
+        };
+    }, [ehTooltip]);
+
     var displayHeader = (function () { var t = getPageHeader(); var ws = t.split(' '); return ws.length > 2 ? ws.slice(0, 2).join(' ') + '...' : t; })();
     return (React.createElement("div", { className: "w-full flex flex-col min-h-screen px-4 pb-40 overflow-x-hidden animate-in fade-in" },
         React.createElement(AnalysisModal, { isOpen: isModalOpen, isAutoOpen: isAutoOpen, data: modalData, isLoading: isRegenerating, autoPlayTTS: autoPlayTTS, onClose: function () { return setIsModalOpen(false); }, onModelChange: handleModelChange, googleApiKey: googleApiKey }),
-        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab, sessionId: sessionId, initialMessages: (_initExtras && _initExtras.chatMessages) || [] }),
+        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab }),
+        /* ── LENS Scanning Overlay ── */
+        entityScanLoading && React.createElement("div", { className: "lens-scan-overlay" },
+            React.createElement("div", { className: "lens-loader" },
+                (function() {
+                    var lensPath = "M63,37c-6.7-4-4-27-13-27s-6.3,23-13,27-27,4-27,13,20.3,9,27,13,4,27,13,27,6.3-23,13-27,27-4,27-13-20.3-9-27-13Z";
+                    var makeSvg = function(id) {
+                        return React.createElement("svg", { id: id, xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 100 100" },
+                            React.createElement("defs", null,
+                                React.createElement("filter", { id: "ls-shine" }, React.createElement("feGaussianBlur", { stdDeviation: "3" })),
+                                React.createElement("mask", { id: "ls-mask" }, React.createElement("path", { d: lensPath, fill: "white" })),
+                                React.createElement("radialGradient", { id: "ls-g1", cx: "50", cy: "66", r: "30", gradientTransform: "translate(0 35) scale(1 0.5)", gradientUnits: "userSpaceOnUse" },
+                                    React.createElement("stop", { offset: "0%", stopColor: "black", stopOpacity: "0.3" }),
+                                    React.createElement("stop", { offset: "100%", stopColor: "black", stopOpacity: "0" })),
+                                React.createElement("radialGradient", { id: "ls-g2", cx: "55", cy: "20", r: "30", gradientUnits: "userSpaceOnUse" },
+                                    React.createElement("stop", { offset: "0%", stopColor: "white", stopOpacity: "0.3" }),
+                                    React.createElement("stop", { offset: "100%", stopColor: "white", stopOpacity: "0" }))),
+                            React.createElement("g", null,
+                                React.createElement("path", { d: lensPath, fill: "currentColor" }),
+                                React.createElement("path", { d: lensPath, fill: "url(#ls-g1)" }),
+                                React.createElement("path", { d: lensPath, fill: "none", stroke: "white", opacity: "0.3", strokeWidth: "3", filter: "url(#ls-shine)", mask: "url(#ls-mask)" }),
+                                React.createElement("path", { d: lensPath, fill: "url(#ls-g2)" })));
+                    };
+                    return [makeSvg("lp1"), makeSvg("lp2"), makeSvg("lp3")];
+                })())),
+        /* ── Entity Tooltip Overlay ── */
+        ehTooltip && React.createElement("div", {
+            className: "eh-tooltip-wrap",
+            style: {
+                left: Math.min(Math.max(8, ehTooltip.x), window.innerWidth - 248) + 'px',
+                top: Math.max(64, ehTooltip.y - 115) + 'px'
+            },
+            onTouchStart: function(e) { e.stopPropagation(); }
+        },
+            React.createElement("div", { className: "eh-tooltip", style: { pointerEvents: 'auto' } },
+                React.createElement("div", { style: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'4px' } },
+                    React.createElement("div", { className: "eh-tooltip-type " + (ehTooltip.entity.type||'other').toLowerCase() },
+                        (ehTooltip.entity.type || 'OTHER').toUpperCase()),
+                    React.createElement("button", {
+                        onClick: function() { setEhTooltip(null); },
+                        style: { background:'none', border:'none', color:'rgba(148,163,184,0.5)', cursor:'pointer', fontSize:'14px', lineHeight:1, padding:'0 0 0 8px' }
+                    }, "×")),
+                React.createElement("div", { className: "eh-tooltip-name" }, ehTooltip.entity.name),
+                React.createElement("div", { className: "eh-tooltip-desc" }, ehTooltip.entity.description))),
         isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
@@ -4245,7 +5193,7 @@ function Reader(_a) {
                         React.createElement("path", { d: "M14 17H5" }),
                         React.createElement("circle", { cx: "17", cy: "17", r: "3" }),
                         React.createElement("circle", { cx: "7", cy: "7", r: "3" }))),
-                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages, { highlights: highlights, rewrittenPages: rewrittenPages }); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5') }, "Exit"))),
+                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages, { highlights: highlights, rewrittenPages: rewrittenPages, xrayCache: xrayCache }); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5') }, "Exit"))),
         /* ── Portion Selection Mode Banner ── */
         isSelectingPortion && React.createElement("div", {
             style:{
@@ -4405,6 +5353,61 @@ function Reader(_a) {
                             onClick: handleRestoreOriginal,
                             style:{width:'100%',padding:'14px',borderRadius:'12px',border:'1px solid rgba(239,68,68,0.2)',background:'rgba(239,68,68,0.08)',color:'#fca5a5',fontWeight:700,fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',cursor:'pointer',outline:'none'}
                         }, "↩ Restore Original"))))))),
+        /* ── X-Ray Panel ── */
+        (function renderXRayPanel() {
+            var xrayEntitiesRaw = xrayCache[currentPage] || [];
+            var xrayEntityTypes = ['all'].concat(Array.from(new Set(xrayEntitiesRaw.map(function(e) { return e.type; }))));
+            var xrayFilterBar = (!isXRayLoading && xrayEntitiesRaw.length > 0)
+                ? React.createElement("div", { className: "xray-filter-bar" },
+                    xrayEntityTypes.map(function(t) {
+                        var tLabel = t === 'all' ? 'All' : t === 'person' ? '👤 Person' : t === 'place' ? '📍 Place' : t === 'org' ? '🏛 Org' : t === 'concept' ? '💡 Concept' : t === 'term' ? '📖 Term' : '• Other';
+                        return React.createElement("button", { key: t, className: "xray-filter-chip" + (xrayFilter === t ? " active" : ""), onClick: function() { setXrayFilter(t); } }, tLabel);
+                    }))
+                : null;
+            var xrayTypeMap = { person: '👤', place: '📍', org: '🏛', concept: '💡', term: '📖', other: '•' };
+            var xrayFiltered = xrayEntitiesRaw.filter(function(e) { return xrayFilter === 'all' || e.type === xrayFilter; });
+            var xrayBody = isXRayLoading
+                ? React.createElement("div", { className: "xray-loading" },
+                    React.createElement("div", { className: "xray-spinner" }),
+                    React.createElement("div", { className: "xray-loading-text" }, "Scanning page..."))
+                : (xrayFiltered.length === 0
+                    ? React.createElement("div", { className: "xray-empty" },
+                        React.createElement("div", { className: "xray-empty-icon" }, "🔍"),
+                        React.createElement("div", { className: "xray-empty-text" }, "No key entities found on this page."))
+                    : React.createElement("div", null, xrayFiltered.map(function(entity, idx) {
+                        return React.createElement("div", { key: idx, className: "xray-card", style: { animationDelay: (idx * 0.06) + "s" } },
+                            React.createElement("div", { className: "xray-card-header" },
+                                React.createElement("div", { className: "xray-entity-icon " + (entity.type || 'other') }, xrayTypeMap[entity.type] || '•'),
+                                React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                                    React.createElement("div", { className: "xray-entity-name" }, entity.name),
+                                    React.createElement("div", { className: "xray-entity-type-pill " + (entity.type || 'other') }, entity.type || 'other'))),
+                            React.createElement("div", { className: "xray-entity-desc" }, entity.description));
+                    })));
+            return React.createElement("div", { className: "xray-panel" + (isXRayOpen ? " open" : "") },
+                React.createElement("div", { className: "xray-sheet" + (isXRayOpen ? " open" : "") },
+                    React.createElement("div", { className: "xray-handle-zone", onClick: function() { setIsXRayOpen(false); } },
+                        React.createElement("div", { className: "xray-handle-bar" })),
+                    React.createElement("div", { className: "xray-header" },
+                        React.createElement("div", { className: "xray-title-row" },
+                            React.createElement("div", { className: "xray-title" },
+                                React.createElement("div", { className: "xray-icon-badge" },
+                                    React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "rgba(56,189,248,0.9)", strokeWidth: "2" },
+                                        React.createElement("circle", { cx: "11", cy: "11", r: "8" }),
+                                        React.createElement("path", { d: "m21 21-4.35-4.35" }),
+                                        React.createElement("path", { d: "M8 11h6" }),
+                                        React.createElement("path", { d: "M11 8v6" }))),
+                                React.createElement("div", null,
+                                    React.createElement("div", { className: "xray-badge-label" }, "Kindle-Style"),
+                                    React.createElement("div", { className: "xray-heading" }, "X-Ray"))),
+                            React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px" } },
+                                React.createElement("div", { className: "xray-page-note" }, "Folio " + (currentPage + 1)),
+                                React.createElement("button", { className: "xray-close-btn", onClick: function() { setIsXRayOpen(false); } },
+                                    React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                                        React.createElement("path", { d: "M18 6 6 18" }),
+                                        React.createElement("path", { d: "m6 6 12 12" }))))),
+                        xrayFilterBar),
+                    React.createElement("div", { className: "xray-scroll" }, xrayBody)));
+        })(),
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
             React.createElement("div", { ref: containerRef, className: "manuscript-text serif text-xl transition-colors duration-500 ".concat(getThemeTextClass()), style: { lineHeight: lineSpacing } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-8 left-1/2 -translate-x-1/2 z-40" },
@@ -4412,20 +5415,56 @@ function Reader(_a) {
                 React.createElement("button", { onClick: function () { return currentPage > 0 && setCurrentPage(function (p) { return p - 1; }); }, disabled: currentPage === 0, className: "p-4 rounded-full bg-white/5 border border-white/10 backdrop-blur-md disabled:opacity-0 transition-all ".concat(readerTheme === 'light' ? 'text-slate-600' : 'text-slate-400 hover:text-white') },
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                         React.createElement("path", { d: "m15 18-6-6 6-6" }))),
-                React.createElement("div", { className: "glass-dock px-2 py-2 rounded-full flex items-center gap-3 shadow-2xl border border-white/10" },
-                    React.createElement("button", { onClick: function () { return setIsCustomizerOpen(true); }, disabled: pdfFile && !extractedPages[currentPage], className: "flex items-center justify-center w-12 h-12 shrink-0 rounded-full transition-all ".concat(readerTheme === 'light' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30') },
-                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
-                            React.createElement("path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }),
-                            React.createElement("polyline", { points: "7 10 12 15 17 10" }),
-                            React.createElement("line", { x1: "12", x2: "12", y1: "15", y2: "3" }))),
-                    React.createElement("button", { onClick: function () { return pdfFile && setIsOriginalPdfOpen(true); }, disabled: !pdfFile, className: "flex items-center justify-center w-14 h-14 shrink-0 rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-all shadow-lg disabled:opacity-50 disabled:grayscale" },
-                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
-                            React.createElement("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
-                            React.createElement("polyline", { points: "14 2 14 8 20 8" }),
-                            React.createElement("line", { x1: "16", y1: "13", x2: "8", y2: "13" }),
-                            React.createElement("line", { x1: "16", y1: "17", x2: "8", y2: "17" }))),
-                    React.createElement("button", { onClick: function () { return setIsMaxDrawerOpen(true); }, className: "flex items-center justify-center w-12 h-12 shrink-0 rounded-full transition-all ".concat(readerTheme === 'light' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30') },
-                        React.createElement("span", { className: "text-[10px] font-black" }, "MAX"))),
+                React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : '') },
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-white" }),
+                    React.createElement("div", { className: "dock-poda-layer dock-poda-border" }),
+                    React.createElement("div", { className: "glass-dock px-2 py-2 rounded-full flex items-center gap-3 shadow-2xl border border-white/10" },
+                        React.createElement("button", { onClick: function () { triggerGlow('customizer'); setIsCustomizerOpen(true); }, disabled: pdfFile && !extractedPages[currentPage], className: "flex items-center justify-center w-12 h-12 shrink-0 rounded-full transition-all ".concat(readerTheme === 'light' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30') },
+                            React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                                React.createElement("path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }),
+                                React.createElement("polyline", { points: "7 10 12 15 17 10" }),
+                                React.createElement("line", { x1: "12", x2: "12", y1: "15", y2: "3" }))),
+                        React.createElement("button", { onClick: function () { triggerGlow('pdf'); pdfFile && setIsOriginalPdfOpen(true); }, disabled: !pdfFile, className: "flex items-center justify-center w-14 h-14 shrink-0 rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-all shadow-lg disabled:opacity-50 disabled:grayscale" },
+                            React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
+                                React.createElement("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
+                                React.createElement("polyline", { points: "14 2 14 8 20 8" }),
+                                React.createElement("line", { x1: "16", y1: "13", x2: "8", y2: "13" }),
+                                React.createElement("line", { x1: "16", y1: "17", x2: "8", y2: "17" }))),
+                        React.createElement("button", { onClick: function () { triggerGlow('max'); setIsMaxDrawerOpen(true); }, className: "flex items-center justify-center w-12 h-12 shrink-0 rounded-full transition-all ".concat(readerTheme === 'light' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30') },
+                            React.createElement("span", { className: "text-[10px] font-black" }, "MAX")),
+                        React.createElement("button", {
+                            onClick: function() { triggerGlow('intl'); toggleInterlinear(); },
+                            className: "intl-btn" + (interlinearMode ? " active" : ""),
+                            title: "Interlinear — বাংলা অনুবাদ"
+                        },
+                            interlinearLoading && interlinearMode
+                                ? React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", className: "animate-spin" },
+                                    React.createElement("path", { d: "M21 12a9 9 0 1 1-6.219-8.56" }))
+                                : React.createElement("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
+                                    React.createElement("line", { x1: "3", y1: "6", x2: "21", y2: "6" }),
+                                    React.createElement("line", { x1: "3", y1: "10", x2: "15", y2: "10", strokeDasharray: "2 1", opacity: "0.5" }),
+                                    React.createElement("line", { x1: "3", y1: "14", x2: "21", y2: "14" }),
+                                    React.createElement("line", { x1: "3", y1: "18", x2: "15", y2: "18", strokeDasharray: "2 1", opacity: "0.5" })),
+                            React.createElement("span", { className: "intl-btn-label" }, "বাংলা")),
+                        React.createElement("button", {
+                            onClick: function() { triggerGlow('lens'); toggleEntityHighlight(); },
+                            className: "bino-btn" + (entityHighlightMode ? " active" : ""),
+                            title: "Entity Highlight — Characters & Places"
+                        },
+                            entityScanLoading && entityHighlightMode
+                                ? React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", className: "animate-spin" },
+                                    React.createElement("path", { d: "M21 12a9 9 0 1 1-6.219-8.56" }))
+                                : React.createElement("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
+                                    React.createElement("circle", { cx: "6", cy: "12", r: "3" }),
+                                    React.createElement("circle", { cx: "18", cy: "12", r: "3" }),
+                                    React.createElement("path", { d: "M9 12h6" }),
+                                    React.createElement("path", { d: "M3 12H2" }),
+                                    React.createElement("path", { d: "M22 12h-1" })),
+                            React.createElement("span", { className: "bino-btn-label" }, "LENS")))),
                 React.createElement("button", { onClick: function () { return currentPage < totalPages - 1 && setCurrentPage(function (p) { return p + 1; }); }, disabled: currentPage === totalPages - 1, className: "p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-md disabled:opacity-0 transition-all ".concat(readerTheme === 'light' ? 'text-slate-600' : 'text-slate-400 hover:text-white') },
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                         React.createElement("path", { d: "m9 18 6-6-6-6" })))))));
@@ -4846,69 +5885,33 @@ function Editor(_a) {
             React.createElement("div", { className: "shine-card w-full" },
                 React.createElement("div", { className: "shine-orb" }),
                 React.createElement("div", { className: "shine-card-inner" },
-                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'Paste or type your manuscript...', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }),
-                    text.trim().length > 0 && !pdfFile && (function() {
-                        var words = text.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
-                        var wordCount = words.length;
-                        var charCount = text.length;
-                        var sentences = text.split(/[।.!?]+/).filter(function(s) { return s.trim().length > 0; }).length;
-                        var readingMins = Math.ceil(wordCount / 200);
-                        var pages = Math.ceil(wordCount / 600);
-                        return React.createElement("div", {
-                            style: {
-                                borderTop: '1px solid rgba(255,255,255,0.05)',
-                                padding: '10px 20px',
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '6px 16px',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'rgba(0,0,0,0.2)'
-                            }
-                        },
-                            [
-                                { label: 'Words', val: wordCount.toLocaleString(), color: '#a5b4fc' },
-                                { label: 'Chars', val: charCount.toLocaleString(), color: '#6ee7b7' },
-                                { label: 'Sentences', val: sentences.toLocaleString(), color: '#fcd34d' },
-                                { label: 'Read', val: readingMins + ' min', color: '#f9a8d4' },
-                                { label: 'Pages', val: pages + 'p', color: '#93c5fd' }
-                            ].map(function(stat) {
-                                return React.createElement("div", { key: stat.label, style: { display: 'flex', alignItems: 'center', gap: '5px' } },
-                                    React.createElement("span", { style: { fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(100,120,160,0.5)' } }, stat.label),
-                                    React.createElement("span", { style: { fontSize: '12px', fontWeight: 700, color: stat.color } }, stat.val)
-                                );
-                            })
-                        );
-                    })()
-                )),
+                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'Paste or type your manuscript...', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }))),
             React.createElement("div", { className: "flex justify-center mt-6 opacity-80" },
                 React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", height: "160", width: "160", viewBox: "0 0 200 200" },
+                    React.createElement("defs", null,
+                        React.createElement("linearGradient", { y2: "100%", x2: "10%", y1: "0%", x1: "0%", id: "iso-g1" },
+                            React.createElement("stop", { style: { stopColor: '#1e2026', stopOpacity: 1 }, offset: "20%" }),
+                            React.createElement("stop", { style: { stopColor: '#414750', stopOpacity: 1 }, offset: "60%" })),
+                        React.createElement("linearGradient", { y2: "100%", x2: "0%", y1: "-17%", x1: "10%", id: "iso-g2" },
+                            React.createElement("stop", { style: { stopColor: '#1f474400', stopOpacity: 1 }, offset: "20%" }),
+                            React.createElement("stop", { id: "iso-animStop", style: { stopColor: '#10c6d354', stopOpacity: 1 }, offset: "100%" })),
+                        React.createElement("linearGradient", { y2: "100%", x2: "10%", y1: "0%", x1: "0%", id: "iso-g3" },
+                            React.createElement("stop", { style: { stopColor: '#10ccd300', stopOpacity: 1 }, offset: "20%" }),
+                            React.createElement("stop", { style: { stopColor: '#10c6d354', stopOpacity: 1 }, offset: "100%" }))),
                     React.createElement("g", null,
-                        React.createElement("polygon", { id: "gem-bounce", transform: "rotate(45 100 100)", strokeWidth: "1", stroke: "#d3a410", fill: "none", points: "70,70 148,50 130,130 50,150" }),
-                        React.createElement("polygon", { id: "gem-bounce2", transform: "rotate(45 100 100)", strokeWidth: "1", stroke: "#d3a410", fill: "none", points: "70,70 148,50 130,130 50,150" }),
-                        React.createElement("polygon", { transform: "rotate(45 100 100)", strokeWidth: "2", stroke: "", fill: "#414750", points: "70,70 150,50 130,130 50,150" }),
-                        React.createElement("polygon", { strokeWidth: "2", stroke: "", fill: "url(#gradiente)", points: "100,70 150,100 100,130 50,100" }),
-                        React.createElement("defs", null,
-                            React.createElement("linearGradient", { y2: "100%", x2: "10%", y1: "0%", x1: "0%", id: "gradiente" },
-                                React.createElement("stop", { style: { stopColor: '#1e2026', stopOpacity: 1 }, offset: "20%" }),
-                                React.createElement("stop", { style: { stopColor: '#414750', stopOpacity: 1 }, offset: "60%" }))),
-                        React.createElement("polygon", { transform: "translate(20, 31)", strokeWidth: "2", stroke: "", fill: "#b7870f", points: "80,50 80,75 80,99 40,75" }),
-                        React.createElement("polygon", { transform: "translate(20, 31)", strokeWidth: "2", stroke: "", fill: "url(#gradiente2)", points: "40,-40 80,-40 80,99 40,75" }),
-                        React.createElement("defs", null,
-                            React.createElement("linearGradient", { y2: "100%", x2: "0%", y1: "-17%", x1: "10%", id: "gradiente2" },
-                                React.createElement("stop", { style: { stopColor: '#d3a51000', stopOpacity: 1 }, offset: "20%" }),
-                                React.createElement("stop", { id: "gem-animatedStop", style: { stopColor: '#d3a51054', stopOpacity: 1 }, offset: "100%" }))),
-                        React.createElement("polygon", { transform: "rotate(180 100 100) translate(20, 20)", strokeWidth: "2", stroke: "", fill: "#d3a410", points: "80,50 80,75 80,99 40,75" }),
-                        React.createElement("polygon", { transform: "rotate(0 100 100) translate(60, 20)", strokeWidth: "2", stroke: "", fill: "url(#gradiente3)", points: "40,-40 80,-40 80,85 40,110.2" }),
-                        React.createElement("defs", null,
-                            React.createElement("linearGradient", { y2: "100%", x2: "10%", y1: "0%", x1: "0%", id: "gradiente3" },
-                                React.createElement("stop", { style: { stopColor: '#d3a51000', stopOpacity: 1 }, offset: "20%" }),
-                                React.createElement("stop", { id: "gem-animatedStop2", style: { stopColor: '#d3a51054', stopOpacity: 1 }, offset: "100%" }))),
-                        React.createElement("polygon", { id: "gem-particles", transform: "rotate(45 100 100) translate(80, 95)", strokeWidth: "2", stroke: "", fill: "#ffe4a1", points: "5,0 5,5 0,5 0,0" }),
-                        React.createElement("polygon", { id: "gem-particles2", transform: "rotate(45 100 100) translate(80, 55)", strokeWidth: "2", stroke: "", fill: "#ccb069", points: "6,0 6,6 0,6 0,0" }),
-                        React.createElement("polygon", { id: "gem-particles3", transform: "rotate(45 100 100) translate(70, 80)", strokeWidth: "2", stroke: "", fill: "#fff", points: "2,0 2,2 0,2 0,0" }),
-                        React.createElement("polygon", { strokeWidth: "2", stroke: "", fill: "#292d34", points: "29.5,99.8 100,142 100,172 29.5,130" }),
-                        React.createElement("polygon", { transform: "translate(50, 92)", strokeWidth: "2", stroke: "", fill: "#1f2127", points: "50,50 120.5,8 120.5,35 50,80" }))))),
+                        React.createElement("polygon", { id: "iso-bounce",  transform: "rotate(45 100 100)", strokeWidth: "1", stroke: "#17afbd", fill: "none", points: "70,70 148,50 130,130 50,150" }),
+                        React.createElement("polygon", { id: "iso-bounce2", transform: "rotate(45 100 100)", strokeWidth: "1", stroke: "#07e7fca4", fill: "none", points: "70,70 148,50 130,130 50,150" }),
+                        React.createElement("polygon", { transform: "rotate(45 100 100)", strokeWidth: "2", fill: "#414750", points: "70,70 150,50 130,130 50,150" }),
+                        React.createElement("polygon", { strokeWidth: "2", fill: "url(#iso-g1)", points: "100,70 150,100 100,130 50,100" }),
+                        React.createElement("polygon", { transform: "translate(20, 31)", strokeWidth: "2", fill: "#227f8b", points: "80,50 80,75 80,99 40,75" }),
+                        React.createElement("polygon", { transform: "translate(20, 31)", strokeWidth: "2", fill: "url(#iso-g2)", points: "40,-40 80,-40 80,99 40,75" }),
+                        React.createElement("polygon", { transform: "rotate(180 100 100) translate(20, 20)", strokeWidth: "2", fill: "#17afbd", points: "80,50 80,75 80,99 40,75" }),
+                        React.createElement("polygon", { transform: "rotate(0 100 100) translate(60, 20)", strokeWidth: "2", fill: "url(#iso-g3)", points: "40,-40 80,-40 80,85 40,110.2" }),
+                        React.createElement("polygon", { id: "iso-particles",  transform: "rotate(45 100 100) translate(80, 95)", strokeWidth: "2", fill: "#ffffff", points: "5,0 5,5 0,5 0,0" }),
+                        React.createElement("polygon", { id: "iso-particles2", transform: "rotate(45 100 100) translate(80, 55)", strokeWidth: "2", fill: "#17afbd", points: "6,0 6,6 0,6 0,0" }),
+                        React.createElement("polygon", { id: "iso-particles3", transform: "rotate(45 100 100) translate(70, 80)", strokeWidth: "2", fill: "#17afbd", points: "2,0 2,2 0,2 0,0" }),
+                        React.createElement("polygon", { strokeWidth: "2", fill: "#292d34", points: "29.5,99.8 100,142 100,172 29.5,130" }),
+                        React.createElement("polygon", { transform: "translate(50, 92)", strokeWidth: "2", fill: "#1f2127", points: "50,50 120.5,8 120.5,35 50,80" })))),
         React.createElement("input", { type: "file", ref: fileInputRef, onChange: handleFileSelect, accept: "application/pdf", className: "hidden" }),
         React.createElement("div", { className: "fixed bottom-10 left-1/2 -translate-x-1/2 z-40" },
             React.createElement("div", { className: "glass-dock px-3 py-2.5 rounded-full flex items-center space-x-1 md:space-x-3 shadow-2xl border-white/10" },
@@ -4974,7 +5977,7 @@ function Editor(_a) {
                             React.createElement("rect", { height: "64", width: "64", y: "8", x: "8" })))),
                 React.createElement("div", { className: "text-center space-y-2 mt-8" },
                     React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse" }, "Structuring"),
-                    React.createElement("p", { className: "text-[9px] text-slate-500 uppercase tracking-widest" }, "AI is processing your text")))))));
+                    React.createElement("p", { className: "text-[9px] text-slate-500 uppercase tracking-widest" }, "AI is processing your text"))))))));
 }
 // ============================================================
 // APP ROOT
@@ -4985,17 +5988,11 @@ function App() {
     var _c = useState(null), pdfRange = _c[0], setPdfRange = _c[1];
     var _d = useState({}), extractedCache = _d[0], setExtractedCache = _d[1];
     var _f = useState(0), lastPageIndex = _f[0], setLastPageIndex = _f[1];
-    var _g = useState(function() {
-        try {
-            var saved = localStorage.getItem('maxofpdf_history');
-            if (saved) {
-                var parsed = JSON.parse(saved);
-                // Filter out items with pdfFile (can't serialize File objects) - keep text-only
-                return parsed.filter(function(item) { return item.type === 'text' && item.data && item.data.rawText; }).slice(0, 10);
-            }
-        } catch(e) {}
-        return [];
-    }), history = _g[0], setHistory = _g[1];
+    var _g = useState([]), history = _g[0], setHistory = _g[1];
+    /* Rich session state cache */
+    var _rc1 = useState([]), cachedHighlights = _rc1[0], setCachedHighlights = _rc1[1];
+    var _rc2 = useState({}), cachedRewrittenPages = _rc2[0], setCachedRewrittenPages = _rc2[1];
+    var _rc3 = useState({}), cachedXrayCache = _rc3[0], setCachedXrayCache = _rc3[1];
     var _h = useState(false), isSettingsOpen = _h[0], setIsSettingsOpen = _h[1];
     var _j = useState('gemini-lite'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
     var _k = useState('gemini-lite'), activeStructureModel = _k[0], setActiveStructureModel = _k[1];
@@ -5008,88 +6005,82 @@ function App() {
     var _s = useState(2), autoScrollSpeed = _s[0], setAutoScrollSpeed = _s[1];
     var _t = useState(false), autoPlayTTS = _t[0], setAutoPlayTTS = _t[1];
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
-    var _v = useState(null), activeSessionId = _v[0], setActiveSessionId = _v[1];
-    var _w = useState(null), restoredExtras = _w[0], setRestoredExtras = _w[1];
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
     var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
-    var addToHistory = function (finalLastPage, finalExtracted, file, range, text, sessionId, extras) {
-        var sid = sessionId || crypto.randomUUID();
-        var item = { id: sid, type: file ? 'pdf' : 'text', title: file ? file.name : (text.slice(0, 40) + (text.length > 40 ? '...' : '')), timestamp: Date.now(), data: { rawText: text, pdfFile: file, pdfRange: range, extractedPages: finalExtracted, lastPageIndex: finalLastPage } };
-        setHistory(function (p) {
-            var updated = __spreadArray([item], p.filter(function (x) { return x.id !== sid && x.title !== item.title; }), true).slice(0, 20);
-            try {
-                var toSave = updated.map(function(h) {
-                    return { id: h.id, type: h.type, title: h.title, timestamp: h.timestamp, data: { rawText: h.data.rawText || '', pdfFile: null, pdfRange: h.data.pdfRange, extractedPages: {}, lastPageIndex: h.data.lastPageIndex || 0 } };
-                });
-                localStorage.setItem('maxofpdf_history', JSON.stringify(toSave));
-            } catch(e) {}
-            return updated;
-        });
-        // Save session extras (highlights, rewrites, chat)
-        if (extras) {
-            try { localStorage.setItem('maxofpdf_session_' + sid, JSON.stringify(extras)); } catch(e) {}
-        }
-        return sid;
+    var addToHistory = function (finalLastPage, finalExtracted, file, range, text, richState) {
+        var item = {
+            id: crypto.randomUUID(),
+            type: file ? 'pdf' : 'text',
+            title: file ? file.name : (text.slice(0, 30) + '...'),
+            timestamp: Date.now(),
+            data: {
+                rawText: text, pdfFile: file, pdfRange: range,
+                extractedPages: finalExtracted, lastPageIndex: finalLastPage,
+                highlights: (richState && richState.highlights) || [],
+                rewrittenPages: (richState && richState.rewrittenPages) || {},
+                xrayCache: (richState && richState.xrayCache) || {}
+            }
+        };
+        setHistory(function (p) { return __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10); });
+        /* Persist to localStorage */
+        try {
+            var toStore = p.filter(function(x){return !x.data.pdfFile;}).concat([item]).slice(0,10);
+            var serializable = [item].concat((history || []).filter(function(x){ return x.title !== item.title && !x.data.pdfFile; })).slice(0,10);
+            localStorage.setItem('maxofpdf_history', JSON.stringify(serializable));
+        } catch(e) {}
     };
     var handleStartReading = function (text) {
         setPdfFile(null); setPdfRange(null); setExtractedCache({}); setLastPageIndex(0);
-        var sid = crypto.randomUUID();
-        setActiveSessionId(sid);
-        addToHistory(0, {}, null, null, text, sid, null);
+        setCachedHighlights([]); setCachedRewrittenPages({}); setCachedXrayCache({});
+        /* Save entry to history immediately */
+        var item = { id: crypto.randomUUID(), type: 'text', title: text.slice(0, 30) + '...', timestamp: Date.now(), data: { rawText: text, pdfFile: null, pdfRange: null, extractedPages: {}, lastPageIndex: 0, highlights: [], rewrittenPages: {}, xrayCache: {} } };
+        setHistory(function(p) { return __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10); });
         setState({ rawText: text, isReading: true });
     };
-    useEffect(function() {
-        var handler = function() { setHistory([]); };
-        window.addEventListener('maxofpdf_clear_history', handler);
-        return function() { window.removeEventListener('maxofpdf_clear_history', handler); };
-    }, []);
     var handleStartPdfReading = function (file, range) {
         var isSameFile = pdfFile && pdfFile.name === file.name && pdfFile.size === file.size;
         var isSameRange = (pdfRange ? pdfRange.start : undefined) === (range ? range.start : undefined) && (pdfRange ? pdfRange.end : undefined) === (range ? range.end : undefined);
         if (!isSameFile || !isSameRange) {
-            setExtractedCache({});
-            setLastPageIndex(0);
+            setExtractedCache({}); setLastPageIndex(0);
+            setCachedHighlights([]); setCachedRewrittenPages({}); setCachedXrayCache({});
         }
         setPdfFile(file);
         setPdfRange(range || null);
-        var sid = crypto.randomUUID();
-        setActiveSessionId(sid);
-        addToHistory(0, {}, file, range || null, '', sid, null);
+        /* Save entry to history immediately */
+        var item = { id: crypto.randomUUID(), type: 'pdf', title: file.name, timestamp: Date.now(), data: { rawText: '', pdfFile: file, pdfRange: range || null, extractedPages: (!isSameFile || !isSameRange) ? {} : extractedCache, lastPageIndex: (!isSameFile || !isSameRange) ? 0 : lastPageIndex, highlights: (!isSameFile || !isSameRange) ? [] : cachedHighlights, rewrittenPages: (!isSameFile || !isSameRange) ? {} : cachedRewrittenPages, xrayCache: (!isSameFile || !isSameRange) ? {} : cachedXrayCache } };
+        setHistory(function(p) { return __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10); });
         setState({ rawText: '', isReading: true });
     };
-    var handleExitReader = function (curPage, curExtracted, sessionExtras) {
-        setExtractedCache(curExtracted);
-        setLastPageIndex(curPage);
-        // Update history with final page position
-        if (activeSessionId) {
-            try {
-                var saved = localStorage.getItem('maxofpdf_history');
-                if (saved) {
-                    var arr = JSON.parse(saved);
-                    arr = arr.map(function(h) { return h.id === activeSessionId ? __assign(__assign({}, h), { data: __assign(__assign({}, h.data), { lastPageIndex: curPage }) }) : h; });
-                    localStorage.setItem('maxofpdf_history', JSON.stringify(arr));
-                }
-            } catch(e) {}
-            // Save session extras
-            if (sessionExtras) {
-                try { localStorage.setItem('maxofpdf_session_' + activeSessionId, JSON.stringify(sessionExtras)); } catch(e) {}
-            }
-        }
+    var handleExitReader = function (curPage, curExtracted, richState) {
+        setExtractedCache(curExtracted); setLastPageIndex(curPage);
+        if (richState) { setCachedHighlights(richState.highlights || []); setCachedRewrittenPages(richState.rewrittenPages || {}); setCachedXrayCache(richState.xrayCache || {}); }
+        addToHistory(curPage, curExtracted, pdfFile, pdfRange, state.rawText, richState);
         setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); });
     };
     var handleRestoreHistory = function (item) {
-        var extras = null;
-        try {
-            var saved = localStorage.getItem('maxofpdf_session_' + item.id);
-            if (saved) extras = JSON.parse(saved);
-        } catch(e) {}
-        setActiveSessionId(item.id);
         setPdfFile(item.data.pdfFile);
         setPdfRange(item.data.pdfRange);
         setExtractedCache(item.data.extractedPages || {});
         setLastPageIndex(item.data.lastPageIndex || 0);
-        setRestoredExtras(extras);
-        setState({ rawText: item.data.rawText || '', isReading: true });
+        setCachedHighlights(item.data.highlights || []);
+        setCachedRewrittenPages(item.data.rewrittenPages || {});
+        setCachedXrayCache(item.data.xrayCache || {});
+        setState({ rawText: item.data.rawText, isReading: true });
+    };
+    /* Called by Reader whenever state changes — keeps history in sync */
+    var handleReaderStateChange = function (richState) {
+        setCachedHighlights(richState.highlights || []);
+        setCachedRewrittenPages(richState.rewrittenPages || {});
+        setCachedXrayCache(richState.xrayCache || {});
+        if (richState.extractedPages) setExtractedCache(richState.extractedPages);
+        if (richState.currentPage !== undefined) setLastPageIndex(richState.currentPage);
+        /* Live-update the top history entry */
+        setHistory(function(prev) {
+            if (!prev || prev.length === 0) return prev;
+            var top = prev[0];
+            var updated = __assign(__assign({}, top), { timestamp: Date.now(), data: __assign(__assign({}, top.data), { lastPageIndex: richState.currentPage !== undefined ? richState.currentPage : top.data.lastPageIndex, extractedPages: richState.extractedPages || top.data.extractedPages, highlights: richState.highlights || top.data.highlights, rewrittenPages: richState.rewrittenPages || top.data.rewrittenPages, xrayCache: richState.xrayCache || top.data.xrayCache }) });
+            return __spreadArray([updated], prev.slice(1), true);
+        });
     };
     var getBg = function () {
         if (!state.isReading)
@@ -5103,7 +6094,7 @@ function App() {
         }
     };
     return (React.createElement("div", { className: "min-h-screen transition-colors duration-700 font-sans ".concat(getBg()) },
-        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, sessionId: activeSessionId, initialSessionExtras: restoredExtras }))),
+        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, initialHighlights: cachedHighlights, initialRewrittenPages: cachedRewrittenPages, initialXrayCache: cachedXrayCache, onStateChange: handleReaderStateChange }))),
         React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onClose: function () { return setIsSettingsOpen(false); } })));
 }
 var container = document.getElementById('root');
