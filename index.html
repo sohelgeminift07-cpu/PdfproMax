@@ -6390,29 +6390,28 @@ function App() {
 var container = document.getElementById('root');
 ReactDOM.render(React.createElement(App, null), container);
 
-/* ── Screen Orientation Lock (portrait) ── */
-if (screen.orientation && screen.orientation.lock) {
-  screen.orientation.lock('portrait-primary').catch(function () {
-    /* Silently ignore — lock only works when app is fullscreen/standalone */
-  });
-}
-
-/* ── Screen Orientation Lock (portrait) ── */
+/* ── Screen Orientation Lock ── */
 (function () {
+  var locked = false;
   function lockPortrait() {
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('portrait-primary').catch(function () {});
-    } else if (window.screen.lockOrientation) {
-      window.screen.lockOrientation('portrait-primary');
-    } else if (window.screen.mozLockOrientation) {
-      window.screen.mozLockOrientation('portrait-primary');
-    } else if (window.screen.msLockOrientation) {
-      window.screen.msLockOrientation('portrait-primary');
+    if (locked) return;
+    if (screen.orientation && typeof screen.orientation.lock === 'function') {
+      screen.orientation.lock('portrait-primary')
+        .then(function () { locked = true; })
+        .catch(function () {});
     }
   }
+  /* Try on first user interaction — required by browser security policy */
+  ['touchstart', 'touchend', 'click', 'pointerdown'].forEach(function (evt) {
+    document.addEventListener(evt, function handler() {
+      lockPortrait();
+    }, { passive: true });
+  });
+  /* Try immediately (works in fullscreen PWA mode) */
   lockPortrait();
+  /* Re-try when app returns to foreground */
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) lockPortrait();
+    if (!document.hidden) { locked = false; lockPortrait(); }
   });
 })();
 
