@@ -1105,6 +1105,7 @@
       box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
     }
     .analysis-chat-input::placeholder { color: rgba(100,120,170,0.4); }
+    textarea::placeholder { font-style: italic; }
     .analysis-chat-input:disabled { opacity: 0.5; }
     .analysis-chat-send {
       width: 36px; height: 36px;
@@ -5885,7 +5886,7 @@ function Editor(_a) {
             React.createElement("div", { className: "shine-card w-full" },
                 React.createElement("div", { className: "shine-orb" }),
                 React.createElement("div", { className: "shine-card-inner" },
-                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'Paste or type your manuscript...', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }))),
+                    React.createElement("textarea", { ref: textareaRef, value: text, onChange: function (e) { return setText(e.target.value); }, onPaste: function (e) { var t = e.clipboardData.getData('text'); if ((t && t.trim())) { e.preventDefault(); setText(function (p) { var n = normalizeMarkdownPaste(t); return p ? p + '\n\n' + n : n; }); } }, disabled: pdfFile !== null, placeholder: pdfFile ? 'PDF Selected. Click Read Now to begin.' : 'যা ইচ্ছা লিখুন, আমি আছি আপনার Ai', className: "relative w-full min-h-[200px] bg-transparent text-center text-xl border-none focus:ring-0 focus:outline-none resize-none leading-relaxed font-serif p-6 z-[2] ".concat(pdfFile ? 'text-slate-600' : 'text-slate-300 placeholder-slate-700') }))),
             React.createElement("div", { className: "flex justify-center mt-6 opacity-80" },
                 React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", height: "160", width: "160", viewBox: "0 0 200 200" },
                     React.createElement("defs", null,
