@@ -556,34 +556,43 @@
 
     /* ── Entity Highlight (Binocular Mode) ── */
     .eh {
+      display: inline;
       border-radius: 3px;
-      padding: 0.05em 0.25em;
-      margin: 0 0.02em;
+      padding: 0.1em 0.2em;
+      margin: 0;
       cursor: pointer;
       transition: filter 0.15s, opacity 0.15s;
       text-decoration: none;
+      line-height: inherit;
+      vertical-align: baseline;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
     }
     .eh:hover { filter: brightness(1.3); opacity: 1 !important; }
-    .eh.person  { background: rgba(167,139,250,0.13); border-bottom: 1.5px solid rgba(167,139,250,0.35); color: inherit; }
-    .eh.place   { background: rgba(52,211,153,0.10);  border-bottom: 1.5px solid rgba(52,211,153,0.32);  color: inherit; }
-    .eh.org     { background: rgba(248,113,113,0.10); border-bottom: 1.5px solid rgba(248,113,113,0.30); color: inherit; }
-    .eh.concept { background: rgba(251,191,36,0.09);  border-bottom: 1.5px solid rgba(251,191,36,0.28);  color: inherit; }
-    .eh.term    { background: rgba(56,189,248,0.09);  border-bottom: 1.5px solid rgba(56,189,248,0.28);  color: inherit; }
-    .eh.other   { background: rgba(148,163,184,0.07); border-bottom: 1.5px solid rgba(148,163,184,0.2);  color: inherit; }
+    .eh.person  { background: rgba(167,139,250,0.13); text-decoration: underline; text-decoration-color: rgba(167,139,250,0.5); text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
+    .eh.place   { background: rgba(52,211,153,0.10);  text-decoration: underline; text-decoration-color: rgba(52,211,153,0.45);  text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
+    .eh.org     { background: rgba(248,113,113,0.10); text-decoration: underline; text-decoration-color: rgba(248,113,113,0.45); text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
+    .eh.concept { background: rgba(251,191,36,0.09);  text-decoration: underline; text-decoration-color: rgba(251,191,36,0.42);  text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
+    .eh.term    { background: rgba(56,189,248,0.09);  text-decoration: underline; text-decoration-color: rgba(56,189,248,0.42);  text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
+    .eh.other   { background: rgba(148,163,184,0.07); text-decoration: underline; text-decoration-color: rgba(148,163,184,0.35); text-decoration-thickness: 1.5px; text-underline-offset: 2px; color: inherit; }
     /* Entity tooltip */
     .eh-tooltip-wrap { position: fixed; z-index: 999; pointer-events: none; }
     .eh-tooltip {
-      background: linear-gradient(160deg, #10182a, #0d1422);
-      border: 1px solid rgba(99,130,200,0.18);
-      border-radius: 12px;
-      padding: 10px 13px;
-      max-width: 220px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      background: linear-gradient(160deg, #161e30, #111828);
+      border: 1px solid rgba(99,130,200,0.28);
+      border-radius: 14px;
+      padding: 12px 14px;
+      max-width: 260px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
       animation: interlinearFadeIn 0.18s ease-out both;
     }
-    .eh-tooltip-type { font-size: 8px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
-    .eh-tooltip-name { font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: 'Playfair Display', serif; margin-bottom: 5px; line-height: 1.3; }
-    .eh-tooltip-desc { font-size: 11px; color: rgba(148,163,184,0.8); line-height: 1.55; font-family: 'Merriweather', serif; }
+    .eh-tooltip-type { font-size: 8px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 5px; }
+    .eh-tooltip-name { font-size: 14px; font-weight: 700; color: #f1f5f9; font-family: 'Playfair Display', serif; margin-bottom: 7px; line-height: 1.35; }
+    .eh-tooltip-desc { font-size: 12px; color: #cbd5e1; line-height: 1.65; font-family: 'Merriweather', serif; }
+    .eh-tooltip-desc strong { color: #f1f5f9; font-weight: 700; }
+    .eh-tooltip-desc em { color: #94a3b8; font-style: italic; }
+    .eh-tooltip-desc p { margin: 0 0 5px; }
+    .eh-tooltip-desc p:last-child { margin-bottom: 0; }
     .eh-tooltip-type.person  { color: rgba(167,139,250,0.9); }
     .eh-tooltip-type.place   { color: rgba(52,211,153,0.9); }
     .eh-tooltip-type.org     { color: rgba(248,113,113,0.9); }
@@ -875,28 +884,46 @@
     }
     /* ── Generate row + button ── */
     .md-gen-row {
-      padding: 0 16px 12px;
-      flex-shrink: 0;
+      display: none; /* replaced by inline compact button in header */
     }
     .md-gen-btn {
-      width: 100%;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      height: 38px; border-radius: 10px;
-      border: 1px solid rgba(16,185,129,0.18);
+      display: none;
+    }
+    /* Compact regen button — sits below model chip */
+    .md-regen-compact {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      height: 26px; padding: 0 10px; border-radius: 8px;
+      border: 1px solid rgba(16,185,129,0.2);
       background: rgba(16,185,129,0.06);
-      color: #6ee7b7;
-      font-size: 12px; font-weight: 500;
-      cursor: pointer; outline: none;
+      color: rgba(110,231,183,0.75);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer; outline: none; white-space: nowrap;
       transition: background 0.15s, border-color 0.15s, opacity 0.15s;
     }
-    .md-gen-btn.timeline {
-      border-color: rgba(245,158,11,0.18);
-      background: rgba(245,158,11,0.06);
-      color: #fcd34d;
+    .md-regen-compact.timeline { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.06); color: rgba(252,211,77,0.75); }
+    .md-regen-compact:hover:not(:disabled) { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); }
+    .md-regen-compact.timeline:hover:not(:disabled) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); }
+    .md-regen-compact:disabled { opacity: 0.35; cursor: not-allowed; }
+    /* Keyword chips row */
+    .md-keywords-row {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 20px 12px;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; flex-shrink: 0;
     }
-    .md-gen-btn:hover:not(:disabled) { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.32); }
-    .md-gen-btn.timeline:hover:not(:disabled) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.32); }
-    .md-gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .md-keywords-row::-webkit-scrollbar { display: none; }
+    .md-kw-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 99px; flex-shrink: 0;
+      font-size: 10px; font-weight: 700;
+      border: 1px solid rgba(99,130,200,0.14);
+      background: rgba(99,130,200,0.06);
+      color: rgba(160,185,230,0.85);
+      white-space: nowrap;
+      animation: mdKwIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes mdKwIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
     /* Scrollable content */
     .md-content-area { flex: 1; min-height: 0; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 16px 20px 80px; }
     /* Floating cards */
@@ -3538,6 +3565,57 @@ function MaxDrawer(_a) {
     var isSummary = activeTab === 'summary';
     var isTimeline = activeTab === 'timeline';
 
+    /* Extract keywords from summary text — parse bold words and bullet headers */
+    var extractKeywords = function(text) {
+        if (!text) return [];
+        var keywords = [];
+        var seen = new Set();
+        /* Priority 1: Bold words — most important */
+        var boldRe = /\*\*([^*]{2,20})\*\*/g, m;
+        while ((m = boldRe.exec(text)) !== null) {
+            var w = m[1].trim().replace(/[*#`_]/g, '');
+            if (!seen.has(w) && w.length > 1) { seen.add(w); keywords.push(w); }
+            if (keywords.length >= 5) break;
+        }
+        /* Priority 2: First word/phrase of bullet lines if still under 5 */
+        if (keywords.length < 4) {
+            text.split('\n').forEach(function(line) {
+                if (keywords.length >= 5) return;
+                var l = line.replace(/^[\s\-\*•#`_]+/, '').trim();
+                if (!l) return;
+                var phrase = l.split(/[:,।]/)[0].trim().replace(/[*#`_]/g, '').split(/\s+/).slice(0,2).join(' ');
+                if (phrase.length > 2 && !seen.has(phrase)) {
+                    seen.add(phrase); keywords.push(phrase);
+                }
+            });
+        }
+        return keywords.slice(0, 5);
+    };
+
+    /* Assign an icon to each keyword based on common Bengali/English patterns */
+    var kwIcon = function(word) {
+        var w = word.toLowerCase();
+        if (/pdf|ফাইল|file|document|doc/.test(w)) return '📄';
+        if (/react|framework|code|api|প্রযুক্তি|tech/.test(w)) return '⚛️';
+        if (/ai|model|gemini|llm|বুদ্ধিম/.test(w)) return '🤖';
+        if (/feature|ফিচার|function|ক্ষমত/.test(w)) return '✨';
+        if (/app|pwa|mobile|অ্যাপ/.test(w)) return '📱';
+        if (/user|ব্যবহারকারী|person|মানু/.test(w)) return '👤';
+        if (/data|তথ্য|info/.test(w)) return '🗂️';
+        if (/text|লেখা|বাংলা|language|ভাষা/.test(w)) return '📝';
+        if (/summary|সারাংশ|সংক্ষেপ/.test(w)) return '📋';
+        if (/history|ইতিহাস|timeline/.test(w)) return '🕰️';
+        if (/search|অনুসন্ধান|find/.test(w)) return '🔍';
+        if (/read|পড়|reader/.test(w)) return '📖';
+        if (/design|ui|ডিজাইন/.test(w)) return '🎨';
+        if (/version|সংস্করণ|update/.test(w)) return '🔄';
+        if (/library|লাইব্রেরি/.test(w)) return '📚';
+        if (/premium|প্রিমিয়াম/.test(w)) return '💎';
+        return '•';
+    };
+
+    var summaryKeywords = isSummary ? extractKeywords(summary) : [];
+
     return (React.createElement("div", { className: "fixed inset-0 z-[100] flex flex-col justify-end" },
         React.createElement("div", { className: "bottom-drawer-backdrop".concat(closing ? ' closing' : ''), onClick: handleClose }),
         React.createElement("div", { className: "bottom-drawer-shell".concat(closing ? ' slide-out-down' : ' slide-in-from-bottom-full'), style: { height: '82vh', transform: "translateY(".concat(dragY, "px)") } },
@@ -3561,12 +3639,9 @@ function MaxDrawer(_a) {
                         React.createElement("button", { className: "max-drawer-scope-btn ".concat(contextScope === 'cumulative' ? 'active' : ''),
                             onClick: function() { return setContextScope('cumulative'); } }, "📚 পুরো বই")),
                     /* Model chip + dropdown */
-                    React.createElement("div", { style:{ position:'relative', flexShrink:0 } },
+                    React.createElement("div", { style:{ position:'relative', flexShrink:0, display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px' } },
                         React.createElement("button", { onClick: function() { return setIsModelMenuOpen(!isModelMenuOpen); },
                             className: "md-model-chip ".concat(isSummary ? 'summary' : 'timeline') },
-                            React.createElement("svg", { width:"8", height:"8", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
-                                React.createElement("circle", { cx:"12", cy:"12", r:"3" }),
-                                React.createElement("path", { d:"M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" })),
                             MODEL_NAMES[isSummary ? activeSummaryModel : activeTimelineModel],
                             React.createElement("svg", { width:"8", height:"8", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5", style:{ transition:'transform 0.2s', transform: isModelMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } },
                                 React.createElement("path", { d:"m6 9 6 6 6-6" }))),
@@ -3584,9 +3659,19 @@ function MaxDrawer(_a) {
                                     isSelected && React.createElement("svg", { width:"8", height:"8", viewBox:"0 0 24 24", fill:"currentColor" }, React.createElement("circle", { cx:"12", cy:"12", r:"6" })),
                                     !isSelected && React.createElement("span", { style:{width:'8px', display:'inline-block'} }),
                                     MODEL_NAMES[m]);
-                            }))))),
+                            })),
+                        /* Compact regen button below model chip */
+                        React.createElement("button", {
+                            className: "md-regen-compact ".concat(isTimeline ? 'timeline' : ''),
+                            disabled: isSummary ? isSummaryLoading : isTimelineLoading,
+                            onClick: function() {
+                                if (isSummary) generateSummary(activeSummaryModel, true);
+                                else generateTimeline(activeTimelineModel, true);
+                            }},
+                            (isSummary ? isSummaryLoading : isTimelineLoading) ? 'তৈরি হচ্ছে…' : 'পুনরায় তৈরি করুন')
+                        ))),
 
-            /* ── Generate button below model row ── */
+            /* ── Generate button below model row (hidden via CSS) ── */
             (isSummary || isTimeline) && React.createElement("div", { className: "md-gen-row" },
                 React.createElement("button", {
                     className: "md-gen-btn ".concat(isTimeline ? 'timeline' : ''),
@@ -3599,6 +3684,14 @@ function MaxDrawer(_a) {
                         React.createElement("path", { d:"M12 3a9 9 0 1 0 9 9" }),
                         React.createElement("path", { d:"M21 3v6h-6" })),
                     (isSummary ? isSummaryLoading : isTimelineLoading) ? 'তৈরি হচ্ছে…' : 'পুনরায় তৈরি করুন')),
+
+            /* ── Keywords row (summary only) ── */
+            isSummary && !isSummaryLoading && summaryKeywords.length > 0 && React.createElement("div", { className: "md-keywords-row" },
+                summaryKeywords.map(function(kw, i) {
+                    return React.createElement("span", { key: i, className: "md-kw-chip", style:{ animationDelay: (i * 0.04) + 's' } },
+                        React.createElement("span", null, kwIcon(kw)),
+                        kw);
+                })),
 
             /* ── Scrollable content area ── */
             React.createElement("div", { className: "md-content-area custom-scrollbar", onTouchStart: function(e) { e.stopPropagation(); setIsDragging(false); } },
@@ -5306,38 +5399,58 @@ function Reader(_a) {
             var pageEntities = entityCache[currentPage];
             if (pageEntities && pageEntities.length > 0) {
                 var plainLine = line.replace(/\*\*(.*?)\*\*/g, '$1').replace(/^(#+\s|[-*]\s)/, '');
-                /* Use Array.from for correct Unicode (Bangla) character counting */
-                var charsLine = Array.from(plainLine);
-                var charsLineLower = Array.from(plainLine.toLowerCase());
+                /* Bengali combining characters: matras, hasanta, anusvara, visarga, nukta, virama range */
+                var isBengaliCombining = function(ch) {
+                    if (!ch) return false;
+                    var cp = ch.codePointAt(0);
+                    /* Bengali matras & signs: U+0981–U+0983, U+09BE–U+09CC, U+09CD (hasanta), U+09D7, U+09BC (nukta) */
+                    return (cp >= 0x0981 && cp <= 0x0983) ||
+                           (cp >= 0x09BE && cp <= 0x09CC) ||
+                           cp === 0x09CD || cp === 0x09D7 || cp === 0x09BC ||
+                           /* Zero-width joiner / non-joiner */
+                           cp === 0x200C || cp === 0x200D;
+                };
+                /* Build grapheme-safe character array using Intl.Segmenter if available, else Array.from */
+                var graphemes;
+                try {
+                    graphemes = Array.from(new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(plainLine), function(s) { return s.segment; });
+                } catch(e) {
+                    graphemes = Array.from(plainLine);
+                }
+                var graphemesLower = graphemes.map(function(g) { return g.toLowerCase(); });
                 var ehSpans = [];
                 pageEntities.forEach(function(ent) {
                     var name = (ent.name || '').trim();
                     if (!name || name.length < 2) return;
                     var entKey = name.toLowerCase();
-                    var charsName = Array.from(entKey);
-                    var nameLen = charsName.length;
-                    var lineLen = charsLineLower.length;
+                    var entGraphemes;
+                    try {
+                        entGraphemes = Array.from(new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(entKey), function(s) { return s.segment; });
+                    } catch(e) {
+                        entGraphemes = Array.from(entKey);
+                    }
+                    var nameLen = entGraphemes.length;
+                    var lineLen = graphemesLower.length;
                     for (var ci = 0; ci <= lineLen - nameLen; ci++) {
-                        /* Stop if this entity already hit max 2 on the page */
                         if (entityHitCount && (entityHitCount[entKey] || 0) >= 2) break;
                         var match = true;
                         for (var ni = 0; ni < nameLen; ni++) {
-                            if (charsLineLower[ci + ni] !== charsName[ni]) { match = false; break; }
+                            if (graphemesLower[ci + ni] !== entGraphemes[ni]) { match = false; break; }
                         }
                         if (match) {
-                            /* Allow match if followed by end, space, punctuation, (, ), –, -, or Bengali suffix chars */
                             var afterIdx = ci + nameLen;
-                            var afterChar = afterIdx < lineLen ? charsLineLower[afterIdx] : '';
-                            /* Skip if it's a mid-word Latin continuation (e.g. "Claude" inside "Claudette") */
-                            var isLatinName = /^[a-z]/.test(charsName[0]);
-                            if (isLatinName && afterChar && /[a-z0-9]/.test(afterChar)) { continue; }
-                            /* Convert char index back to string index */
-                            var strStart = charsLine.slice(0, ci).join('').length;
-                            var strEnd = charsLine.slice(0, ci + nameLen).join('').length;
+                            var afterGrapheme = afterIdx < lineLen ? graphemesLower[afterIdx] : '';
+                            var isLatinName = /^[a-z]/.test(entGraphemes[0]);
+                            if (isLatinName && afterGrapheme && /[a-z0-9]/.test(afterGrapheme)) { continue; }
+                            /* Extend match to include any immediately following combining chars */
+                            var extEnd = afterIdx;
+                            while (extEnd < lineLen && isBengaliCombining(graphemesLower[extEnd])) { extEnd++; }
+                            /* Convert grapheme index to string index */
+                            var strStart = graphemes.slice(0, ci).join('').length;
+                            var strEnd = graphemes.slice(0, extEnd).join('').length;
                             ehSpans.push({ start: strStart, end: strEnd, entity: ent, matched: plainLine.substring(strStart, strEnd) });
-                            /* Increment hit counter */
                             if (entityHitCount) entityHitCount[entKey] = (entityHitCount[entKey] || 0) + 1;
-                            ci += nameLen - 1;
+                            ci += extEnd - ci - 1;
                         }
                     }
                 });
@@ -5492,7 +5605,20 @@ function Reader(_a) {
                         style: { background:'none', border:'none', color:'rgba(148,163,184,0.5)', cursor:'pointer', fontSize:'14px', lineHeight:1, padding:'0 0 0 8px' }
                     }, "×")),
                 React.createElement("div", { className: "eh-tooltip-name" }, ehTooltip.entity.name),
-                React.createElement("div", { className: "eh-tooltip-desc" }, ehTooltip.entity.description))),
+                React.createElement("div", { className: "eh-tooltip-desc" },
+                    (ehTooltip.entity.description || '').split('\n').map(function(para, pi) {
+                        if (!para.trim()) return null;
+                        /* Parse **bold** and *italic* inline */
+                        var parts = para.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+                        var rendered = parts.map(function(part, i) {
+                            if (part.startsWith('**') && part.endsWith('**'))
+                                return React.createElement('strong', { key: i }, part.slice(2, -2));
+                            if (part.startsWith('*') && part.endsWith('*'))
+                                return React.createElement('em', { key: i }, part.slice(1, -1));
+                            return part;
+                        });
+                        return React.createElement('p', { key: pi }, rendered);
+                    })))),
         isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
