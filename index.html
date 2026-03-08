@@ -178,8 +178,8 @@
     .animate-bounce { animation:bounce 1s infinite; }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     .animate-in { animation:fadeIn 0.3s ease-out; }
-    @keyframes slideInBottom { from{transform:translateY(100%);opacity:0.6} to{transform:translateY(0);opacity:1} }
-    .slide-in-from-bottom-full { animation:slideInBottom 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+    @keyframes slideInBottom { from{transform:translateY(100%);opacity:0.8} to{transform:translateY(0);opacity:1} }
+    .slide-in-from-bottom-full { animation:slideInBottom 0.28s cubic-bezier(0.22,1,0.36,1) both; }
 
     /* ── X-Ray Panel ── */
     @keyframes xrayReveal { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -329,7 +329,7 @@
     .xray-filter-chip.active { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); color: rgba(56,189,248,0.9); }
     .xray-page-note { font-size: 10px; color: rgba(56,189,248,0.3); font-weight: 600; margin-top: 2px; letter-spacing: 0.05em; }
     @keyframes slideOutDown { from{transform:translateY(0);opacity:1} to{transform:translateY(100%);opacity:0} }
-    .slide-out-down { animation:slideOutDown 0.36s cubic-bezier(0.32,0,0.67,0) forwards; }
+    .slide-out-down { animation:slideOutDown 0.24s cubic-bezier(0.32,0,0.67,0) forwards; }
 
     /* ── Timeline Tab ── */
 
@@ -684,8 +684,16 @@
       z-index: 1;
     }
 
-    /* === IDLE: visible glow always === */
-    .dock-poda-glow { opacity: 0.5; }
+    /* === IDLE: all layers hidden === */
+    .dock-poda-glow   { opacity: 0; }
+    .dock-poda-dark   { opacity: 0; }
+    .dock-poda-white  { opacity: 0; }
+    .dock-poda-border { opacity: 0; }
+
+    /* === ACTIVE: show & rotate all layers === */
+    .dock-glow-wrap.dg-active .dock-poda-dark   { opacity: 1; transition: opacity 0.3s ease; }
+    .dock-glow-wrap.dg-active .dock-poda-white  { opacity: 1; transition: opacity 0.3s ease; }
+    .dock-glow-wrap.dg-active .dock-poda-border { opacity: 1; transition: opacity 0.3s ease; }
 
     /* === ACTIVE: rotate all layers (triggered by JS class) === */
     .dock-glow-wrap.dg-active .dock-poda-dark::before {
@@ -708,12 +716,15 @@
       opacity: 0.85;
       transition: opacity 0.3s ease;
     }
-    /* Reset when not active */
+    /* Reset when not active — hide everything */
     .dock-glow-wrap:not(.dg-active) .dock-poda-dark::before   { transform: translate(-50%, -50%) rotate(82deg);  transition: all 1.5s; }
     .dock-glow-wrap:not(.dg-active) .dock-poda-glow::before   { transform: translate(-50%, -50%) rotate(60deg);  transition: all 1.5s; }
     .dock-glow-wrap:not(.dg-active) .dock-poda-white::before  { transform: translate(-50%, -50%) rotate(83deg);  transition: all 1.5s; }
     .dock-glow-wrap:not(.dg-active) .dock-poda-border::before { transform: translate(-50%, -50%) rotate(70deg);  transition: all 1.5s; }
-    .dock-glow-wrap:not(.dg-active) .dock-poda-glow           { opacity: 0.5; transition: opacity 1s ease; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-glow   { opacity: 0; transition: opacity 1s ease; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-dark   { opacity: 0; transition: opacity 1s ease; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-white  { opacity: 0; transition: opacity 1s ease; }
+    .dock-glow-wrap:not(.dg-active) .dock-poda-border { opacity: 0; transition: opacity 1s ease; }
 
     .bino-btn {
       display: flex; align-items: center; justify-content: center; flex-direction: column;
@@ -772,10 +783,8 @@
     /* ── Shared Bottom Drawer Shell ── */
     .bottom-drawer-backdrop {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.72);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      transition: opacity 0.36s ease;
+      background: rgba(0,0,0,0.65);
+      transition: opacity 0.28s ease;
       z-index: 0;
     }
     .bottom-drawer-backdrop.closing { opacity: 0; pointer-events: none; }
@@ -795,7 +804,7 @@
         0 -2px 0 rgba(100,140,255,0.06);
       overflow: clip;
       touch-action: pan-y;
-      transition: transform 0.32s cubic-bezier(0.22,1,0.36,1);
+      transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
       will-change: transform;
     }
     .bottom-drawer-handle {
@@ -2263,7 +2272,7 @@
       to   { transform: translateY(100%); opacity: 0; }
     }
     .slide-out-down {
-      animation: slideOutDown 0.38s cubic-bezier(0.32,0.72,0,1) forwards;
+      animation: slideOutDown 0.24s cubic-bezier(0.32,0.72,0,1) forwards;
     }
 
     /* ── Spinning Words Loader (Uiverse by kennyotsu) ── */
@@ -4050,38 +4059,54 @@ function Reader(_a) {
     var _o = useState({}), rewritingStatus = _o[0], setRewritingStatus = _o[1];
     var _p = useState(false), isCustomizerOpen = _p[0], setIsCustomizerOpen = _p[1];
     var _q = useState(false), isCustomizerClosing = _q[0], setIsCustomizerClosing = _q[1];
-    var customizerDragY = useRef(0);
-    var _r = useState(0), custDragY = _r[0], setCustDragY = _r[1];
-    var _s = useState(false), custIsDragging = _s[0], setCustIsDragging = _s[1];
+    var custDragY = 0;
+    var custIsDragging = useRef(false);
     var custStartY = useRef(0);
+    var custShellRef = useRef(null);
     var closeCustomizer = function () {
         setIsCustomizerClosing(true);
-        setTimeout(function () { setIsCustomizerClosing(false); setIsCustomizerOpen(false); }, 360);
+        setTimeout(function () { setIsCustomizerClosing(false); setIsCustomizerOpen(false); }, 260);
     };
     var custDragHandlers = {
-        onMouseDown: function (e) { setCustIsDragging(true); custStartY.current = e.clientY; },
-        onMouseMove: function (e) { if (!custIsDragging)
-            return; var d = e.clientY - custStartY.current; if (d > 0)
-            setCustDragY(d); },
-        onMouseUp: function () { setCustIsDragging(false); if (custDragY > 80)
-            closeCustomizer();
-        else
-            setCustDragY(0); },
-        onMouseLeave: function () { if (custIsDragging) {
-            setCustIsDragging(false);
-            if (custDragY > 80)
-                closeCustomizer();
-            else
-                setCustDragY(0);
-        } },
-        onTouchStart: function (e) { setCustIsDragging(true); custStartY.current = e.touches[0].clientY; },
-        onTouchMove: function (e) { if (!custIsDragging)
-            return; var d = e.touches[0].clientY - custStartY.current; if (d > 0)
-            setCustDragY(d); },
-        onTouchEnd: function () { setCustIsDragging(false); if (custDragY > 80)
-            closeCustomizer();
-        else
-            setCustDragY(0); },
+        onMouseDown: function (e) { custIsDragging.current = true; custStartY.current = e.clientY; },
+        onMouseMove: function (e) {
+            if (!custIsDragging.current) return;
+            var d = e.clientY - custStartY.current;
+            if (d > 0 && custShellRef.current) custShellRef.current.style.transform = 'translateY(' + d + 'px)';
+        },
+        onMouseUp: function () {
+            if (!custIsDragging.current) return;
+            custIsDragging.current = false;
+            var el = custShellRef.current;
+            if (!el) return;
+            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
+            if (d > 80) { closeCustomizer(); }
+            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+        },
+        onMouseLeave: function () {
+            if (!custIsDragging.current) return;
+            custIsDragging.current = false;
+            var el = custShellRef.current;
+            if (!el) return;
+            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
+            if (d > 80) { closeCustomizer(); }
+            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+        },
+        onTouchStart: function (e) { custIsDragging.current = true; custStartY.current = e.touches[0].clientY; },
+        onTouchMove: function (e) {
+            if (!custIsDragging.current) return;
+            var d = e.touches[0].clientY - custStartY.current;
+            if (d > 0 && custShellRef.current) custShellRef.current.style.transform = 'translateY(' + d + 'px)';
+        },
+        onTouchEnd: function () {
+            if (!custIsDragging.current) return;
+            custIsDragging.current = false;
+            var el = custShellRef.current;
+            if (!el) return;
+            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
+            if (d > 80) { closeCustomizer(); }
+            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+        },
     };
     var _t = useState('gemini-lite'), customizerModel = _t[0], setCustomizerModel = _t[1];
     var _u = useState('Bengali'), customizerLanguage = _u[0], setCustomizerLanguage = _u[1];
@@ -5626,7 +5651,7 @@ function Reader(_a) {
                     }, capturedPortion ? "✓ Confirm" : "Select text first")))),
         (isCustomizerOpen || isCustomizerClosing) && (React.createElement("div", { className: "fixed inset-0 z-[60] flex flex-col justify-end" },
             React.createElement("div", { className: "bottom-drawer-backdrop".concat(isCustomizerClosing ? ' closing' : ''), onClick: closeCustomizer }),
-            React.createElement("div", { className: "bottom-drawer-shell".concat(isCustomizerClosing ? ' slide-out-down' : ' slide-in-from-bottom-full'), style: { maxWidth: '640px', transform: "translateY(".concat(custDragY, "px)") } },
+            React.createElement("div", { ref: custShellRef, className: "bottom-drawer-shell".concat(isCustomizerClosing ? ' slide-out-down' : ' slide-in-from-bottom-full'), style: { maxWidth: '640px' } },
                 React.createElement("div", __assign({ className: "bottom-drawer-handle" }, custDragHandlers),
                     React.createElement("div", { className: "bottom-drawer-handle-bar" })),
                 React.createElement("div", { className: "px-6 pb-6 overflow-y-auto custom-scrollbar" },
@@ -6352,7 +6377,16 @@ function App() {
     var _c = useState(null), pdfRange = _c[0], setPdfRange = _c[1];
     var _d = useState({}), extractedCache = _d[0], setExtractedCache = _d[1];
     var _f = useState(0), lastPageIndex = _f[0], setLastPageIndex = _f[1];
-    var _g = useState([]), history = _g[0], setHistory = _g[1];
+    var _g = useState(function() {
+        try {
+            var saved = localStorage.getItem('maxofpdf_history');
+            if (saved) {
+                var parsed = JSON.parse(saved);
+                return parsed.filter(function(x){ return x && x.data && !x.data.pdfFile; });
+            }
+        } catch(e) {}
+        return [];
+    }), history = _g[0], setHistory = _g[1];
     /* Rich session state cache */
     var _rc1 = useState([]), cachedHighlights = _rc1[0], setCachedHighlights = _rc1[1];
     var _rc2 = useState({}), cachedRewrittenPages = _rc2[0], setCachedRewrittenPages = _rc2[1];
@@ -6371,6 +6405,12 @@ function App() {
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
     var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
+    /* Listen for clear-history event dispatched from Settings */
+    useEffect(function() {
+        var handler = function() { setHistory([]); };
+        window.addEventListener('maxofpdf_clear_history', handler);
+        return function() { window.removeEventListener('maxofpdf_clear_history', handler); };
+    }, []);
     var addToHistory = function (finalLastPage, finalExtracted, file, range, text, richState) {
         var item = {
             id: crypto.randomUUID(),
@@ -6385,20 +6425,26 @@ function App() {
                 xrayCache: (richState && richState.xrayCache) || {}
             }
         };
-        setHistory(function (p) { return __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10); });
-        /* Persist to localStorage */
-        try {
-            var toStore = p.filter(function(x){return !x.data.pdfFile;}).concat([item]).slice(0,10);
-            var serializable = [item].concat((history || []).filter(function(x){ return x.title !== item.title && !x.data.pdfFile; })).slice(0,10);
-            localStorage.setItem('maxofpdf_history', JSON.stringify(serializable));
-        } catch(e) {}
+        setHistory(function (p) {
+            var next = __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10);
+            /* Persist to localStorage — skip PDF entries (File objects not serializable) */
+            try {
+                var serializable = next.filter(function(x){ return !x.data.pdfFile; });
+                localStorage.setItem('maxofpdf_history', JSON.stringify(serializable));
+            } catch(e) {}
+            return next;
+        });
     };
     var handleStartReading = function (text) {
         setPdfFile(null); setPdfRange(null); setExtractedCache({}); setLastPageIndex(0);
         setCachedHighlights([]); setCachedRewrittenPages({}); setCachedXrayCache({});
         /* Save entry to history immediately */
         var item = { id: crypto.randomUUID(), type: 'text', title: text.slice(0, 30) + '...', timestamp: Date.now(), data: { rawText: text, pdfFile: null, pdfRange: null, extractedPages: {}, lastPageIndex: 0, highlights: [], rewrittenPages: {}, xrayCache: {} } };
-        setHistory(function(p) { return __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10); });
+        setHistory(function(p) {
+            var next = __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10);
+            try { localStorage.setItem('maxofpdf_history', JSON.stringify(next.filter(function(x){ return !x.data.pdfFile; }))); } catch(e) {}
+            return next;
+        });
         setState({ rawText: text, isReading: true });
     };
     var handleStartPdfReading = function (file, range) {
