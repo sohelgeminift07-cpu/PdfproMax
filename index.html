@@ -56,13 +56,13 @@
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html, body {
+    html {
       height: 100%;
-      overflow: hidden;
-      position: fixed;
       width: 100%;
     }
     body {
+      height: 100%;
+      width: 100%;
       margin: 0;
       font-family: 'Inter', sans-serif;
       background-color: #0c0c0c;
@@ -71,19 +71,53 @@
       -webkit-tap-highlight-color: transparent;
       font-synthesis: none;
     }
+    #root {
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-    /* ── Force portrait via CSS rotation trick ── */
-    @media screen and (orientation: landscape) {
-      html {
-        transform: rotate(-90deg);
-        transform-origin: left top;
-        width: 100vh;
-        height: 100vw;
-        overflow-x: hidden;
-        position: absolute;
-        top: 100%;
-        left: 0;
-      }
+    /* ── Bouncing box loader (for generate button) ── */
+    .md-fab-loader {
+      width: 14px;
+      height: 14px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .md-fab-loader:before {
+      content: '';
+      width: 14px;
+      height: 2px;
+      background: rgba(110,231,183,0.4);
+      position: absolute;
+      top: 18px;
+      left: 0;
+      border-radius: 50%;
+      animation: fabLoaderShadow 0.5s linear infinite;
+    }
+    .md-fab-loader:after {
+      content: '';
+      width: 100%;
+      height: 100%;
+      background: #6ee7b7;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 2px;
+      animation: fabLoaderJump 0.5s linear infinite;
+    }
+    .md-fab.timeline-fab .md-fab-loader:before { background: rgba(252,211,77,0.4); }
+    .md-fab.timeline-fab .md-fab-loader:after  { background: #fcd34d; }
+    @keyframes fabLoaderJump {
+      15% { border-bottom-right-radius: 2px; }
+      25% { transform: translateY(3px) rotate(22.5deg); }
+      50% { transform: translateY(6px) scale(1,.9) rotate(45deg); border-bottom-right-radius: 8px; }
+      75% { transform: translateY(3px) rotate(67.5deg); }
+      100% { transform: translateY(0) rotate(90deg); }
+    }
+    @keyframes fabLoaderShadow {
+      0%,100% { transform: scale(1,1); }
+      50% { transform: scale(1.2,1); }
     }
     .serif { font-family: 'Merriweather', 'Noto Serif Bengali', 'Amiri', serif; }
     .display-serif { font-family: 'Playfair Display', 'Noto Serif Bengali', 'Amiri', serif; }
@@ -298,6 +332,78 @@
     .slide-out-down { animation:slideOutDown 0.36s cubic-bezier(0.32,0,0.67,0) forwards; }
 
     /* ── Timeline Tab ── */
+
+    /* ── Premium centered loading overlay for MaxDrawer ── */
+    .md-loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: rgba(10, 15, 26, 0.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 28px 28px 0 0;
+      pointer-events: none;
+    }
+    .md-loading-box {
+      width: 36px;
+      height: 36px;
+      position: relative;
+    }
+    .md-loading-box:before {
+      content: '';
+      width: 36px;
+      height: 4px;
+      background: rgba(110,231,183,0.3);
+      position: absolute;
+      top: 46px;
+      left: 0;
+      border-radius: 50%;
+      animation: mdBoxShadow 0.5s linear infinite;
+    }
+    .md-loading-box:after {
+      content: '';
+      width: 100%;
+      height: 100%;
+      background: #6ee7b7;
+      position: absolute;
+      top: 0; left: 0;
+      border-radius: 4px;
+      animation: mdBoxJump 0.5s linear infinite;
+    }
+    .md-loading-box.timeline:before { background: rgba(252,211,77,0.3); }
+    .md-loading-box.timeline:after  { background: #fcd34d; }
+    @keyframes mdBoxJump {
+      15% { border-bottom-right-radius: 3px; }
+      25% { transform: translateY(7px) rotate(22.5deg); }
+      50% { transform: translateY(14px) scale(1,.9) rotate(45deg); border-bottom-right-radius: 30px; }
+      75% { transform: translateY(7px) rotate(67.5deg); }
+      100% { transform: translateY(0) rotate(90deg); }
+    }
+    @keyframes mdBoxShadow {
+      0%,100% { transform: scale(1,1); }
+      50% { transform: scale(1.2,1); }
+    }
+    .md-loading-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: rgba(148,163,184,0.7);
+    }
+
+
+    /* ── Max Drawer plain markdown prose ── */
+    .md-content-area p { color: #94a3b8; font-size: 14px; line-height: 1.8; margin: 0 0 12px; }
+    .md-content-area h1, .md-content-area h2 { color: #e2e8f0; font-size: 15px; font-weight: 700; margin: 16px 0 8px; }
+    .md-content-area h3, .md-content-area h4 { color: #cbd5e1; font-size: 14px; font-weight: 600; margin: 12px 0 6px; }
+    .md-content-area strong { color: #e2e8f0; font-weight: 700; }
+    .md-content-area ul, .md-content-area ol { padding-left: 20px; margin: 0 0 12px; }
+    .md-content-area li { color: #94a3b8; font-size: 14px; line-height: 1.8; margin-bottom: 4px; }
+
     .max-drawer-tab-btn.tab-timeline.active {
       background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(217,119,6,0.12) 100%);
       color: #fcd34d;
@@ -687,7 +793,8 @@
         inset -1px 0 0 rgba(120,160,255,0.04),
         0 -24px 80px rgba(0,0,0,0.8),
         0 -2px 0 rgba(100,140,255,0.06);
-      overflow: hidden;
+      overflow: clip;
+      touch-action: pan-y;
       transition: transform 0.32s cubic-bezier(0.22,1,0.36,1);
       will-change: transform;
     }
@@ -733,7 +840,6 @@
       border-top: 1px solid rgba(99,130,200,0.08);
       flex-shrink: 0;
       gap: 4px;
-      position: relative;
     }
     .md-nav-tab {
       flex: 1; display: flex; flex-direction: column;
@@ -758,31 +864,32 @@
       background: rgba(245,158,11,0.2); color: rgba(252,211,77,0.9);
       border: 1px solid rgba(245,158,11,0.25);
     }
-    /* FAB generate button */
-    .md-fab {
-      position: absolute; right: 16px; top: -22px;
-      display: flex; align-items: center; gap: 7px;
-      padding: 10px 18px; border-radius: 99px;
-      border: 1px solid rgba(16,185,129,0.25);
-      background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.1));
+    /* ── Generate row + button ── */
+    .md-gen-row {
+      padding: 0 16px 12px;
+      flex-shrink: 0;
+    }
+    .md-gen-btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      height: 38px; border-radius: 10px;
+      border: 1px solid rgba(16,185,129,0.18);
+      background: rgba(16,185,129,0.06);
       color: #6ee7b7;
-      font-size: 10px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
+      font-size: 12px; font-weight: 500;
       cursor: pointer; outline: none;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(16,185,129,0.12);
-      transition: all 0.22s ease;
-      backdrop-filter: blur(12px);
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
     }
-    .md-fab.timeline-fab {
-      border-color: rgba(245,158,11,0.25);
-      background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(217,119,6,0.1));
+    .md-gen-btn.timeline {
+      border-color: rgba(245,158,11,0.18);
+      background: rgba(245,158,11,0.06);
       color: #fcd34d;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(245,158,11,0.12);
     }
-    .md-fab:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 28px rgba(16,185,129,0.2); }
-    .md-fab.timeline-fab:hover:not(:disabled) { box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 28px rgba(245,158,11,0.2); }
-    .md-fab:disabled { opacity: 0.5; cursor: not-allowed; }
+    .md-gen-btn:hover:not(:disabled) { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.32); }
+    .md-gen-btn.timeline:hover:not(:disabled) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.32); }
+    .md-gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     /* Scrollable content */
-    .md-content-area { flex: 1; overflow-y: auto; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .md-content-area { flex: 1; min-height: 0; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 16px 20px 80px; }
     /* Floating cards */
     .md-card { border-radius: 18px; border: 1px solid rgba(99,130,200,0.1); background: rgba(255,255,255,0.025); backdrop-filter: blur(8px); overflow: hidden; animation: mdCardIn 0.3s cubic-bezier(0.22,1,0.36,1) both; }
     @keyframes mdCardIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -2500,8 +2607,7 @@ var GEMINI_KEYS = [
 ];
 var MODEL_LABELS = {
     "gemini-lite": "Gemini 3.1 Flash-Lite",
-    gemini: "Gemini 2.5 Flash",
-    "gemini-3.0": "Gemini 3.0 Flash",
+    
     kimi: "Kimi K2 Instruct",
     "llama-maverick": "Llama Maverick",
 };
@@ -3248,7 +3354,10 @@ function MaxDrawer(_a) {
         else
             setDragY(0); },
     };
-    var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'gemini-3.0': 'Gemini 3.0 Flash', 'gemini-flash': 'Gemini 2.5 Flash', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
+    var contentAreaTouchHandlers = {
+        onTouchStart: function(e) { e.stopPropagation(); setIsDragging(false); },
+    };
+    var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
     useEffect(function () { (messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })); }, [messages]);
     useEffect(function () { if (drawerStateRef)
         drawerStateRef.current.isChatActive = (activeTab === 'chat'); }, [activeTab, drawerStateRef]);
@@ -3306,8 +3415,8 @@ function MaxDrawer(_a) {
                 case 1:
                     _b.trys.push([1, 7, 8, 9]);
                     result_1 = '';
-                    if (!(mToUse === 'gemini-flash' || mToUse === 'gemini-3.0' || mToUse === 'gemini-lite')) return [3 /*break*/, 3];
-                    gemApiModel = mToUse === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                    if (!(mToUse === 'gemini-lite')) return [3 /*break*/, 3];
+                    gemApiModel = mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, srcText, { systemInstruction: promptCtx })];
                 case 2:
                     r = _b.sent();
@@ -3355,7 +3464,7 @@ function MaxDrawer(_a) {
         setTimelineEvents([]);
         var sysPrompt = 'Extract dates and events from the text. Write "event" and "description" fields in Bengali. Reply ONLY with valid JSON, no markdown fences: {"events":[{"date":"...","event":"...","description":"...","category":"war|birth|death|law|treaty|rule|other"}]}';
         var userPrompt = 'Extract all dates and events:\n\n' + srcText.slice(0, 2500);
-        var gemApiModel = mToUse === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+        var gemApiModel = mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
         geminiGenerate(googleApiKey, gemApiModel, userPrompt, { systemInstruction: sysPrompt, maxOutputTokens: 800 })
             .then(function(r) {
                 var raw = (r && r.text) ? r.text : '{"events":[]}';
@@ -3384,8 +3493,8 @@ function MaxDrawer(_a) {
                 case 1:
                     _b.trys.push([1, 7, 8, 9]);
                     aiText_1 = '';
-                    if (!(activeChatModel === 'gemini-flash' || activeChatModel === 'gemini-3.0' || activeChatModel === 'gemini-lite')) return [3 /*break*/, 3];
-                    gemApiModel = activeChatModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : activeChatModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                    if (!(activeChatModel === 'gemini-lite')) return [3 /*break*/, 3];
+                    gemApiModel = activeChatModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, userPrompt, { systemInstruction: sysPrompt })];
                 case 2:
                     r = _b.sent();
@@ -3419,26 +3528,7 @@ function MaxDrawer(_a) {
         return null;
     var isSummary = activeTab === 'summary';
     var isTimeline = activeTab === 'timeline';
-    /* Summary card parser — splits markdown into typed sections */
-    var parseSummaryCards = function(md) {
-        if (!md) return [];
-        var cards = [];
-        var sections = md.split(/\n(?=#{1,3} |\*\*[^*]+\*\*\n)/);
-        var iconMap = { '📖':['overview','🗂️'], '🔑':['keypoints','🔑'], '💡':['insight','💡'], '📌':['context','📌'] };
-        var cardTypes = ['overview','keypoints','insight','context','overview','keypoints'];
-        sections.forEach(function(s, i) {
-            var clean = s.trim();
-            if (!clean) return;
-            var titleMatch = clean.match(/^#{1,3} (.+)|^\*\*(.+)\*\*/);
-            var title = titleMatch ? (titleMatch[1] || titleMatch[2]) : null;
-            var body = title ? clean.replace(/^#{1,3} .+|^\*\*.+\*\*/, '').trim() : clean;
-            if (!body && !title) return;
-            cards.push({ title: title || 'বিস্তারিত', body: body, type: cardTypes[i % cardTypes.length] });
-        });
-        if (cards.length === 0) cards.push({ title: 'সারসংক্ষেপ', body: md, type: 'overview' });
-        return cards;
-    };
-    var iconForType = { overview:'🗂️', keypoints:'🔑', insight:'💡', context:'🌐' };
+
     return (React.createElement("div", { className: "fixed inset-0 z-[100] flex flex-col justify-end" },
         React.createElement("div", { className: "bottom-drawer-backdrop".concat(closing ? ' closing' : ''), onClick: handleClose }),
         React.createElement("div", { className: "bottom-drawer-shell".concat(closing ? ' slide-out-down' : ' slide-in-from-bottom-full'), style: { height: '82vh', transform: "translateY(".concat(dragY, "px)") } },
@@ -3446,6 +3536,11 @@ function MaxDrawer(_a) {
             /* ── Drag Handle ── */
             React.createElement("div", __assign({ className: "bottom-drawer-handle" }, dragHandlers),
                 React.createElement("div", { className: "bottom-drawer-handle-bar" })),
+
+            /* ── Premium loading overlay ── */
+            (isSummaryLoading || isTimelineLoading) && React.createElement("div", { className: "md-loading-overlay" },
+                React.createElement("div", { className: "md-loading-box ".concat(isTimeline ? 'timeline' : '') }),
+                React.createElement("span", { className: "md-loading-label" }, isTimeline ? 'খুঁজছি…' : 'তৈরি হচ্ছে…')),
 
             /* ── Header: scope bar + model chip ── */
             React.createElement("div", { className: "max-drawer-header" },
@@ -3482,57 +3577,43 @@ function MaxDrawer(_a) {
                                     MODEL_NAMES[m]);
                             }))))),
 
+            /* ── Generate button below model row ── */
+            (isSummary || isTimeline) && React.createElement("div", { className: "md-gen-row" },
+                React.createElement("button", {
+                    className: "md-gen-btn ".concat(isTimeline ? 'timeline' : ''),
+                    disabled: isSummary ? isSummaryLoading : isTimelineLoading,
+                    onClick: function() {
+                        if (isSummary) generateSummary(activeSummaryModel, true);
+                        else generateTimeline(activeTimelineModel, true);
+                    }},
+                    React.createElement("svg", { width:"14", height:"14", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2" },
+                        React.createElement("path", { d:"M12 3a9 9 0 1 0 9 9" }),
+                        React.createElement("path", { d:"M21 3v6h-6" })),
+                    (isSummary ? isSummaryLoading : isTimelineLoading) ? 'তৈরি হচ্ছে…' : 'পুনরায় তৈরি করুন')),
+
             /* ── Scrollable content area ── */
-            React.createElement("div", { className: "md-content-area custom-scrollbar" },
+            React.createElement("div", { className: "md-content-area custom-scrollbar", onTouchStart: function(e) { e.stopPropagation(); setIsDragging(false); } },
 
                 /* ── SUMMARY TAB ── */
                 isSummary && React.createElement(React.Fragment, null,
                     /* Status chip */
                     React.createElement("div", null,
-                        React.createElement("span", { className: "md-status-chip" },
-                            React.createElement("span", { className: "md-status-dot ".concat(isSummaryLoading ? 'loading' : 'ready') }),
-                            isSummaryLoading ? 'তৈরি হচ্ছে…' : contextScope === 'cumulative' ? 'পুরো বই' : 'এই পাতা')),
-                    /* Skeleton */
-                    isSummaryLoading && [1,2,3].map(function(i) {
-                        return React.createElement("div", { key:i, className:"md-skel-card", style:{ animationDelay: (i*0.08)+'s' } },
-                            React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'35%', height:'10px', borderRadius:'99px' } }),
-                            React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'90%', height:'12px', borderRadius:'8px' } }),
-                            React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'75%', height:'12px', borderRadius:'8px' } }),
-                            React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'82%', height:'12px', borderRadius:'8px' } }));
-                    }),
-                    /* Summary cards */
-                    !isSummaryLoading && !summary && React.createElement("div", { className: "md-card" },
-                        React.createElement("div", { className:"md-card-body" },
-                            React.createElement("p", { style:{ color:'rgba(120,150,200,0.45)', fontStyle:'italic', fontSize:'13px' } },
-                                "Generate বাটন চাপুন অথবা নিচে ↓ থেকে তৈরি করুন।"))),
-                    !isSummaryLoading && summary && parseSummaryCards(summary).map(function(card, i) {
-                        return React.createElement("div", { key:i, className:"md-card", style:{ animationDelay: (i*0.07)+'s' } },
-                            React.createElement("div", { className:"md-card-header" },
-                                React.createElement("div", { className:"md-card-icon ".concat(card.type) }, iconForType[card.type] || '📄'),
-                                React.createElement("span", { className:"md-card-title" }, card.title)),
-                            React.createElement("div", { className:"md-card-body" },
-                                React.createElement(FormattedContent, { content: card.body })));
-                    })),
+                        !isSummaryLoading && React.createElement("span", { className: "md-status-chip" },
+                            React.createElement("span", { className: "md-status-dot ready" }),
+                            contextScope === 'cumulative' ? 'পুরো বই' : 'এই পাতা')),
+
+                    /* Summary — plain markdown */
+                    !isSummaryLoading && !summary && React.createElement("p", { style:{ color:'rgba(120,150,200,0.45)', fontStyle:'italic', fontSize:'13px', padding:'4px 0' } },
+                        "Generate বাটন চাপুন।"),
+                    !isSummaryLoading && summary && React.createElement(FormattedContent, { content: summary })),
 
                 /* ── TIMELINE TAB ── */
                 isTimeline && React.createElement(React.Fragment, null,
                     React.createElement("div", null,
-                        React.createElement("span", { className: "md-status-chip" },
-                            React.createElement("span", { className: "md-status-dot ".concat(isTimelineLoading ? 'loading' : 'ready'),
-                                style: isTimelineLoading ? {} : { background:'#f59e0b', boxShadow:'0 0 6px rgba(245,158,11,0.5)' } }),
-                            isTimelineLoading ? 'তারিখ খুঁজছি…'
-                            : timelineEvents.length > 0 ? timelineEvents.length + 'টি ঘটনা'
-                            : 'কোনো তারিখ পাওয়া যায়নি')),
-                    /* Skeleton */
-                    isTimelineLoading && [1,2,3,4].map(function(i) {
-                        return React.createElement("div", { key:i, className:"md-skel-card", style:{ animationDelay:(i*0.08)+'s' } },
-                            React.createElement("div", { style:{ display:'flex', gap:'12px', alignItems:'flex-start' } },
-                                React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'14px', height:'14px', borderRadius:'50%', flexShrink:0, marginTop:'2px' } }),
-                                React.createElement("div", { style:{ flex:1, display:'flex', flexDirection:'column', gap:'7px' } },
-                                    React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'30%', height:'9px', borderRadius:'99px' } }),
-                                    React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'85%', height:'12px' } }),
-                                    React.createElement("div", { className:"max-drawer-skeleton", style:{ width:'65%', height:'11px' } }))));
-                    }),
+                        !isTimelineLoading && React.createElement("span", { className: "md-status-chip" },
+                            React.createElement("span", { className: "md-status-dot ready", style:{ background:'#f59e0b', boxShadow:'0 0 6px rgba(245,158,11,0.5)' } }),
+                            timelineEvents.length > 0 ? timelineEvents.length + 'টি ঘটনা' : 'কোনো তারিখ পাওয়া যায়নি')),
+
                     /* Timeline cards */
                     !isTimelineLoading && timelineEvents.length > 0 && React.createElement("div", { className:"tl-container" },
                         React.createElement("div", { className:"tl-spine" }),
@@ -3555,19 +3636,6 @@ function MaxDrawer(_a) {
 
             /* ── Bottom Navigation ── */
             React.createElement("div", { className: "md-bottom-nav" },
-                /* FAB — Generate/Rebuild */
-                (isSummary || isTimeline) && React.createElement("button", {
-                    className: "md-fab ".concat(isTimeline ? 'timeline-fab' : ''),
-                    disabled: isSummary ? isSummaryLoading : isTimelineLoading,
-                    onClick: function() {
-                        if (isSummary) generateSummary(activeSummaryModel, true);
-                        else generateTimeline(activeTimelineModel, true);
-                    } },
-                    React.createElement("svg", { className: (isSummary ? isSummaryLoading : isTimelineLoading) ? 'animate-spin' : '',
-                        width:"12", height:"12", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
-                        React.createElement("path", { d:"M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
-                        React.createElement("path", { d:"M3 3v5h5" })),
-                    (isSummary ? isSummaryLoading : isTimelineLoading) ? 'তৈরি হচ্ছে…' : (isSummary ? 'Generate' : 'Rebuild')),
                 /* Summary tab */
                 React.createElement("button", { className: "md-nav-tab ".concat(isSummary ? 'active-summary' : ''),
                     onClick: function() { setActiveTab('summary'); setIsModelMenuOpen(false); } },
@@ -3635,15 +3703,13 @@ function Settings(_a) {
         return null;
     var MODEL_OPTIONS = [
         { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google · Default', color: 'from-indigo-500/20 to-indigo-900/5' },
-        { id: 'gemini-3.0', label: 'Gemini 3.0 Flash', provider: 'Google', color: 'from-fuchsia-500/20 to-fuchsia-900/5' },
-        { id: 'gemini', label: 'Gemini 2.5 Flash', provider: 'Google', color: 'from-rose-500/20 to-rose-900/5' },
+        
         { id: 'kimi', label: 'Kimi K2', provider: 'Moonshot/Groq', color: 'from-emerald-500/20 to-emerald-900/5' },
         { id: 'llama-maverick', label: 'Llama Maverick', provider: 'Meta/Groq', color: 'from-blue-500/20 to-blue-900/5' },
     ];
     var SCANNING_OPTIONS = [
         { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google Vision · Default', color: 'from-indigo-600/30 to-indigo-900/10' },
-        { id: 'gemini-3.0-flash', label: 'Gemini 3.0 Flash', provider: 'Google Vision', color: 'from-fuchsia-600/30 to-fuchsia-900/10' },
-        { id: 'gemini-flash', label: 'Gemini 2.5 Flash', provider: 'Google Vision', color: 'from-rose-600/30 to-rose-900/10' },
+        
         { id: 'llama', label: 'Llama 4 Maverick', provider: 'Meta/Groq Vision', color: 'from-blue-600/30 to-blue-900/10' },
     ];
     var THEMES = [
@@ -3718,8 +3784,8 @@ function Settings(_a) {
                     React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                         React.createElement("div", { className: "radio-container scanning-radio", style: { '--total-radio': 3 } },
                             SCANNING_OPTIONS.map(function (m) {
-                                var icons = { 'gemini-3.0-flash': '✦', 'gemini-flash': '✦', 'llama': '⬡', 'llama-maverick': '⬡' };
-                                var subs = { 'gemini-3.0-flash': 'Google Vision · Latest', 'gemini-flash': 'Google Vision · Fast', 'llama': 'Meta · Groq Vision' };
+                                var icons = { 'llama': '⬡', 'llama-maverick': '⬡' };
+                                var subs = { 'llama': 'Meta · Groq Vision' };
                                 var rid = "ocr-radio-".concat(m.id);
                                 return (React.createElement(React.Fragment, { key: m.id },
                                     React.createElement("input", { id: rid, name: "ocr-model-radio", type: "radio", checked: activeScanningModel === m.id, onChange: function () { return onSelectScanningModel(m.id); } }),
@@ -3737,8 +3803,8 @@ function Settings(_a) {
                         React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                             React.createElement("div", { className: "radio-container" },
                                 MODEL_OPTIONS.map(function (m, i) {
-                                    var icons = { 'gemini-3.0': '✦', 'gemini': '✦', 'kimi': '◈', 'llama-maverick': '⬡' };
-                                    var subs = { 'gemini-3.0': 'Google · Fastest', 'gemini': 'Google · Smart', 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
+                                    var icons = { 'kimi': '◈', 'llama-maverick': '⬡' };
+                                    var subs = { 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
                                     var rid = "reader-radio-".concat(m.id);
                                     return (React.createElement(React.Fragment, { key: m.id },
                                         React.createElement("input", { id: rid, name: "reader-model-radio", type: "radio", checked: activeReaderModel === m.id, onChange: function () { return onSelectReaderModel(m.id); } }),
@@ -3771,8 +3837,8 @@ function Settings(_a) {
                         React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                             React.createElement("div", { className: "radio-container structure-radio" },
                                 MODEL_OPTIONS.map(function (m) {
-                                    var icons = { 'gemini-3.0': '✦', 'gemini': '✦', 'kimi': '◈', 'llama-maverick': '⬡' };
-                                    var subs = { 'gemini-3.0': 'Google · Fastest', 'gemini': 'Google · Smart', 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
+                                    var icons = { 'kimi': '◈', 'llama-maverick': '⬡' };
+                                    var subs = { 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
                                     var rid = "struct-radio-".concat(m.id);
                                     return (React.createElement(React.Fragment, { key: m.id },
                                         React.createElement("input", { id: rid, name: "struct-model-radio", type: "radio", checked: activeStructureModel === m.id, onChange: function () { return onSelectStructureModel(m.id); } }),
@@ -4200,7 +4266,7 @@ function Reader(_a) {
             clearInterval(autoScrollRef.current); };
     }, [isAutoScrolling, autoScrollSpeed]);
     // PDF OCR scanning
-    var OCR_ROTATION = ['gemini-lite', 'gemini-flash', 'gemini-3.0-flash'];
+    var OCR_ROTATION = ['gemini-lite'];
     useEffect(function () {
         if (!pdfDoc)
             return;
@@ -4257,13 +4323,7 @@ function Reader(_a) {
                             contextPrompt = prevText ? "PREVIOUS: \"...".concat(prevText.slice(-800), "\". Continue flow naturally.") : 'First page.';
                             prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
-                            geminiModel = 'gemini-2.0-flash';
-                            if (currentModel === 'gemini-3.0-flash')
-                                geminiModel = 'gemini-2.5-flash-preview-05-20';
-                            else if (currentModel === 'gemini-lite')
-                                geminiModel = 'gemini-3.1-flash-lite-preview';
-                            else if (currentModel === 'gemini-flash')
-                                geminiModel = 'gemini-2.0-flash';
+                            geminiModel = currentModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
                             body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
@@ -4585,7 +4645,7 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         newText_1 = '';
                         if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = customizerModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                        gemM = customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, fullP)];
                     case 2:
                         r = _a.sent();
@@ -4828,7 +4888,7 @@ function Reader(_a) {
                     _a.trys.push([1, 7, 8, 9]);
                     newChunk = '';
                     if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                    gemM = customizerModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                    gemM = customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 2:
                     r = _a.sent();
@@ -4980,7 +5040,7 @@ function Reader(_a) {
                             }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase" }, "Retry"));
                 if (!ext) {
                     var pageLabel = ((pdfRange ? pdfRange.start : 1) || 1) + currentPage;
-                    var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : activeScanningModel.includes('3.0') ? 'Gemini 3.0 Flash' : activeScanningModel.includes('gemini') ? 'Gemini 2.5 Flash' : 'Llama 4 Maverick';
+                    var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : 'Llama 4 Maverick';
                     var keyNum = GEMINI_KEYS.indexOf(apiKeyRef.current) + 1 || 1;
                     return (React.createElement("div", { className: "flex flex-col items-center justify-center pt-16 space-y-6" },
                         React.createElement("div", { className: "ocr-upload" },
@@ -5892,7 +5952,7 @@ function Editor(_a) {
                         _a.trys.push([1, 9, 10, 11]);
                         result = '';
                         if (!activeStructureModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = activeStructureModel === 'gemini-3.0' ? 'gemini-2.5-flash-preview-05-20' : activeStructureModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                        gemM = activeStructureModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, text, { systemInstruction: systemPrompt, temperature: 0.3, maxOutputTokens: 16384 })];
                     case 2:
                         r = _a.sent();
@@ -6405,6 +6465,19 @@ var container = document.getElementById('root');
 ReactDOM.render(React.createElement(App, null), container);
 
 
+
+/* ── Portrait orientation lock ── */
+(function() {
+  function lockPortrait() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('portrait').catch(function() {});
+    }
+  }
+  lockPortrait();
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) lockPortrait();
+  });
+})();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
