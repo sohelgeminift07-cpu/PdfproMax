@@ -747,7 +747,108 @@
     .bino-btn.active { background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(139,92,246,0.18)); border-color: rgba(167,139,250,0.55); color: #c4b5fd; box-shadow: 0 0 24px rgba(167,139,250,0.3), inset 0 1px 0 rgba(167,139,250,0.2); animation: pulse 2.5s ease-in-out infinite; }
     .bino-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
 
-    /* ── LENS Scanning Overlay Animation ── */
+    /* ── BS Detector (Skeptic Mode) ── */
+    .bs-btn {
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 2px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(251,146,60,0.25);
+      background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(234,88,12,0.07));
+      color: rgba(251,146,60,0.85); cursor: pointer; outline: none;
+      transition: all 0.25s ease;
+    }
+    .bs-btn:hover { background: linear-gradient(135deg, rgba(251,146,60,0.2), rgba(234,88,12,0.14)); border-color: rgba(251,146,60,0.45); color: #fb923c; box-shadow: 0 0 18px rgba(251,146,60,0.22); }
+    .bs-btn.active { background: linear-gradient(135deg, rgba(251,146,60,0.25), rgba(234,88,12,0.18)); border-color: rgba(251,146,60,0.6); color: #fdba74; box-shadow: 0 0 24px rgba(251,146,60,0.35), inset 0 1px 0 rgba(251,146,60,0.2); animation: pulse 2.5s ease-in-out infinite; }
+    .bs-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+
+    /* Dock expand arrow */
+    .dock-expand-arrow {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(15,15,22,0.9);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      color: rgba(148,163,184,0.5);
+      transition: all 0.22s ease;
+      z-index: 2;
+    }
+    .dock-expand-arrow:hover { color: rgba(200,210,230,0.9); background: rgba(30,30,45,0.95); border-color: rgba(255,255,255,0.15); }
+    .dock-expand-arrow svg { transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1); }
+    .dock-expanded-row {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: max-height 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease;
+    }
+    .dock-expanded-row.open {
+      max-height: 80px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* BS flag marker (amber ? superscript) */
+    .bs-flag {
+      display: inline;
+      position: relative;
+      background: rgba(251,146,60,0.18);
+      border-bottom: 2px solid rgba(251,146,60,0.65);
+      border-radius: 3px;
+      padding: 0.05em 0.15em;
+      cursor: pointer;
+      color: inherit;
+      transition: background 0.15s;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+    .bs-flag:hover { background: rgba(251,146,60,0.3); }
+    .bs-flag-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px; height: 14px;
+      background: rgba(251,146,60,0.85);
+      color: #000;
+      border-radius: 50%;
+      font-size: 8px;
+      font-weight: 900;
+      vertical-align: super;
+      line-height: 1;
+      margin-left: 1px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-style: normal;
+    }
+
+    /* BS Tooltip */
+    .bs-tooltip-wrap { position: fixed; z-index: 1100; pointer-events: none; }
+    .bs-tooltip {
+      background: linear-gradient(160deg, #1a1000, #120d00);
+      border: 1px solid rgba(251,146,60,0.35);
+      border-radius: 14px;
+      padding: 12px 14px;
+      max-width: 270px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(251,146,60,0.08);
+      animation: interlinearFadeIn 0.18s ease-out both;
+      pointer-events: auto;
+    }
+    .bs-tooltip-type {
+      font-size: 8px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(251,146,60,0.85); margin-bottom: 5px;
+    }
+    .bs-tooltip-claim {
+      font-size: 12px; font-weight: 700; color: #fdba74;
+      font-family: 'Merriweather', serif; margin-bottom: 7px;
+      font-style: italic; line-height: 1.4;
+      border-left: 2px solid rgba(251,146,60,0.4); padding-left: 8px;
+    }
+    .bs-tooltip-desc { font-size: 12px; color: #cbd5e1; line-height: 1.65; font-family: 'Merriweather', serif; }
+
+    /* LENS Scanning Overlay Animation ── */
     .lens-scan-overlay {
       position: fixed; inset: 0; z-index: 999;
       display: flex; align-items: center; justify-content: center;
@@ -4252,6 +4353,13 @@ function Reader(_a) {
     var _eh0 = useState(false), entityHighlightMode = _eh0[0], setEntityHighlightMode = _eh0[1];
     var _eh1 = useState(null), ehTooltip = _eh1[0], setEhTooltip = _eh1[1];
     var _agb = useState(null), activeGlowBtn = _agb[0], setActiveGlowBtn = _agb[1];
+    /* ── BS Detector (Skeptic Mode) state ── */
+    var _bs0 = useState(false), bsMode = _bs0[0], setBsMode = _bs0[1];
+    var _bs1 = useState(false), bsLoading = _bs1[0], setBsLoading = _bs1[1];
+    var _bs2 = useState({}), bsCache = _bs2[0], setBsCache = _bs2[1];
+    var _bs3 = useState(null), bsTooltip = _bs3[0], setBsTooltip = _bs3[1];
+    var _bs4 = useState(false), dockExpanded = _bs4[0], setDockExpanded = _bs4[1];
+    var bsAbortRef = useRef(null);
     var glowTimerRef = useRef(null);
     var triggerGlow = function(btnId) {
         if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
@@ -4966,6 +5074,49 @@ function Reader(_a) {
             performEntityScan(currentPage);
         }
     }, [currentPage, entityHighlightMode]);
+    /* ── BS Detector ── */
+    var performBsScan = function(pageIdx) {
+        if (bsCache[pageIdx]) return;
+        var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
+        if (!pageText.trim()) return;
+        setBsLoading(true);
+        if (bsAbortRef.current) try { bsAbortRef.current.abort(); } catch(_e) {}
+        bsAbortRef.current = new AbortController();
+        var sysMsg = 'You are a critical thinking assistant and fact-checker. Analyze the provided text and identify:\n1. Bold/unsubstantiated claims (e.g. "always", "never", "proven", "the best")\n2. Logical fallacies (e.g. ad hominem, straw man, false dichotomy, slippery slope)\n3. Extreme political/ideological bias or one-sided framing\n4. Potentially outdated statistics or facts\n5. Misleading or emotionally manipulative language\n\nFor EACH flagged item, provide:\n- "phrase": the EXACT phrase from the text (10-50 chars, must be verbatim substring)\n- "type": one of "bold_claim" | "fallacy" | "bias" | "outdated" | "misleading"\n- "explanation": a 1-2 sentence explanation written entirely in BENGALI (বাংলায় লিখুন) — why this is suspicious or problematic\n\nReturn ONLY a raw JSON array. NO markdown, NO code fences, NO explanation outside JSON. If nothing suspicious, return [].';
+        var gemUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=' + apiKeyRef.current;
+        fetch(gemUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: sysMsg + '\n\nText to analyze:\n' + pageText.slice(0, 6000) }], role: 'user' }],
+                generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+            }),
+            signal: bsAbortRef.current.signal
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            var raw = ((d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) ? d.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('') : '') || '';
+            var clean = raw.replace(/```json\n?|```/g, '').trim();
+            var parsed = null;
+            try { parsed = JSON.parse(clean); } catch(_e) {}
+            if (!Array.isArray(parsed)) {
+                var ai = clean.indexOf('['), ei = clean.lastIndexOf(']');
+                if (ai !== -1 && ei > ai) try { parsed = JSON.parse(clean.substring(ai, ei + 1)); } catch(_e2) {}
+            }
+            if (!Array.isArray(parsed)) parsed = [];
+            setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
+        }).catch(function(e) {
+            if (e && e.name !== 'AbortError') console.error('[BS] scan error:', e);
+            setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = []; return n; });
+        }).finally(function() { setBsLoading(false); });
+    };
+    var toggleBsMode = function() {
+        var next = !bsMode;
+        setBsMode(next);
+        setBsTooltip(null);
+        if (next && !bsCache[currentPage]) performBsScan(currentPage);
+    };
+    useEffect(function() {
+        if (bsMode && !bsCache[currentPage] && !bsLoading) performBsScan(currentPage);
+    }, [currentPage, bsMode]);
     /* ── Partial (selection-based) rewrite ── */
     var performPartialRewrite = function (mode, instruction) { return __awaiter(_this, void 0, void 0, function () {
         var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, r, modelId, key, endpoint, rr, d, e_sel;
@@ -5492,6 +5643,56 @@ function Reader(_a) {
                 }
             }
         }
+        /* ── BS Detector flag injection ── */
+        if (bsMode) {
+            var bsFlags = bsCache[currentPage];
+            if (bsFlags && bsFlags.length > 0) {
+                var plainForBs = line.replace(/\*\*(.*?)\*\*/g, '$1').replace(/^(#+\s|[-*]\s|\^\^\s?)/, '');
+                var bsSpans = [];
+                bsFlags.forEach(function(flag, fi) {
+                    var ph = (flag.phrase || '').trim();
+                    if (!ph || ph.length < 4) return;
+                    var idx = plainForBs.indexOf(ph);
+                    if (idx === -1) {
+                        var lower = plainForBs.toLowerCase();
+                        var lph = ph.toLowerCase();
+                        idx = lower.indexOf(lph);
+                    }
+                    if (idx !== -1) bsSpans.push({ start: idx, end: idx + ph.length, flag: flag, fi: fi });
+                });
+                if (bsSpans.length > 0) {
+                    bsSpans.sort(function(a,b){ return a.start - b.start; });
+                    var deduped = []; var lastE = -1;
+                    bsSpans.forEach(function(sp) { if (sp.start >= lastE) { deduped.push(sp); lastE = sp.end; } });
+                    var bsNodes = []; var cur3 = 0;
+                    deduped.forEach(function(sp, si) {
+                        if (sp.start > cur3) bsNodes.push(plainForBs.substring(cur3, sp.start));
+                        var spFlag = sp.flag;
+                        var typeLabel = spFlag.type === 'bold_claim' ? 'BOLD CLAIM' : spFlag.type === 'fallacy' ? 'FALLACY' : spFlag.type === 'bias' ? 'BIAS' : spFlag.type === 'outdated' ? 'OUTDATED' : 'MISLEADING';
+                        bsNodes.push(React.createElement("span", {
+                            key: "bs"+lineIdx+"-"+si,
+                            className: "bs-flag",
+                            onClick: function(e) {
+                                e.stopPropagation();
+                                var target = e.currentTarget;
+                                var rect = target ? target.getBoundingClientRect() : null;
+                                setBsTooltip(function(prev) {
+                                    if (prev && prev.flag === spFlag) return null;
+                                    if (!rect) return prev;
+                                    return { flag: spFlag, typeLabel: typeLabel, x: rect.left, y: rect.top };
+                                });
+                            }
+                        },
+                            plainForBs.substring(sp.start, sp.end),
+                            React.createElement("span", { className: "bs-flag-mark" }, "?")
+                        ));
+                        cur3 = sp.end;
+                    });
+                    if (cur3 < plainForBs.length) bsNodes.push(plainForBs.substring(cur3));
+                    nodes = bsNodes;
+                }
+            }
+        }
         var bk = "blk".concat(lineIdx);
         var h1c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-900' : 'text-[#e2e8f0]';
         var h2c = readerTheme === 'light' || readerTheme === 'sepia' ? 'text-slate-800' : 'text-[#cbd5e1]';
@@ -5619,6 +5820,25 @@ function Reader(_a) {
                         });
                         return React.createElement('p', { key: pi }, rendered);
                     })))),
+        /* ── BS Detector Tooltip Overlay ── */
+        bsTooltip && React.createElement("div", {
+            className: "bs-tooltip-wrap",
+            style: {
+                left: Math.min(Math.max(8, bsTooltip.x), window.innerWidth - 244) + 'px',
+                top: Math.max(64, bsTooltip.y - 120) + 'px',
+                pointerEvents: 'none'
+            },
+            onTouchStart: function(e) { e.stopPropagation(); }
+        },
+            React.createElement("div", { className: "bs-tooltip" },
+                React.createElement("div", { style: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'6px' } },
+                    React.createElement("div", { className: "bs-tooltip-type" }, bsTooltip.typeLabel),
+                    React.createElement("button", {
+                        onClick: function() { setBsTooltip(null); },
+                        style: { background:'none', border:'none', color:'rgba(148,163,184,0.4)', cursor:'pointer', fontSize:'14px', lineHeight:1, padding:'0 0 0 8px', pointerEvents:'auto' }
+                    }, "×")),
+                React.createElement("div", { className: "bs-tooltip-claim" }, '"' + (bsTooltip.flag.phrase || '') + '"'),
+                React.createElement("div", { className: "bs-tooltip-desc" }, bsTooltip.flag.explanation || ''))),
         isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
@@ -5925,14 +6145,42 @@ function Reader(_a) {
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
             React.createElement("div", { ref: containerRef, className: "manuscript-text serif text-xl transition-colors duration-500 ".concat(getThemeTextClass()), style: { lineHeight: lineSpacing } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3" },
-            React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : '') },
+            React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-white" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-border" }),
-                React.createElement("div", { className: "glass-dock px-2 py-1.5 rounded-full flex items-center gap-1 shadow-2xl border border-white/10" },
+                React.createElement("div", { style: { position:'relative', display:'flex', flexDirection:'column', alignItems:'center', zIndex:1 } },
+                    /* ── Expand arrow ── */
+                    React.createElement("button", {
+                        className: "dock-expand-arrow",
+                        onClick: function() { setDockExpanded(function(p) { return !p; }); },
+                        title: "More tools"
+                    },
+                        React.createElement("svg", { width:"12", height:"8", viewBox:"0 0 12 8", fill:"none", stroke:"currentColor", strokeWidth:"2", strokeLinecap:"round",
+                            style: { transform: dockExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition:'transform 0.3s cubic-bezier(0.34,1.2,0.64,1)' } },
+                            React.createElement("path", { d:"M1 6.5L6 1.5L11 6.5" }))),
+                    /* ── Expanded row with BS Detector ── */
+                    React.createElement("div", { className: "dock-expanded-row" + (dockExpanded ? " open" : ""), style:{ width:'100%', display:'flex', justifyContent:'center', paddingBottom:'6px' } },
+                        React.createElement("div", { className: "glass-dock px-4 py-2 rounded-full flex items-center gap-3 border border-white/10" },
+                            /* BS Detector button */
+                            React.createElement("button", {
+                                onClick: function() { triggerGlow('bs'); toggleBsMode(); },
+                                className: "bs-btn" + (bsMode ? " active" : ""),
+                                title: "Skeptic Mode — BS Detector"
+                            },
+                                bsLoading && bsMode
+                                    ? React.createElement("svg", { width:"16", height:"16", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", className:"animate-spin" },
+                                        React.createElement("path", { d:"M21 12a9 9 0 1 1-6.219-8.56" }))
+                                    : React.createElement("svg", { width:"17", height:"17", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2" },
+                                        React.createElement("path", { d:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" }),
+                                        React.createElement("path", { d:"M12 8v4" }),
+                                        React.createElement("path", { d:"M12 16h.01" })),
+                                React.createElement("span", { className:"bs-btn-label" }, "VERIFY")))),
+                    /* ── Main dock ── */
+                    React.createElement("div", { className: "glass-dock px-2 py-1.5 rounded-full flex items-center gap-1 shadow-2xl border border-white/10" },
                     React.createElement("button", { onClick: function () { return currentPage > 0 && setCurrentPage(function (p) { return p - 1; }); }, disabled: currentPage === 0, className: "flex items-center justify-center w-9 h-9 shrink-0 rounded-full transition-all disabled:opacity-20 ".concat(readerTheme === 'light' ? 'text-slate-600 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10') },
                         React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                             React.createElement("path", { d: "m15 18-6-6 6-6" }))),
@@ -5982,7 +6230,7 @@ function Reader(_a) {
                     React.createElement("div", { className: "w-px h-5 bg-white/10 shrink-0" }),
                     React.createElement("button", { onClick: function () { return currentPage < totalPages - 1 && setCurrentPage(function (p) { return p + 1; }); }, disabled: currentPage === totalPages - 1, className: "flex items-center justify-center w-9 h-9 shrink-0 rounded-full transition-all disabled:opacity-20 ".concat(readerTheme === 'light' ? 'text-slate-600 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10') },
                         React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-                            React.createElement("path", { d: "m9 18 6-6-6-6" }))))))));
+                            React.createElement("path", { d: "m9 18 6-6-6-6" })))))))));
 }
 // ============================================================
 // EDITOR COMPONENT
