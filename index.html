@@ -599,6 +599,44 @@
     .eh-tooltip-type.concept { color: rgba(251,191,36,0.9); }
     .eh-tooltip-type.term    { color: rgba(56,189,248,0.9); }
     .eh-tooltip-type.other   { color: rgba(148,163,184,0.7); }
+    .eh-tooltip-img-btn {
+        display: flex; align-items: center; gap: 5px;
+        margin-top: 9px; width: 100%;
+        padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer;
+        font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+        background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+        color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3);
+        transition: all 0.2s ease;
+    }
+    .eh-tooltip-img-btn:active { background: linear-gradient(135deg,rgba(99,102,241,0.45),rgba(139,92,246,0.35)); transform: scale(0.97); }
+    .eh-img-drawer {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100;
+        background: #0c0c14;
+        border-top-left-radius: 24px; border-top-right-radius: 24px;
+        border-top: 1px solid rgba(99,102,241,0.25);
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.8);
+        display: flex; flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+        max-height: 72vh;
+    }
+    .eh-img-drawer.open { transform: translateY(0); }
+    .eh-img-drawer-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; margin: 14px auto 0; }
+    .eh-img-drawer-header { padding: 14px 20px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
+    .eh-img-drawer-title { display: flex; align-items: center; gap: 8px; }
+    .eh-img-drawer-name { font-size: 15px; font-weight: 700; color: #e2e8f0; font-family: 'Playfair Display', serif; }
+    .eh-img-drawer-type { font-size: 8px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+    .eh-img-drawer-type.person { background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); }
+    .eh-img-drawer-type.place  { background: rgba(52,211,153,0.12); color: rgba(52,211,153,0.9); }
+    .eh-img-drawer-type.org    { background: rgba(248,113,113,0.12); color: rgba(248,113,113,0.9); }
+    .eh-img-drawer-type.other  { background: rgba(148,163,184,0.1); color: rgba(148,163,184,0.7); }
+    .eh-img-drawer-close { background: rgba(255,255,255,0.05); border: none; color: #94a3b8; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .eh-img-drawer-tabs { display: flex; gap: 4px; padding: 10px 16px 0; flex-shrink: 0; }
+    .eh-img-drawer-tab { flex: 1; padding: 7px 4px; border: none; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: rgba(255,255,255,0.04); color: #64748b; transition: all 0.18s; }
+    .eh-img-drawer-tab.active { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+    .eh-img-drawer-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 14px; }
+    .eh-img-drawer-open-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 24px rgba(99,102,241,0.45); }
+    .eh-img-drawer-url { font-size: 10px; color: #475569; word-break: break-all; text-align: center; max-width: 280px; }
     /* Binocular button */
     /* ── Dock Corner Glow (Uiverse by Lakshay-art, adapted) ── */
     /* ── Dock Poda Glow Border (Uiverse by Lakshay-art, adapted for pill dock) ── */
@@ -747,20 +785,89 @@
     .bino-btn.active { background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(139,92,246,0.18)); border-color: rgba(167,139,250,0.55); color: #c4b5fd; box-shadow: 0 0 24px rgba(167,139,250,0.3), inset 0 1px 0 rgba(167,139,250,0.2); animation: pulse 2.5s ease-in-out infinite; }
     .bino-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
 
-    /* ── BS Detector (Skeptic Mode) ── */
+    /* ── VERIFY Mode (Fact-Check) ── */
     .bs-btn {
       display: flex; align-items: center; justify-content: center; flex-direction: column;
       gap: 2px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-      border: 1px solid rgba(251,146,60,0.25);
-      background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(234,88,12,0.07));
-      color: rgba(251,146,60,0.85); cursor: pointer; outline: none;
+      border: 1px solid rgba(56,189,248,0.25);
+      background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(14,165,233,0.07));
+      color: rgba(56,189,248,0.85); cursor: pointer; outline: none;
       transition: all 0.25s ease;
     }
-    .bs-btn:hover { background: linear-gradient(135deg, rgba(251,146,60,0.2), rgba(234,88,12,0.14)); border-color: rgba(251,146,60,0.45); color: #fb923c; box-shadow: 0 0 18px rgba(251,146,60,0.22); }
-    .bs-btn.active { background: linear-gradient(135deg, rgba(251,146,60,0.25), rgba(234,88,12,0.18)); border-color: rgba(251,146,60,0.6); color: #fdba74; box-shadow: 0 0 24px rgba(251,146,60,0.35), inset 0 1px 0 rgba(251,146,60,0.2); animation: pulse 2.5s ease-in-out infinite; }
+    .bs-btn:hover { background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.14)); border-color: rgba(56,189,248,0.45); color: #38bdf8; box-shadow: 0 0 18px rgba(56,189,248,0.22); }
+    .bs-btn.active { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(14,165,233,0.18)); border-color: rgba(56,189,248,0.6); color: #7dd3fc; box-shadow: 0 0 24px rgba(56,189,248,0.35), inset 0 1px 0 rgba(56,189,248,0.2); animation: pulse 2.5s ease-in-out infinite; }
     .bs-btn-label { font-size: 7px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
 
-    /* Dock expand arrow */
+    /* Verify flag — colored by score */
+    .bs-flag {
+      display: inline; position: relative;
+      border-radius: 3px; padding: 0.05em 0.15em; cursor: pointer; color: inherit;
+      transition: background 0.15s; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+    }
+    .bs-flag.vf-green  { background: rgba(34,197,94,0.14);  border-bottom: 2px solid rgba(34,197,94,0.65); }
+    .bs-flag.vf-yellow { background: rgba(234,179,8,0.14);  border-bottom: 2px solid rgba(234,179,8,0.65); }
+    .bs-flag.vf-red    { background: rgba(239,68,68,0.14);  border-bottom: 2px solid rgba(239,68,68,0.65); }
+    .bs-flag.vf-grey   { background: rgba(148,163,184,0.1); border-bottom: 2px solid rgba(148,163,184,0.4); }
+    .bs-flag:hover.vf-green  { background: rgba(34,197,94,0.26); }
+    .bs-flag:hover.vf-yellow { background: rgba(234,179,8,0.26); }
+    .bs-flag:hover.vf-red    { background: rgba(239,68,68,0.26); }
+    .bs-flag:hover.vf-grey   { background: rgba(148,163,184,0.18); }
+    .bs-flag-mark {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 28px; height: 15px; border-radius: 6px;
+      font-size: 8px; font-weight: 900; vertical-align: super; line-height: 1;
+      margin-left: 2px; cursor: pointer; flex-shrink: 0; font-style: normal; padding: 0 3px;
+    }
+    .bs-flag-mark.vf-green  { background: rgba(34,197,94,0.85);  color: #000; }
+    .bs-flag-mark.vf-yellow { background: rgba(234,179,8,0.9);   color: #000; }
+    .bs-flag-mark.vf-red    { background: rgba(239,68,68,0.85);  color: #fff; }
+    .bs-flag-mark.vf-grey   { background: rgba(148,163,184,0.6); color: #000; }
+
+    /* Verify Tooltip */
+    .bs-tooltip-wrap { display:none; } /* legacy — replaced by drawer */
+    .bs-tooltip { display:none; }
+    .bs-tooltip-type { display:none; }
+    .bs-tooltip-score-bar { display:none; }
+    .bs-tooltip-score-fill { display:none; }
+    .bs-tooltip-claim { display:none; }
+    .bs-tooltip-desc { display:none; }
+    .bs-tooltip-source { display:none; }
+    /* ── Verify Drawer ── */
+    .verify-drawer {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100;
+        background: #080d18;
+        border-top-left-radius: 28px; border-top-right-radius: 28px;
+        border-top: 1px solid rgba(56,189,248,0.2);
+        box-shadow: 0 -24px 60px rgba(0,0,0,0.85);
+        display: flex; flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+        max-height: 68vh;
+    }
+    .verify-drawer.open { transform: translateY(0); }
+    .verify-drawer-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 14px auto 0; flex-shrink: 0; }
+    .verify-drawer-header { padding: 14px 20px 12px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
+    .verify-score-ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+    .verify-score-ring svg { transform: rotate(-90deg); }
+    .verify-score-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .verify-score-pct { font-size: 17px; font-weight: 900; line-height: 1; }
+    .verify-score-label { font-size: 7px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin-top: 1px; }
+    .verify-verdict-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .verify-verdict-badge.verified    { background: rgba(34,197,94,0.15);  color: rgba(34,197,94,0.95);  border: 1px solid rgba(34,197,94,0.3); }
+    .verify-verdict-badge.mostly_true { background: rgba(132,204,22,0.15); color: rgba(132,204,22,0.95); border: 1px solid rgba(132,204,22,0.3); }
+    .verify-verdict-badge.disputed    { background: rgba(234,179,8,0.15);  color: rgba(234,179,8,0.95);  border: 1px solid rgba(234,179,8,0.3); }
+    .verify-verdict-badge.mostly_false{ background: rgba(249,115,22,0.15); color: rgba(249,115,22,0.95); border: 1px solid rgba(249,115,22,0.3); }
+    .verify-verdict-badge.false       { background: rgba(239,68,68,0.15);  color: rgba(239,68,68,0.95);  border: 1px solid rgba(239,68,68,0.3); }
+    .verify-verdict-badge.unverifiable{ background: rgba(148,163,184,0.1); color: rgba(148,163,184,0.7); border: 1px solid rgba(148,163,184,0.2); }
+    .verify-score-bar-wrap { height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; margin: 10px 0 4px; }
+    .verify-score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+    .verify-claim-quote { font-size: 12px; font-weight: 600; color: #e2e8f0; font-family: 'Merriweather', serif; font-style: italic; line-height: 1.55; border-left: 3px solid rgba(56,189,248,0.4); padding: 6px 10px; background: rgba(56,189,248,0.04); border-radius: 0 8px 8px 0; margin-bottom: 10px; }
+    .verify-body { padding: 14px 20px 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+    .verify-explanation { font-size: 12px; color: #94a3b8; line-height: 1.7; font-family: 'Merriweather', serif; margin-bottom: 12px; }
+    .verify-source-hint { font-size: 10px; color: #475569; font-style: italic; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 5px; }
+    .verify-search-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border-radius: 12px; border: none; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(99,102,241,0.15)); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.25); transition: all 0.2s; }
+    .verify-search-btn:active { background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(99,102,241,0.3)); transform: scale(0.98); }
+    .verify-type-chip { font-size: 8px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(56,189,248,0.6); padding: 2px 7px; border-radius: 4px; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15); }
     .dock-expand-arrow {
       position: absolute;
       top: -22px;
@@ -791,62 +898,6 @@
       pointer-events: auto;
     }
 
-    /* BS flag marker (amber ? superscript) */
-    .bs-flag {
-      display: inline;
-      position: relative;
-      background: rgba(251,146,60,0.18);
-      border-bottom: 2px solid rgba(251,146,60,0.65);
-      border-radius: 3px;
-      padding: 0.05em 0.15em;
-      cursor: pointer;
-      color: inherit;
-      transition: background 0.15s;
-      box-decoration-break: clone;
-      -webkit-box-decoration-break: clone;
-    }
-    .bs-flag:hover { background: rgba(251,146,60,0.3); }
-    .bs-flag-mark {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 14px; height: 14px;
-      background: rgba(251,146,60,0.85);
-      color: #000;
-      border-radius: 50%;
-      font-size: 8px;
-      font-weight: 900;
-      vertical-align: super;
-      line-height: 1;
-      margin-left: 1px;
-      cursor: pointer;
-      flex-shrink: 0;
-      font-style: normal;
-    }
-
-    /* BS Tooltip */
-    .bs-tooltip-wrap { position: fixed; z-index: 1100; pointer-events: none; }
-    .bs-tooltip {
-      background: linear-gradient(160deg, #1a1000, #120d00);
-      border: 1px solid rgba(251,146,60,0.35);
-      border-radius: 14px;
-      padding: 12px 14px;
-      max-width: 270px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(251,146,60,0.08);
-      animation: interlinearFadeIn 0.18s ease-out both;
-      pointer-events: auto;
-    }
-    .bs-tooltip-type {
-      font-size: 8px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(251,146,60,0.85); margin-bottom: 5px;
-    }
-    .bs-tooltip-claim {
-      font-size: 12px; font-weight: 700; color: #fdba74;
-      font-family: 'Merriweather', serif; margin-bottom: 7px;
-      font-style: italic; line-height: 1.4;
-      border-left: 2px solid rgba(251,146,60,0.4); padding-left: 8px;
-    }
-    .bs-tooltip-desc { font-size: 12px; color: #cbd5e1; line-height: 1.65; font-family: 'Merriweather', serif; }
 
     /* LENS Scanning Overlay Animation ── */
     .lens-scan-overlay {
@@ -889,6 +940,39 @@
       75%  { transform: scale(0.5) rotateZ(-5deg) translateY(50px) translateX(0px); opacity: 1; }
       100% { transform: scale(0) rotateZ(-10deg) translateY(100px) translateX(-25px); opacity: 0; }
     }
+
+    /* ── VERIFY Loading Overlay Animation ── */
+    .verify-scan-overlay {
+      position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+      z-index: 998;
+      display: flex; flex-direction: column; align-items: center;
+      pointer-events: none; gap: 16px;
+    }
+    .verify-loader-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      animation: verifyOverlayIn 0.35s ease-out both;
+    }
+    @keyframes verifyOverlayIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .verify-loader-rings {
+      position: relative; width: 72px; height: 72px;
+    }
+    .verify-loader-rings svg { position: absolute; top:0; left:0; width:100%; height:100%; }
+    .verify-ring-outer { animation: verifyRingOuter 1.8s linear infinite; transform-origin: center; }
+    .verify-ring-mid   { animation: verifyRingMid 1.2s linear infinite reverse; transform-origin: center; }
+    .verify-ring-inner { animation: verifyRingInner 0.9s ease-in-out infinite alternate; transform-origin: center; }
+    @keyframes verifyRingOuter { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes verifyRingMid   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes verifyRingInner { from{transform:scale(0.6);opacity:0.4} to{transform:scale(1.1);opacity:1} }
+    .verify-loader-step {
+      font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(56,189,248,0.85);
+      animation: verifyStepPulse 1.4s ease-in-out infinite;
+    }
+    .verify-loader-sub {
+      font-size: 10px; color: rgba(148,163,184,0.6); letter-spacing: 0.06em;
+      margin-top: -8px;
+    }
+    @keyframes verifyStepPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
     /* ── Shared Bottom Drawer Shell ── */
     .bottom-drawer-backdrop {
@@ -3169,14 +3253,19 @@ function AnalysisModal(_a) {
     var entityType = ((data.entityType) || 'other').toLowerCase();
     var searchTerm = data.searchQuery || data.word;
     var wikiTitle = data.wikiTitle || searchTerm;
+    /* For person/place: prefer wikiTitle (always English) for image search to avoid Bengali spelling issues */
+    var isBengaliQuery = /[\u0980-\u09FF]/.test(searchTerm);
+    var imgSearchTerm = (entityType === 'person' || entityType === 'place') && isBengaliQuery && wikiTitle && !/[\u0980-\u09FF]/.test(wikiTitle)
+        ? wikiTitle   /* use English wikiTitle if searchQuery is Bengali */
+        : searchTerm; /* otherwise use searchQuery as-is */
     var googleImgUrl = "https://www.google.com/search?igu=1&tbm=isch&q=" + encodeURIComponent(
-        entityType === 'person' ? searchTerm + ' portrait photo' :
-        entityType === 'place'  ? searchTerm + ' landmark' : searchTerm
+        entityType === 'person' ? imgSearchTerm + ' portrait photo' :
+        entityType === 'place'  ? imgSearchTerm + ' landmark' : searchTerm
     );
     var wikiUrl = "https://en.wikipedia.org/wiki/" + encodeURIComponent(wikiTitle.replace(/\s+/g,'_'));
-    var wikimediaUrl = "https://commons.wikimedia.org/w/index.php?search=" + encodeURIComponent(searchTerm) + "&title=Special:MediaSearch&type=image";
-    var googleMapsUrl = "https://www.google.com/maps/search/" + encodeURIComponent(searchTerm);
-    var googleAiUrl = "https://www.google.com/search?q=" + encodeURIComponent(searchTerm) + "&udm=50";
+    var wikimediaUrl = "https://commons.wikimedia.org/w/index.php?search=" + encodeURIComponent(imgSearchTerm) + "&title=Special:MediaSearch&type=image";
+    var googleMapsUrl = "https://www.google.com/maps/search/" + encodeURIComponent(imgSearchTerm);
+    var googleAiUrl = "https://www.google.com/search?q=" + encodeURIComponent(imgSearchTerm) + "&udm=50";
     var imgSources = entityType === 'person'
         ? [{ id:'wikimedia', label:'Wikimedia', icon:'\u{1F5BC}', url: wikimediaUrl }, { id:'aimode', label:'AI Mode', icon:'\u2728', url: googleAiUrl }, { id:'google', label:'Google', icon:'\u{1F50D}', url: googleImgUrl }]
         : entityType === 'place'
@@ -4352,14 +4441,21 @@ function Reader(_a) {
     /* ── Entity Highlight (Binocular) state ── */
     var _eh0 = useState(false), entityHighlightMode = _eh0[0], setEntityHighlightMode = _eh0[1];
     var _eh1 = useState(null), ehTooltip = _eh1[0], setEhTooltip = _eh1[1];
+    var _ehD = useState(null), ehImageDrawer = _ehD[0], setEhImageDrawer = _ehD[1];
+    var _ehDT = useState(0), ehDrawerTabIdx = _ehDT[0], setEhDrawerTabIdx = _ehDT[1];
+    var _ehDO = useState(false), ehDrawerOpen = _ehDO[0], setEhDrawerOpen = _ehDO[1];
     var _agb = useState(null), activeGlowBtn = _agb[0], setActiveGlowBtn = _agb[1];
     /* ── BS Detector (Skeptic Mode) state ── */
     var _bs0 = useState(false), bsMode = _bs0[0], setBsMode = _bs0[1];
     var _bs1 = useState(false), bsLoading = _bs1[0], setBsLoading = _bs1[1];
+    var _bsStep = useState(''), verifyStep = _bsStep[0], setVerifyStep = _bsStep[1];
     var _bs2 = useState({}), bsCache = _bs2[0], setBsCache = _bs2[1];
     var _bs3 = useState(null), bsTooltip = _bs3[0], setBsTooltip = _bs3[1];
     var _bs4 = useState(false), dockExpanded = _bs4[0], setDockExpanded = _bs4[1];
+    var _bsDO = useState(false), bsDrawerOpen = _bsDO[0], setBsDrawerOpen = _bsDO[1];
+    var _bsDD = useState(null), bsDrawerData = _bsDD[0], setBsDrawerData = _bsDD[1];
     var bsAbortRef = useRef(null);
+    var bsScanGenRef = useRef(0); /* generation counter — prevents stale finally from corrupting state */
     var glowTimerRef = useRef(null);
     var triggerGlow = function(btnId) {
         if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
@@ -4688,8 +4784,8 @@ function Reader(_a) {
                         cleanText = selection.text.replace(/^(\*\*|__)|(\*\*|__)$/g, '').trim();
                         wc = cleanText.split(/\s+/).length;
                         isSentence = wc > 2;
-                        wordSys = "You are a dictionary and entity-detection assistant with deep contextual understanding.\n\nFor the given word/phrase, use the surrounding context to understand EXACTLY who/what it refers to:\n1. Detect if it is a PERSON name, PLACE name, or OTHER.\n2. Provide 'meaning': direct Bengali meaning/synonyms (or short description if it's a name).\n3. Provide 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. Provide 'entityType': exactly one of 'person', 'place', or 'other'.\n5. If entityType is 'person': Use the context to identify the FULL real name with disambiguating details. 'searchQuery' must be specific enough to find this exact person — include their role/title/era/nationality if needed (e.g. 'Shah Jahan Mughal Emperor', 'Saddam Hussein Iraqi President', 'Sheikh Jaber Al-Ahmad Al-Sabah Kuwait Emir'). Also provide 'wikiTitle': the exact Wikipedia article title for this specific person.\n6. If entityType is 'place': 'searchQuery' must be the place name in English with country/region for specificity (e.g. 'Dhaka Bangladesh capital'). Also provide 'wikiTitle': exact Wikipedia article title.\n7. If entityType is 'other': 'searchQuery' is a descriptive Google Image search query.\n8. Provide 'smartQuery': a natural, context-aware question in Bengali or English that captures what a reader would want to know.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
-                        sentSys = "You are an explanatory and entity-detection assistant with deep contextual understanding.\n\nFor the given phrase, use the surrounding context to understand EXACTLY who/what it refers to:\n1. Detect if the main subject is a PERSON name, PLACE name, or OTHER concept.\n2. Provide 'meaning': explain in simple Bengali.\n3. Provide 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. Provide 'entityType': exactly one of 'person', 'place', or 'other'.\n5. If entityType is 'person': Use the context to identify the FULL real name with disambiguating details. 'searchQuery' must be specific enough to find this exact person — include their role/title/era/nationality (e.g. 'Shah Jahan Mughal Emperor India', 'King Fahd Saudi Arabia ruler'). Also provide 'wikiTitle': exact Wikipedia article title for this specific person.\n6. If entityType is 'place': 'searchQuery' = place name in English with region/country. Also 'wikiTitle': exact Wikipedia article title.\n7. Otherwise: 'searchQuery' = main subject for Google Image Search.\n8. Provide 'smartQuery': a natural context-aware question a curious reader would ask.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
+                        wordSys = "You are an expert dictionary, entity-identification and image-search assistant with deep historical and cultural knowledge.\n\nThe user has selected a word or short phrase. Use ALL surrounding context to identify EXACTLY what/who this refers to.\n\nRULES:\n1. Determine if this is a PERSON name, PLACE name, or OTHER.\n2. 'meaning': Bengali meaning/synonyms, or if a name — 1-line Bengali description.\n3. 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. 'entityType': exactly one of 'person', 'place', or 'other'.\n5. PERSON: Identify the FULL real-world English name. 'searchQuery' MUST be in ENGLISH ONLY — never Bengali — specific enough to find THIS exact person on Google Images (e.g. 'Humayun Ahmed Bangladeshi author', 'Harry Truman US President 1945', 'Shah Jahan Mughal Emperor India'). 'wikiTitle': exact English Wikipedia article title.\n6. PLACE: 'searchQuery' MUST be in ENGLISH ONLY (e.g. 'Hiroshima Japan city', 'Dhaka Bangladesh capital'). 'wikiTitle': exact English Wikipedia article title.\n7. OTHER: 'searchQuery' = best English Google Image search query.\n8. 'smartQuery': natural curious reader question in Bengali or English.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
+                        sentSys = "You are an expert explanatory and entity-identification assistant with deep historical and cultural knowledge.\n\nThe user has selected a phrase from a text. Use ALL surrounding context to understand EXACTLY what this refers to.\n\nRULES:\n1. Determine if the main subject is a PERSON, PLACE, or OTHER.\n2. 'meaning': clear simple Bengali explanation.\n3. 'explanation': EXACTLY 3 SHORT bullet points IN BENGALI.\n4. 'entityType': exactly one of 'person', 'place', or 'other'.\n5. PERSON: Identify the FULL real-world English name. 'searchQuery' MUST be in ENGLISH ONLY — never Bengali — specific enough to find THIS exact person on Google Images (e.g. 'Humayun Ahmed Bangladeshi author', 'Harry Truman US President 1945', 'Shah Jahan Mughal Emperor India'). 'wikiTitle': exact English Wikipedia article title.\n6. PLACE: 'searchQuery' MUST be in ENGLISH ONLY (e.g. 'Hiroshima Japan city', 'Dhaka Bangladesh capital'). 'wikiTitle': exact English Wikipedia article title.\n7. OTHER: 'searchQuery' = best English descriptive Google Image search query.\n8. 'smartQuery': natural curious reader question in Bengali or English.\nOutput ONLY valid JSON: {\"meaning\":\"...\",\"explanation\":\"...\",\"entityType\":\"person|place|other\",\"searchQuery\":\"...\",\"wikiTitle\":\"...\",\"smartQuery\":\"...\"}";
                         sys = isSentence ? sentSys : wordSys;
                         userP = "Context: \"".concat(fullContext, "\"\nAnalyze: \"").concat(cleanText, "\"");
                         _a.label = 1;
@@ -5004,7 +5100,7 @@ function Reader(_a) {
         setEntityScanLoading(true);
         if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
         entityAbortRef.current = new AbortController();
-        var sysMsg = 'You are a named entity recognition engine. Given a page of text (which may be in Bengali, English, or mixed), extract ALL important named entities and key terms. Include: people (person), places (place), organizations (org), important concepts (concept), technical terms (term), historical events (concept), laws/treaties (term), and any other significant named items. For EVERY entity found, provide:\n- "name": the exact string as it appears in the text (do not translate or modify)\n- "type": one of person|place|org|concept|term\n- "description": a 1-sentence explanation written in BENGALI (বাংলায় লিখুন)\nReturn ONLY a raw JSON array with NO markdown, NO code fences, NO explanation. Extract up to 30 entities — do NOT skip any important name, term, or concept.';
+        var sysMsg = 'You are an elite named entity recognition engine specialized in Bengali and English text. Your job is to extract EVERY single named entity — missing even one important name is a failure.\n\nGiven a page of text (Bengali, English, or mixed), you MUST:\n1. Extract ALL people (historical figures, politicians, authors, scientists, religious leaders, military commanders, rulers, etc.)\n2. Extract ALL places (cities, countries, regions, rivers, mountains, buildings, battlefields, etc.)\n3. Extract ALL organizations (governments, armies, parties, institutions, companies, etc.)\n4. Extract ALL important concepts, events, treaties, laws, doctrines\n5. Extract ALL technical/scientific terms\n\nCRITICAL RULES:\n- NEVER skip a person\'s name, even if mentioned only once\n- For Bengali text: detect names written in Bengali script (e.g. হিরোশিমা, হ্যারি ট্রুম্যান, মুজিবুর রহমান, হুমায়ূন আহমেদ)\n- "name" field MUST be the EXACT substring as it appears in the text — copy character-for-character, do NOT correct spelling, do NOT translate, do NOT paraphrase\n- For each entity provide:\n  * "name": EXACT string as it appears in the input text (copy verbatim)\n  * "type": one of person|place|org|concept|term\n  * "description": 1 concise sentence in BENGALI explaining who/what this is\n- Extract up to 40 entities — PRIORITIZE people and places\n- Return ONLY a raw JSON array, NO markdown, NO code fences, NO explanation\n\nExample: if text says "হুমায়ন আহমেদ" then name must be "হুমায়ন আহমেদ" exactly as written.';
         fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
@@ -5074,48 +5170,126 @@ function Reader(_a) {
             performEntityScan(currentPage);
         }
     }, [currentPage, entityHighlightMode]);
-    /* ── BS Detector ── */
+    /* ── VERIFY Mode (Fact-Check) ── */
     var performBsScan = function(pageIdx) {
-        if (bsCache[pageIdx]) return;
+        if (bsCache[pageIdx] && bsCache[pageIdx].length > 0) { console.log('[VERIFY] cache hit, skipping'); return; }
         var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
-        if (!pageText.trim()) return;
-        setBsLoading(true);
+        if (!pageText.trim()) { console.log('[VERIFY] no page text'); return; }
+        console.log('[VERIFY] starting scan for page', pageIdx, 'text len:', pageText.length);
         if (bsAbortRef.current) try { bsAbortRef.current.abort(); } catch(_e) {}
         bsAbortRef.current = new AbortController();
-        var sysMsg = 'You are a critical thinking assistant and fact-checker. Analyze the provided text and identify:\n1. Bold/unsubstantiated claims (e.g. "always", "never", "proven", "the best")\n2. Logical fallacies (e.g. ad hominem, straw man, false dichotomy, slippery slope)\n3. Extreme political/ideological bias or one-sided framing\n4. Potentially outdated statistics or facts\n5. Misleading or emotionally manipulative language\n\nFor EACH flagged item, provide:\n- "phrase": the EXACT phrase from the text (10-50 chars, must be verbatim substring)\n- "type": one of "bold_claim" | "fallacy" | "bias" | "outdated" | "misleading"\n- "explanation": a 1-2 sentence explanation written entirely in BENGALI (বাংলায় লিখুন) — why this is suspicious or problematic\n\nReturn ONLY a raw JSON array. NO markdown, NO code fences, NO explanation outside JSON. If nothing suspicious, return [].';
-        var gemUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=' + apiKeyRef.current;
-        fetch(gemUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: sysMsg + '\n\nText to analyze:\n' + pageText.slice(0, 6000) }], role: 'user' }],
-                generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-            }),
-            signal: bsAbortRef.current.signal
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var raw = ((d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) ? d.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('') : '') || '';
+        bsScanGenRef.current += 1;
+        var myGen = bsScanGenRef.current;
+        setBsLoading(true);
+        setVerifyStep('extracting');
+        var systemPrompt = 'You are a fact-checker. From the Bengali text below, extract up to 10 verifiable factual claims and rate each. For EACH claim provide: "phrase" (EXACT verbatim substring from the text, 5-80 chars, must exist exactly as-is), "claim_en" (the claim as a clear English sentence), "type" (one of: historical|statistic|scientific|attribution|geopolitical), "score" (integer 0-100: 100=confirmed true, 75=mostly true, 50=uncertain/disputed, 25=questionable, 0=false, -1=unverifiable/opinion), "verdict" (one of: verified|mostly_true|disputed|mostly_false|false|unverifiable), "explanation" (1-2 sentences IN BENGALI explaining verdict), "source_hint" (brief English note). Return ONLY a raw JSON array. No markdown, no preamble.';
+        var userPrompt = 'Text:\n' + pageText.slice(0, 4000);
+        var parseClaims = function(raw) {
+            if (!raw) return null;
             var clean = raw.replace(/```json\n?|```/g, '').trim();
-            var parsed = null;
-            try { parsed = JSON.parse(clean); } catch(_e) {}
-            if (!Array.isArray(parsed)) {
+            var claims = null;
+            try { claims = JSON.parse(clean); } catch(_e) {}
+            if (!Array.isArray(claims)) {
                 var ai = clean.indexOf('['), ei = clean.lastIndexOf(']');
-                if (ai !== -1 && ei > ai) try { parsed = JSON.parse(clean.substring(ai, ei + 1)); } catch(_e2) {}
+                if (ai !== -1 && ei > ai) try { claims = JSON.parse(clean.substring(ai, ei + 1)); } catch(_e2) {}
             }
-            if (!Array.isArray(parsed)) parsed = [];
-            setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
+            return Array.isArray(claims) ? claims : null;
+        };
+        var onSuccess = function(claims) {
+            if (bsScanGenRef.current !== myGen) return;
+            console.log('[VERIFY] parsed claims:', claims ? claims.length : 'NONE');
+            if (!claims || claims.length === 0) {
+                setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = []; return n; });
+                setNotification({ message: 'No verifiable claims found on this page.', type: 'error' });
+            } else {
+                setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = claims; return n; });
+            }
+            setBsLoading(false); setVerifyStep('');
+        };
+        var onFail = function(msg) {
+            if (bsScanGenRef.current !== myGen) return;
+            console.error('[VERIFY] all engines failed:', msg);
+            setNotification({ message: 'Verify failed: ' + msg, type: 'error' });
+            setBsLoading(false); setVerifyStep('');
+        };
+        /* ── Step 1: Try Groq (Kimi K2) — high free-tier quota ── */
+        setVerifyStep('extracting');
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+            body: JSON.stringify({
+                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                model: 'moonshotai/kimi-k2-instruct-0905',
+                temperature: 0.15, max_tokens: 3000
+            }),
+            signal: bsAbortRef.current ? bsAbortRef.current.signal : undefined
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            if (bsScanGenRef.current !== myGen) return;
+            if (d.error || !d.choices || !d.choices[0]) {
+                console.log('[VERIFY] Groq Kimi failed, trying Maverick:', d.error);
+                /* ── Step 2: Try Groq Maverick ── */
+                return fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + MAVERICK_KEY },
+                    body: JSON.stringify({
+                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                        model: 'meta-llama/llama-4-maverick-17b-128e-instruct',
+                        temperature: 0.15, max_tokens: 3000
+                    }),
+                    signal: bsAbortRef.current ? bsAbortRef.current.signal : undefined
+                }).then(function(r2) { return r2.json(); }).then(function(d2) {
+                    if (bsScanGenRef.current !== myGen) return;
+                    if (d2.error || !d2.choices || !d2.choices[0]) {
+                        console.log('[VERIFY] Maverick failed, falling back to Gemini keys');
+                        /* ── Step 3: Try all Gemini keys in rotation ── */
+                        var startKeyIdx = Math.max(0, GEMINI_KEYS.indexOf(apiKeyRef.current));
+                        var tryGemini = function(attempt) {
+                            if (bsAbortRef.current && bsAbortRef.current.signal.aborted) return;
+                            if (attempt >= GEMINI_KEYS.length) { onFail('All API keys quota-exceeded. Try again later.'); return; }
+                            var key = GEMINI_KEYS[(startKeyIdx + attempt) % GEMINI_KEYS.length];
+                            setVerifyStep('verifying');
+                            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + '\n\n' + userPrompt }], role: 'user' }], generationConfig: { temperature: 0.15, maxOutputTokens: 3000 } }),
+                                signal: bsAbortRef.current ? bsAbortRef.current.signal : undefined
+                            }).then(function(r3) { return r3.json(); }).then(function(d3) {
+                                if (bsScanGenRef.current !== myGen) return;
+                                if (d3.error && (d3.error.code === 429 || d3.error.code === 503) && attempt < GEMINI_KEYS.length - 1) { tryGemini(attempt + 1); return; }
+                                if (d3.error) { onFail(d3.error.message || 'Gemini API error'); return; }
+                                var raw3 = (d3.candidates && d3.candidates[0] && d3.candidates[0].content && d3.candidates[0].content.parts) ? d3.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('') : '';
+                                apiKeyRef.current = key;
+                                onSuccess(parseClaims(raw3));
+                            }).catch(function(e3) {
+                                if (bsScanGenRef.current !== myGen) return;
+                                if (e3 && e3.name === 'AbortError') { setBsLoading(false); setVerifyStep(''); return; }
+                                if (attempt < GEMINI_KEYS.length - 1) { tryGemini(attempt + 1); } else { onFail('Network error'); }
+                            });
+                        };
+                        tryGemini(0);
+                        return;
+                    }
+                    var raw2 = d2.choices[0].message && d2.choices[0].message.content ? d2.choices[0].message.content : '';
+                    onSuccess(parseClaims(raw2));
+                });
+            }
+            var raw = d.choices[0].message && d.choices[0].message.content ? d.choices[0].message.content : '';
+            setVerifyStep('verifying');
+            onSuccess(parseClaims(raw));
         }).catch(function(e) {
-            if (e && e.name !== 'AbortError') console.error('[BS] scan error:', e);
-            setBsCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = []; return n; });
-        }).finally(function() { setBsLoading(false); });
+            if (bsScanGenRef.current !== myGen) return;
+            if (e && e.name === 'AbortError') { setBsLoading(false); setVerifyStep(''); return; }
+            onFail('Network error — check your connection.');
+        });
     };
-    var toggleBsMode = function() {
+        var toggleBsMode = function() {
         var next = !bsMode;
         setBsMode(next);
         setBsTooltip(null);
-        if (next && !bsCache[currentPage]) performBsScan(currentPage);
+        if (next && !(bsCache[currentPage] && bsCache[currentPage].length > 0)) performBsScan(currentPage);
     };
     useEffect(function() {
-        if (bsMode && !bsCache[currentPage] && !bsLoading) performBsScan(currentPage);
+        if (bsMode && !(bsCache[currentPage] && bsCache[currentPage].length > 0) && !bsLoading) performBsScan(currentPage);
     }, [currentPage, bsMode]);
     /* ── Partial (selection-based) rewrite ── */
     var performPartialRewrite = function (mode, instruction) { return __awaiter(_this, void 0, void 0, function () {
@@ -5554,54 +5728,85 @@ function Reader(_a) {
                 var isBengaliCombining = function(ch) {
                     if (!ch) return false;
                     var cp = ch.codePointAt(0);
-                    /* Bengali matras & signs: U+0981–U+0983, U+09BE–U+09CC, U+09CD (hasanta), U+09D7, U+09BC (nukta) */
                     return (cp >= 0x0981 && cp <= 0x0983) ||
                            (cp >= 0x09BE && cp <= 0x09CC) ||
                            cp === 0x09CD || cp === 0x09D7 || cp === 0x09BC ||
-                           /* Zero-width joiner / non-joiner */
                            cp === 0x200C || cp === 0x200D;
                 };
-                /* Build grapheme-safe character array using Intl.Segmenter if available, else Array.from */
-                var graphemes;
-                try {
-                    graphemes = Array.from(new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(plainLine), function(s) { return s.segment; });
-                } catch(e) {
-                    graphemes = Array.from(plainLine);
-                }
-                var graphemesLower = graphemes.map(function(g) { return g.toLowerCase(); });
+                /* Normalize Bengali: remove nukta, normalize vowel signs that are visually similar */
+                var normBengali = function(s) {
+                    return s
+                        .replace(/\u09BC/g, '')          /* remove nukta */
+                        .replace(/\u09CB/g, '\u09CB')    /* keep o-kar */
+                        .replace(/\u09C2/g, '\u09C1')    /* uu-kar → u-kar (হুমায়ূন→হুমায়ুন) */
+                        .replace(/\u09C0/g, '\u09BF')    /* ii-matra → i-matra */
+                        .replace(/\u0985/g, '\u0985')    /* a */
+                        .replace(/\u09E0/g, '\u098B')    /* vocalic rr → rr */
+                        .toLowerCase();
+                };
+                /* Build grapheme array */
+                var buildGraphemes = function(str) {
+                    try {
+                        return Array.from(new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(str), function(s) { return s.segment; });
+                    } catch(e) {
+                        return Array.from(str);
+                    }
+                };
+                var graphemes = buildGraphemes(plainLine);
+                var normLine = normBengali(plainLine);
+                var graphemesNorm = buildGraphemes(normLine);
                 var ehSpans = [];
                 pageEntities.forEach(function(ent) {
                     var name = (ent.name || '').trim();
                     if (!name || name.length < 2) return;
-                    var entKey = name.toLowerCase();
-                    var entGraphemes;
-                    try {
-                        entGraphemes = Array.from(new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(entKey), function(s) { return s.segment; });
-                    } catch(e) {
-                        entGraphemes = Array.from(entKey);
-                    }
-                    var nameLen = entGraphemes.length;
-                    var lineLen = graphemesLower.length;
-                    for (var ci = 0; ci <= lineLen - nameLen; ci++) {
-                        if (entityHitCount && (entityHitCount[entKey] || 0) >= 2) break;
-                        var match = true;
-                        for (var ni = 0; ni < nameLen; ni++) {
-                            if (graphemesLower[ci + ni] !== entGraphemes[ni]) { match = false; break; }
+                    /* Try exact match first, then normalized match */
+                    var tryMatch = function(lineG, entKey) {
+                        var entG = buildGraphemes(entKey);
+                        var nameLen = entG.length;
+                        var lineLen = lineG.length;
+                        if (nameLen < 2 || lineLen < nameLen) return;
+                        for (var ci = 0; ci <= lineLen - nameLen; ci++) {
+                            if (entityHitCount && (entityHitCount[name.toLowerCase()] || 0) >= 2) break;
+                            var match = true;
+                            for (var ni = 0; ni < nameLen; ni++) {
+                                if (lineG[ci + ni] !== entG[ni]) { match = false; break; }
+                            }
+                            if (match) {
+                                var afterIdx = ci + nameLen;
+                                var afterG = afterIdx < lineLen ? lineG[afterIdx] : '';
+                                var isLatinName = /^[a-z]/.test(entG[0]);
+                                if (isLatinName && afterG && /[a-z0-9]/.test(afterG)) continue;
+                                var extEnd = afterIdx;
+                                while (extEnd < lineLen && isBengaliCombining(lineG[extEnd])) extEnd++;
+                                /* Convert grapheme index back to original plainLine string index */
+                                var strStart = graphemes.slice(0, ci).join('').length;
+                                var strEnd = graphemes.slice(0, Math.min(extEnd, graphemes.length)).join('').length;
+                                if (strEnd <= strStart) strEnd = strStart + name.length;
+                                ehSpans.push({ start: strStart, end: strEnd, entity: ent, matched: plainLine.substring(strStart, strEnd) });
+                                if (entityHitCount) entityHitCount[name.toLowerCase()] = (entityHitCount[name.toLowerCase()] || 0) + 1;
+                                ci += extEnd - ci - 1;
+                            }
                         }
-                        if (match) {
-                            var afterIdx = ci + nameLen;
-                            var afterGrapheme = afterIdx < lineLen ? graphemesLower[afterIdx] : '';
-                            var isLatinName = /^[a-z]/.test(entGraphemes[0]);
-                            if (isLatinName && afterGrapheme && /[a-z0-9]/.test(afterGrapheme)) { continue; }
-                            /* Extend match to include any immediately following combining chars */
-                            var extEnd = afterIdx;
-                            while (extEnd < lineLen && isBengaliCombining(graphemesLower[extEnd])) { extEnd++; }
-                            /* Convert grapheme index to string index */
-                            var strStart = graphemes.slice(0, ci).join('').length;
-                            var strEnd = graphemes.slice(0, extEnd).join('').length;
-                            ehSpans.push({ start: strStart, end: strEnd, entity: ent, matched: plainLine.substring(strStart, strEnd) });
-                            if (entityHitCount) entityHitCount[entKey] = (entityHitCount[entKey] || 0) + 1;
-                            ci += extEnd - ci - 1;
+                    };
+                    /* 1) Exact (lowercase) match */
+                    tryMatch(buildGraphemes(plainLine.toLowerCase()), name.toLowerCase());
+                    /* 2) Normalized match (handles হুমায়ূন vs হুমায়ুন etc.) */
+                    if ((entityHitCount[name.toLowerCase()] || 0) === 0) {
+                        tryMatch(graphemesNorm, normBengali(name));
+                    }
+                    /* 3) For multi-word Bengali names: try matching just first word if ≥4 graphemes */
+                    if ((entityHitCount[name.toLowerCase()] || 0) === 0) {
+                        var isBengali = /[\u0980-\u09FF]/.test(name);
+                        if (isBengali) {
+                            var words = name.trim().split(/\s+/);
+                            if (words.length >= 2) {
+                                /* Try each individual word (≥4 chars) as a fallback highlight */
+                                words.forEach(function(w) {
+                                    if (w.length >= 4 && (entityHitCount[name.toLowerCase()] || 0) < 2) {
+                                        tryMatch(buildGraphemes(plainLine.toLowerCase()), w.toLowerCase());
+                                    }
+                                });
+                            }
                         }
                     }
                 });
@@ -5643,22 +5848,35 @@ function Reader(_a) {
                 }
             }
         }
-        /* ── BS Detector flag injection ── */
+        /* ── VERIFY Mode flag injection ── */
         if (bsMode) {
             var bsFlags = bsCache[currentPage];
             if (bsFlags && bsFlags.length > 0) {
                 var plainForBs = line.replace(/\*\*(.*?)\*\*/g, '$1').replace(/^(#+\s|[-*]\s|\^\^\s?)/, '');
                 var bsSpans = [];
+                /* Bengali normalization for fuzzy match */
+                var normBn = function(s) { return s.replace(/\u09BC/g,'').replace(/\u09C2/g,'\u09C1').replace(/\u09C0/g,'\u09BF').replace(/\u09CB/g,'\u09CB').replace(/\s+/g,' ').trim(); };
                 bsFlags.forEach(function(flag, fi) {
                     var ph = (flag.phrase || '').trim();
                     if (!ph || ph.length < 4) return;
-                    var idx = plainForBs.indexOf(ph);
+                    var idx = -1, matchLen = ph.length;
+                    /* 1. Exact match */
+                    idx = plainForBs.indexOf(ph);
+                    /* 2. Lowercase match */
+                    if (idx === -1) { idx = plainForBs.toLowerCase().indexOf(ph.toLowerCase()); }
+                    /* 3. Normalized Bengali match */
                     if (idx === -1) {
-                        var lower = plainForBs.toLowerCase();
-                        var lph = ph.toLowerCase();
-                        idx = lower.indexOf(lph);
+                        var normText = normBn(plainForBs), normPh = normBn(ph);
+                        var ni = normText.indexOf(normPh);
+                        if (ni !== -1) { idx = ni; matchLen = normPh.length; }
                     }
-                    if (idx !== -1) bsSpans.push({ start: idx, end: idx + ph.length, flag: flag, fi: fi });
+                    /* 4. Partial phrase: first 3 words if phrase is long */
+                    if (idx === -1 && ph.split(/\s+/).length >= 3) {
+                        var shortPh = ph.split(/\s+/).slice(0, 3).join(' ');
+                        idx = plainForBs.indexOf(shortPh);
+                        if (idx !== -1) matchLen = shortPh.length;
+                    }
+                    if (idx !== -1) bsSpans.push({ start: idx, end: idx + matchLen, flag: flag, fi: fi });
                 });
                 if (bsSpans.length > 0) {
                     bsSpans.sort(function(a,b){ return a.start - b.start; });
@@ -5668,23 +5886,31 @@ function Reader(_a) {
                     deduped.forEach(function(sp, si) {
                         if (sp.start > cur3) bsNodes.push(plainForBs.substring(cur3, sp.start));
                         var spFlag = sp.flag;
-                        var typeLabel = spFlag.type === 'bold_claim' ? 'BOLD CLAIM' : spFlag.type === 'fallacy' ? 'FALLACY' : spFlag.type === 'bias' ? 'BIAS' : spFlag.type === 'outdated' ? 'OUTDATED' : 'MISLEADING';
+                        var score = typeof spFlag.score === 'number' ? spFlag.score : -1;
+                        /* Color class by score */
+                        var vfClass = score < 0 ? 'vf-grey' : score >= 85 ? 'vf-green' : score >= 55 ? 'vf-yellow' : 'vf-red';
+                        /* Badge label */
+                        var badgeLabel = score < 0 ? '?' : score + '%';
+                        /* Verdict icon */
+                        var verdictIcon = score < 0 ? '~' : score >= 85 ? '✓' : score >= 55 ? '~' : '✗';
                         bsNodes.push(React.createElement("span", {
                             key: "bs"+lineIdx+"-"+si,
-                            className: "bs-flag",
+                            className: "bs-flag " + vfClass,
                             onClick: function(e) {
                                 e.stopPropagation();
-                                var target = e.currentTarget;
-                                var rect = target ? target.getBoundingClientRect() : null;
                                 setBsTooltip(function(prev) {
-                                    if (prev && prev.flag === spFlag) return null;
-                                    if (!rect) return prev;
-                                    return { flag: spFlag, typeLabel: typeLabel, x: rect.left, y: rect.top };
+                                    if (prev && prev.flag === spFlag) {
+                                        setBsDrawerOpen(false);
+                                        setTimeout(function(){ setBsTooltip(null); }, 380);
+                                        return prev;
+                                    }
+                                    return { flag: spFlag, score: score, vfClass: vfClass, x: 0, y: 0 };
                                 });
+                                setTimeout(function(){ setBsDrawerOpen(true); }, 30);
                             }
                         },
                             plainForBs.substring(sp.start, sp.end),
-                            React.createElement("span", { className: "bs-flag-mark" }, "?")
+                            React.createElement("span", { className: "bs-flag-mark " + vfClass }, verdictIcon + ' ' + badgeLabel)
                         ));
                         cur3 = sp.end;
                     });
@@ -5748,7 +5974,7 @@ function Reader(_a) {
                 ilNode);
         }
     };
-    /* Dismiss entity tooltip on scroll */
+    /* Dismiss entity tooltip on scroll — same pattern for all floating UI */
     useEffect(function() {
         if (!ehTooltip) return;
         var dismiss = function() { setEhTooltip(null); if (ehTooltipTimer.current) clearTimeout(ehTooltipTimer.current); };
@@ -5759,6 +5985,21 @@ function Reader(_a) {
             document.removeEventListener('touchmove', dismiss);
         };
     }, [ehTooltip]);
+
+    /* Dismiss verify drawer on scroll */
+    useEffect(function() {
+        if (!bsDrawerOpen && !bsTooltip) return;
+        var dismiss = function() {
+            setBsDrawerOpen(false);
+            setTimeout(function(){ setBsTooltip(null); }, 380);
+        };
+        window.addEventListener('scroll', dismiss, { passive: true });
+        document.addEventListener('touchmove', dismiss, { passive: true });
+        return function() {
+            window.removeEventListener('scroll', dismiss);
+            document.removeEventListener('touchmove', dismiss);
+        };
+    }, [bsDrawerOpen, bsTooltip]);
 
     var displayHeader = (function () { var t = getPageHeader(); var ws = t.split(' '); return ws.length > 2 ? ws.slice(0, 2).join(' ') + '...' : t; })();
     return (React.createElement("div", { className: "w-full flex flex-col min-h-screen px-4 pb-40 overflow-x-hidden animate-in fade-in" },
@@ -5788,6 +6029,28 @@ function Reader(_a) {
                     };
                     return [makeSvg("lp1"), makeSvg("lp2"), makeSvg("lp3")];
                 })())),
+        /* ── VERIFY Loading Overlay ── */
+        bsLoading && bsMode && React.createElement("div", { className: "verify-scan-overlay" },
+            React.createElement("div", { className: "verify-loader-wrap" },
+                React.createElement("div", { className: "verify-loader-rings" },
+                    React.createElement("svg", { viewBox: "0 0 72 72", fill: "none" },
+                        /* Outer ring - dashed */
+                        React.createElement("circle", { className: "verify-ring-outer", cx: "36", cy: "36", r: "32",
+                            stroke: "rgba(56,189,248,0.6)", strokeWidth: "2.5",
+                            strokeDasharray: "12 6", strokeLinecap: "round" }),
+                        /* Mid ring */
+                        React.createElement("circle", { className: "verify-ring-mid", cx: "36", cy: "36", r: "24",
+                            stroke: "rgba(56,189,248,0.35)", strokeWidth: "2",
+                            strokeDasharray: "8 8", strokeLinecap: "round" }),
+                        /* Inner pulse */
+                        React.createElement("circle", { className: "verify-ring-inner", cx: "36", cy: "36", r: "12",
+                            fill: "rgba(56,189,248,0.15)", stroke: "rgba(56,189,248,0.8)", strokeWidth: "2" }),
+                        /* Center checkmark */
+                        React.createElement("path", { d: "M30 36l4 4 8-8", stroke: "rgba(56,189,248,0.9)", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }))),
+                React.createElement("div", { className: "verify-loader-step" },
+                    verifyStep === 'verifying' ? '⚖️ Fact-Checking...' : '🔍 Extracting Claims...'),
+                React.createElement("div", { className: "verify-loader-sub" },
+                    verifyStep === 'verifying' ? 'Scoring each claim' : 'Scanning for facts'))),
         /* ── Entity Tooltip Overlay ── */
         ehTooltip && React.createElement("div", {
             className: "eh-tooltip-wrap",
@@ -5819,26 +6082,189 @@ function Reader(_a) {
                             return part;
                         });
                         return React.createElement('p', { key: pi }, rendered);
-                    })))),
-        /* ── BS Detector Tooltip Overlay ── */
-        bsTooltip && React.createElement("div", {
-            className: "bs-tooltip-wrap",
-            style: {
-                left: Math.min(Math.max(8, bsTooltip.x), window.innerWidth - 244) + 'px',
-                top: Math.max(64, bsTooltip.y - 120) + 'px',
-                pointerEvents: 'none'
+                    })),
+                (['person','place','org'].indexOf((ehTooltip.entity.type||'other').toLowerCase()) !== -1) &&
+                React.createElement("button", {
+                    className: "eh-tooltip-img-btn",
+                    onClick: function(e) {
+                        e.stopPropagation();
+                        setEhTooltip(null);
+                        setEhImageDrawer(ehTooltip.entity);
+                        setEhDrawerTabIdx(0);
+                        setTimeout(function(){ setEhDrawerOpen(true); }, 30);
+                    }
+                },
+                    React.createElement("svg", { width:"12", height:"12", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                        React.createElement("rect", { x:"3", y:"3", width:"18", height:"18", rx:"2", ry:"2" }),
+                        React.createElement("circle", { cx:"8.5", cy:"8.5", r:"1.5" }),
+                        React.createElement("polyline", { points:"21 15 16 10 5 21" })),
+                    "View Image"))),
+        /* ── Entity Image Drawer ── */
+        React.createElement(React.Fragment, null,
+            ehImageDrawer && React.createElement("div", {
+                className: "fixed inset-0 z-[1090] bg-black/50",
+                onClick: function() { setEhDrawerOpen(false); setTimeout(function(){ setEhImageDrawer(null); }, 400); }
+            }),
+            React.createElement("div", {
+                className: "eh-img-drawer" + (ehDrawerOpen ? " open" : ""),
+                style: { zIndex: 1095 },
+                onTouchStart: function(e){ e.stopPropagation(); }
             },
-            onTouchStart: function(e) { e.stopPropagation(); }
-        },
-            React.createElement("div", { className: "bs-tooltip" },
-                React.createElement("div", { style: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'6px' } },
-                    React.createElement("div", { className: "bs-tooltip-type" }, bsTooltip.typeLabel),
-                    React.createElement("button", {
-                        onClick: function() { setBsTooltip(null); },
-                        style: { background:'none', border:'none', color:'rgba(148,163,184,0.4)', cursor:'pointer', fontSize:'14px', lineHeight:1, padding:'0 0 0 8px', pointerEvents:'auto' }
-                    }, "×")),
-                React.createElement("div", { className: "bs-tooltip-claim" }, '"' + (bsTooltip.flag.phrase || '') + '"'),
-                React.createElement("div", { className: "bs-tooltip-desc" }, bsTooltip.flag.explanation || ''))),
+                ehImageDrawer && (function() {
+                    var etype = (ehImageDrawer.type || 'other').toLowerCase();
+                    var name = ehImageDrawer.name || '';
+                    var desc = ehImageDrawer.description || '';
+                    /* Build best English search query:
+                       Priority 1: entity has a searchQuery field (set by Lens scan if we store it — not available here)
+                       Priority 2: extract capitalized English words from description (e.g. "Humayun Ahmed", "Hiroshima")
+                       Priority 3: extract any English words from the name itself
+                       Priority 4: use name as-is (Bengali) — Google will try to correct */
+                    var isBengaliName = /[\u0980-\u09FF]/.test(name);
+                    var searchName = name;
+                    if (isBengaliName) {
+                        /* Try multi-word English name pattern from description */
+                        var multiEng = desc.match(/\b([A-Z][a-z]{1,15}(?:\s+[A-Z][a-z]{1,15}){1,4})\b/);
+                        if (multiEng) {
+                            searchName = multiEng[1];
+                        } else {
+                            /* Try single capitalized English word */
+                            var singleEng = desc.match(/\b([A-Z][a-zA-Z]{2,})\b/);
+                            if (singleEng) searchName = singleEng[1];
+                        }
+                    }
+                    /* For person add role hint from description if short enough */
+                    var roleHint = '';
+                    if (etype === 'person' && isBengaliName) {
+                        var roleMatch = desc.match(/(?:লেখক|কবি|রাজনীতিবিদ|রাজা|সম্রাট|নেতা|বিজ্ঞানী|শিল্পী|চলচ্চিত্র|ক্রিকেটার|খেলোয়াড়)/);
+                        var roleMap = { 'লেখক':'author writer', 'কবি':'poet', 'রাজনীতিবিদ':'politician', 'রাজা':'king', 'সম্রাট':'emperor', 'নেতা':'leader', 'বিজ্ঞানী':'scientist', 'শিল্পী':'artist', 'চলচ্চিত্র':'filmmaker', 'ক্রিকেটার':'cricketer', 'খেলোয়াড়':'player' };
+                        if (roleMatch) roleHint = ' ' + (roleMap[roleMatch[0]] || '');
+                    }
+                    var finalSearchName = searchName + roleHint;
+                    var googleImgQ = etype === 'person' ? finalSearchName + ' portrait photo' : etype === 'place' ? finalSearchName + ' landmark' : finalSearchName;
+                    var wikimediaQ = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(finalSearchName) + '&title=Special:MediaSearch&type=image';
+                    var googleImgTabUrl = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(googleImgQ);
+                    var googleMapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(finalSearchName);
+                    var wikiUrl = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(finalSearchName.trim().replace(/\s+/g,'_'));
+                    var tabs = etype === 'person'
+                        ? [{ label:'🔍 Google Images', url: googleImgTabUrl }, { label:'🖼 Wikimedia', url: wikimediaQ }, { label:'📖 Wikipedia', url: wikiUrl }]
+                        : etype === 'place'
+                        ? [{ label:'🔍 Google Images', url: googleImgTabUrl }, { label:'🗺️ Maps', url: googleMapsUrl }, { label:'🖼 Wikimedia', url: wikimediaQ }]
+                        : [{ label:'🔍 Google Images', url: googleImgTabUrl }, { label:'🖼 Wikimedia', url: wikimediaQ }, { label:'📖 Wikipedia', url: wikiUrl }];
+                    var activeTab = tabs[Math.min(ehDrawerTabIdx, tabs.length-1)];
+                    return React.createElement(React.Fragment, null,
+                        React.createElement("div", { className: "eh-img-drawer-handle" }),
+                        React.createElement("div", { className: "eh-img-drawer-header" },
+                            React.createElement("div", { className: "eh-img-drawer-title" },
+                                React.createElement("span", { className: "eh-img-drawer-type " + etype }, etype.toUpperCase()),
+                                React.createElement("span", { className: "eh-img-drawer-name" }, name)),
+                            React.createElement("button", {
+                                className: "eh-img-drawer-close",
+                                onClick: function() { setEhDrawerOpen(false); setTimeout(function(){ setEhImageDrawer(null); }, 400); }
+                            }, "×")),
+                        React.createElement("div", { className: "eh-img-drawer-tabs" },
+                            tabs.map(function(tab, ti) {
+                                return React.createElement("button", {
+                                    key: ti,
+                                    className: "eh-img-drawer-tab" + (ehDrawerTabIdx === ti ? " active" : ""),
+                                    onClick: function() { setEhDrawerTabIdx(ti); }
+                                }, tab.label);
+                            })),
+                        React.createElement("div", { className: "eh-img-drawer-body" },
+                            React.createElement("div", { style: { fontSize:'2.8rem', lineHeight:1 } },
+                                etype === 'person' ? '👤' : etype === 'place' ? '📍' : etype === 'org' ? '🏢' : '🔍'),
+                            React.createElement("div", { style: { textAlign:'center', color:'#94a3b8', fontSize:'12px', lineHeight:1.6, maxWidth:'260px' } }, desc.length > 120 ? desc.slice(0,120)+'…' : desc),
+                            React.createElement("div", { className: "eh-img-drawer-url" }, activeTab.url.length > 55 ? activeTab.url.slice(0,55)+'…' : activeTab.url),
+                            React.createElement("a", {
+                                href: activeTab.url,
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                                className: "eh-img-drawer-open-btn",
+                                onClick: function(e){ e.stopPropagation(); }
+                            },
+                                React.createElement("svg", { width:"16", height:"16", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                                    React.createElement("path", { d:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
+                                    React.createElement("polyline", { points:"15 3 21 3 21 9" }),
+                                    React.createElement("line", { x1:"10", y1:"14", x2:"21", y2:"3" })),
+                                "Open " + activeTab.label.replace(/^[^ ]+ /,''))));
+                })())),
+        /* ── VERIFY Tooltip Overlay ── */
+        /* ── Verify Drawer (replaces old bs-tooltip) ── */
+        React.createElement(React.Fragment, null,
+            bsDrawerOpen && React.createElement("div", {
+                className: "fixed inset-0 z-[1090] bg-black/50",
+                onClick: function() { setBsDrawerOpen(false); setTimeout(function(){ setBsTooltip(null); }, 380); }
+            }),
+            React.createElement("div", {
+                className: "verify-drawer" + (bsDrawerOpen ? " open" : ""),
+                onTouchStart: function(e){ e.stopPropagation(); }
+            },
+                bsTooltip && (function() {
+                    var flag = bsTooltip.flag;
+                    var score = bsTooltip.score;
+                    var verdict = flag.verdict || (score < 0 ? 'unverifiable' : score >= 85 ? 'verified' : score >= 70 ? 'mostly_true' : score >= 45 ? 'disputed' : score >= 20 ? 'mostly_false' : 'false');
+                    var verdictLabel = { verified:'✓ Verified', mostly_true:'✓ Mostly True', disputed:'~ Disputed', mostly_false:'✗ Mostly False', false:'✗ False', unverifiable:'? Unverifiable' }[verdict] || '? Unknown';
+                    /* Score ring colours */
+                    var ringColor = score < 0 ? '#64748b' : score >= 85 ? '#22c55e' : score >= 70 ? '#84cc16' : score >= 45 ? '#eab308' : score >= 20 ? '#f97316' : '#ef4444';
+                    var barGrad = score < 0 ? 'rgba(100,116,139,0.4)' : score >= 85 ? 'linear-gradient(90deg,#16a34a,#22c55e)' : score >= 70 ? 'linear-gradient(90deg,#65a30d,#84cc16)' : score >= 45 ? 'linear-gradient(90deg,#a16207,#eab308)' : score >= 20 ? 'linear-gradient(90deg,#c2410c,#f97316)' : 'linear-gradient(90deg,#b91c1c,#ef4444)';
+                    /* Google fact-check search URL */
+                    var claimEn = flag.claim_en || flag.phrase || '';
+                    var googleFactUrl = 'https://www.google.com/search?q=' + encodeURIComponent('"' + claimEn + '" fact check');
+                    var googleSearchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(claimEn);
+                    /* SVG ring: circumference = 2π×28 ≈ 175.9 */
+                    var circ = 175.9;
+                    var dash = score < 0 ? 0 : (score / 100) * circ;
+                    return React.createElement(React.Fragment, null,
+                        React.createElement("div", { className: "verify-drawer-handle" }),
+                        /* Header: ring + verdict + type chip + close */
+                        React.createElement("div", { className: "verify-drawer-header" },
+                            React.createElement("div", { style:{ display:'flex', alignItems:'center', gap:'14px', flex:1 } },
+                                /* Score ring */
+                                React.createElement("div", { className: "verify-score-ring" },
+                                    React.createElement("svg", { width:"64", height:"64", viewBox:"0 0 64 64" },
+                                        React.createElement("circle", { cx:"32", cy:"32", r:"28", fill:"none", stroke:"rgba(255,255,255,0.07)", strokeWidth:"5" }),
+                                        React.createElement("circle", { cx:"32", cy:"32", r:"28", fill:"none", stroke: ringColor, strokeWidth:"5",
+                                            strokeDasharray: circ, strokeDashoffset: circ - dash, strokeLinecap:"round",
+                                            style:{ transition:'stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)', filter:'drop-shadow(0 0 6px ' + ringColor + '66)' } })),
+                                    React.createElement("div", { className: "verify-score-num" },
+                                        React.createElement("span", { className: "verify-score-pct", style:{ color: ringColor } }, score < 0 ? '?' : score + '%'),
+                                        React.createElement("span", { className: "verify-score-label" }, score < 0 ? 'N/A' : 'Score'))),
+                                /* Verdict + type */
+                                React.createElement("div", { style:{ flex:1 } },
+                                    React.createElement("div", { className: "verify-verdict-badge " + verdict }, verdictLabel),
+                                    React.createElement("div", { className: "verify-type-chip" }, (flag.type || 'fact').replace(/_/g,' ')))),
+                            React.createElement("button", {
+                                onClick: function() { setBsDrawerOpen(false); setTimeout(function(){ setBsTooltip(null); }, 380); },
+                                style:{ background:'rgba(255,255,255,0.05)', border:'none', color:'#94a3b8', width:'30px', height:'30px', borderRadius:'50%', cursor:'pointer', fontSize:'16px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+                            }, "×")),
+                        /* Body */
+                        React.createElement("div", { className: "verify-body" },
+                            /* Score bar */
+                            score >= 0 && React.createElement("div", { className: "verify-score-bar-wrap" },
+                                React.createElement("div", { className: "verify-score-bar-fill", style:{ width: score + '%', background: barGrad } })),
+                            /* Quoted claim */
+                            React.createElement("div", { className: "verify-claim-quote" }, '"' + (flag.phrase || '') + '"'),
+                            /* Explanation */
+                            flag.explanation && React.createElement("div", { className: "verify-explanation" }, flag.explanation),
+                            /* Source hint */
+                            flag.source_hint && React.createElement("div", { className: "verify-source-hint" },
+                                React.createElement("span", null, "📌"),
+                                React.createElement("span", null, flag.source_hint)),
+                            /* Search buttons */
+                            React.createElement("div", { style:{ display:'flex', flexDirection:'column', gap:'8px' } },
+                                React.createElement("a", { href: googleFactUrl, target:"_blank", rel:"noopener noreferrer",
+                                    className: "verify-search-btn", onClick: function(e){ e.stopPropagation(); } },
+                                    React.createElement("svg", { width:"14", height:"14", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                                        React.createElement("circle", { cx:"11", cy:"11", r:"8" }),
+                                        React.createElement("line", { x1:"21", y1:"21", x2:"16.65", y2:"16.65" })),
+                                    "Fact-Check on Google"),
+                                React.createElement("a", { href: googleSearchUrl, target:"_blank", rel:"noopener noreferrer",
+                                    className: "verify-search-btn", style:{ opacity:0.7, fontSize:'11px' }, onClick: function(e){ e.stopPropagation(); } },
+                                    React.createElement("svg", { width:"12", height:"12", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                                        React.createElement("path", { d:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
+                                        React.createElement("polyline", { points:"15 3 21 3 21 9" }),
+                                        React.createElement("line", { x1:"10", y1:"14", x2:"21", y2:"3" })),
+                                    "Search on Google"))))
+                })())),
         isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
@@ -6167,7 +6593,7 @@ function Reader(_a) {
                         React.createElement("div", { className: "glass-dock px-4 py-2 rounded-full flex items-center gap-3 border border-white/10" },
                             /* BS Detector button */
                             React.createElement("button", {
-                                onClick: function() { triggerGlow('bs'); toggleBsMode(); },
+                                onClick: function() { toggleBsMode(); },
                                 className: "bs-btn" + (bsMode ? " active" : ""),
                                 title: "Skeptic Mode — BS Detector"
                             },
