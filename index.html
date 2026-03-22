@@ -48,13 +48,13 @@
 
 
 
-  <!-- KaTeX JS -->
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-
-  <!-- PDF.js (ESM via importmap polyfill will not work in SPCK, so use UMD build) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
+  <!-- KaTeX JS — deferred, ~80KB, needed for math rendering -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous" onload="katex=window.katex"></script>
+  <!-- PDF.js — lazy loaded on first PDF upload via ensurePdfJs() -->
 
   <style>
+
+
     *, *::before, *::after { box-sizing: border-box; }
     html {
       height: 100%;
@@ -393,12 +393,12 @@
 
 
     /* ── Max Drawer plain markdown prose ── */
-    .md-content-area p { color: #94a3b8; font-size: 14px; line-height: 1.8; margin: 0 0 12px; }
-    .md-content-area h1, .md-content-area h2 { color: #e2e8f0; font-size: 15px; font-weight: 700; margin: 16px 0 8px; }
-    .md-content-area h3, .md-content-area h4 { color: #cbd5e1; font-size: 14px; font-weight: 600; margin: 12px 0 6px; }
+    .md-content-area p { color: #94a3b8; font-size: 17px; line-height: 1.85; margin: 0 0 14px; }
+    .md-content-area h1, .md-content-area h2 { color: #e2e8f0; font-size: 18px; font-weight: 700; margin: 16px 0 8px; }
+    .md-content-area h3, .md-content-area h4 { color: #cbd5e1; font-size: 17px; font-weight: 600; margin: 12px 0 6px; }
     .md-content-area strong { color: #e2e8f0; font-weight: 700; }
     .md-content-area ul, .md-content-area ol { padding-left: 20px; margin: 0 0 12px; }
-    .md-content-area li { color: #94a3b8; font-size: 14px; line-height: 1.8; margin-bottom: 4px; }
+    .md-content-area li { color: #94a3b8; font-size: 17px; line-height: 1.85; margin-bottom: 4px; }
 
     .max-drawer-tab-btn.tab-timeline.active {
       background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(217,119,6,0.12) 100%);
@@ -841,6 +841,7 @@
       width: 100%; max-width: 720px;
       margin: 0 auto;
       display: flex; flex-direction: column;
+      font-family: 'Noto Serif Bengali', 'Merriweather', serif;
       background: linear-gradient(160deg, #0f1623 0%, #0d1220 40%, #0a0f1a 100%);
       border: 1px solid rgba(99,130,200,0.12);
       border-radius: 28px 28px 0 0;
@@ -976,10 +977,10 @@
     .md-card-icon.context   { background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.18); }
     .md-card-title { font-size: 10px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(120,150,200,0.55); }
     .md-card-body { padding: 13px 16px 15px; }
-    .md-card-body p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.65; color: #cbd5e1; font-family: 'Merriweather', serif; }
+    .md-card-body p { margin: 0 0 8px; font-size: 17px; line-height: 1.8; color: #cbd5e1; font-family: 'Noto Serif Bengali', 'Merriweather', serif; }
     .md-card-body p:last-child { margin-bottom: 0; }
     .md-card-body ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-    .md-card-body li { font-size: 13px; line-height: 1.6; color: #94a3b8; font-family: 'Merriweather', serif; }
+    .md-card-body li { font-size: 16px; line-height: 1.75; color: #94a3b8; font-family: 'Noto Serif Bengali', 'Merriweather', serif; }
     .md-skel-card { border-radius: 18px; border: 1px solid rgba(99,130,200,0.07); background: rgba(255,255,255,0.015); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
     .md-status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 99px; font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; background: rgba(0,0,0,0.2); border: 1px solid rgba(99,130,200,0.1); color: rgba(120,150,200,0.5); }
     .md-status-dot { width: 5px; height: 5px; border-radius: 50%; }
@@ -2664,12 +2665,52 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 // GLOBALS & CONSTANTS
 // ============================================================
 var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useMemo = React.useMemo, useCallback = React.useCallback;
+// ── Lazy script loader ─────────────────────────────────────
+var _scriptCache = {};
+function loadScript(src, onload) {
+    if (_scriptCache[src]) { if (onload) onload(); return; }
+    if (document.querySelector('script[src="' + src + '"]')) {
+        // already injected, poll until ready
+        var poll = setInterval(function() {
+            if (_scriptCache[src]) { clearInterval(poll); if (onload) onload(); }
+        }, 50);
+        return;
+    }
+    var s = document.createElement('script');
+    s.src = src; s.crossOrigin = 'anonymous';
+    s.onload = function() { _scriptCache[src] = true; if (onload) onload(); };
+    s.onerror = function() { console.warn('[PdfMax] Failed to load', src); };
+    document.head.appendChild(s);
+}
+var PDF_JS_SRC    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+var PDF_WORKER    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var KATEX_JS_SRC  = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+
 // Setup PDF.js worker
 if (window.pdfjsLib) {
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+    _scriptCache[PDF_JS_SRC] = true;
 }
-var pdfjsLib = window.pdfjsLib;
-var katex = window.katex;
+var pdfjsLib = window.pdfjsLib || null;
+var katex    = window.katex    || null;
+
+// Lazy-load PDF.js when first needed
+function ensurePdfJs(cb) {
+    if (pdfjsLib) { cb(pdfjsLib); return; }
+    loadScript(PDF_JS_SRC, function() {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+        pdfjsLib = window.pdfjsLib;
+        cb(pdfjsLib);
+    });
+}
+// Lazy-load KaTeX when first needed
+function ensureKatex(cb) {
+    if (katex) { cb(katex); return; }
+    loadScript(KATEX_JS_SRC, function() {
+        katex = window.katex;
+        cb(katex);
+    });
+}
 var GROQ_API_KEY = "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";
 var MAVERICK_KEY = "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";
 var GEMINI_KEYS = [
@@ -2710,7 +2751,7 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
+                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: config.signal || undefined })];
                 case 1:
                     res = _a.sent();
                     if (!!res.ok) return [3 /*break*/, 3];
@@ -2731,6 +2772,10 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
 // ============================================================
 // HELPERS
 // ============================================================
+/* ── Haptic feedback utility ── */
+function haptic(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms || 50); } catch(_e) {}
+}
 var safeExtractJSON = function (text) {
     try {
         var clean = text.replace(/```json\n?|```/g, '').trim();
@@ -2786,6 +2831,76 @@ function splitIntoPages(text) {
 // ============================================================
 // SKELETON LOADER
 // ============================================================
+// ============================================================
+// ERROR BOUNDARY
+// ============================================================
+/* __extends polyfill for ES5 class inheritance */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var ErrorBoundary = /** @class */ (function (_super) {
+    __extends(ErrorBoundary, _super);
+    function ErrorBoundary(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { hasError: false, error: null };
+        return _this;
+    }
+    ErrorBoundary.getDerivedStateFromError = function (error) {
+        return { hasError: true, error: error };
+    };
+    ErrorBoundary.prototype.componentDidCatch = function (error, info) {
+        console.error('[MaxOfPdf] Component error:', error, info);
+    };
+    ErrorBoundary.prototype.render = function () {
+        if (this.state.hasError) {
+            return React.createElement('div', {
+                style: {
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    justifyContent: 'center', minHeight: '100vh',
+                    background: '#0c0c0c', padding: '2rem', textAlign: 'center'
+                }
+            },
+                React.createElement('div', {
+                    style: {
+                        background: '#1a1a1d', border: '1px solid rgba(239,68,68,0.25)',
+                        borderRadius: '20px', padding: '2.5rem 2rem', maxWidth: '340px'
+                    }
+                },
+                    React.createElement('div', { style: { fontSize: '2.5rem', marginBottom: '1rem' } }, '⚠️'),
+                    React.createElement('h2', {
+                        style: { color: '#f87171', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.6rem' }
+                    }, 'কিছু একটা সমস্যা হয়েছে'),
+                    React.createElement('p', {
+                        style: { color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1.5rem' }
+                    }, 'অ্যাপের একটি অংশে ত্রুটি ঘটেছে।'),
+                    React.createElement('button', {
+                        onClick: function () { window.location.reload(); },
+                        style: {
+                            background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)',
+                            color: '#fca5a5', borderRadius: '12px', padding: '0.6rem 1.5rem',
+                            fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
+                        }
+                    }, 'পুনরায় লোড করুন')
+                )
+            );
+        }
+        return this.props.children;
+    };
+    return ErrorBoundary;
+}(React.Component));
+
 function SkeletonLoader() {
     return (React.createElement("div", { className: "w-full max-w-2xl flex flex-col min-h-screen animate-in fade-in px-6" },
         React.createElement("div", { className: "flex-grow pt-32 pb-48 space-y-4" }, __spreadArray([], Array(12), true).map(function (_, i) { return (React.createElement("div", { key: i, className: "h-4 bg-white/5 rounded-full animate-pulse", style: { width: "".concat(80 + Math.random() * 20, "%") } })); }))));
@@ -2805,7 +2920,7 @@ function HistoryModal(_a) {
                 React.createElement("div", null,
                     React.createElement("h3", { className: "display-serif text-2xl text-white" }, "History"),
                     React.createElement("p", { className: "text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1" }, "Previous Sessions")),
-                React.createElement("button", { onClick: onClose, className: "p-2 bg-white/5 rounded-full hover:bg-white/10 text-slate-400" },
+                React.createElement("button", { onClick: onClose, className: "p-2 bg-white/5 rounded-full hover:bg-white/10 text-slate-400", "aria-label": "বন্ধ করুন" },
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                         React.createElement("path", { d: "M18 6 6 18" }),
                         React.createElement("path", { d: "m6 6 12 12" })))),
@@ -2837,16 +2952,10 @@ function FormattedContent(_a) {
                 return React.createElement('mark', {
                     key: i,
                     style: {
-                        background: 'rgba(34,197,94,0.22)',
+                        background: 'transparent',
                         color: '#4ade80',
-                        borderRadius: '4px',
-                        padding: '1px 5px',
                         fontWeight: 700,
                         fontStyle: 'normal',
-                        border: '1px solid rgba(34,197,94,0.35)',
-                        boxDecorationBreak: 'clone',
-                        WebkitBoxDecorationBreak: 'clone',
-                        letterSpacing: '0.01em',
                     }
                 }, p.slice(2, -2));
             }
@@ -2863,9 +2972,9 @@ function FormattedContent(_a) {
             key: i,
             style: {
                 color: 'rgba(210,222,238,0.95)',
-                lineHeight: 1.8,
-                marginBottom: '8px',
-                fontSize: '13.5px',
+                lineHeight: 1.85,
+                marginBottom: '10px',
+                fontSize: '17px',
                 fontFamily: 'inherit',
             }
         }, renderInline(t)));
@@ -3170,7 +3279,7 @@ function AnalysisModal(_a) {
                                 isModelDropdownOpen && (React.createElement("div", { className: "absolute left-0 top-full mt-2 w-48 glass-dock rounded-xl p-1 border border-white/10 shadow-2xl z-[130] max-h-48 overflow-y-auto custom-scrollbar" }, Object.keys(MODEL_LABELS).map(function (k) { return (React.createElement("button", { key: k, onClick: function () { setIsModelDropdownOpen(false); if (onModelChange)
                                         onModelChange(k); }, className: "w-full text-left px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ".concat(data.modelId === k ? 'bg-indigo-600/20 text-indigo-300' : 'text-slate-500 hover:bg-white/5 hover:text-white') }, MODEL_LABELS[k])); }))))),
                         React.createElement("h2", { className: "display-serif text-3xl text-slate-200 font-medium italic animate-in fade-in break-words line-clamp-1" }, displayTitle)),
-                    React.createElement("button", { onClick: onClose, className: "p-3 hover:bg-white/5 rounded-full text-slate-500 hover:text-slate-200 transition-all" },
+                    React.createElement("button", { onClick: onClose, className: "p-3 hover:bg-white/5 rounded-full text-slate-500 hover:text-slate-200 transition-all", "aria-label": "বন্ধ করুন" },
                         React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                             React.createElement("path", { d: "M18 6 6 18" }),
                             React.createElement("path", { d: "m6 6 12 12" })))),
@@ -3390,11 +3499,11 @@ function AnalysisModal(_a) {
 // ============================================================
 function MaxDrawer(_a) {
     var _this = this;
-    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange;
+    var isOpen = _a.isOpen, onClose = _a.onClose, text = _a.text, _b = _a.currentPageText, currentPageText = _b === void 0 ? '' : _b, pageIndex = _a.pageIndex, drawerStateRef = _a.drawerStateRef, drawerActionsRef = _a.drawerActionsRef, activeStructureModel = _a.activeStructureModel, googleApiKey = _a.googleApiKey, onTabChange = _a.onTabChange, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onCacheChange = _a.onCacheChange;
     var _c = useState('summary'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState('current'), contextScope = _d[0], setContextScope = _d[1];
     var _f = useState(''), summary = _f[0], setSummary = _f[1];
-    var _g = useState({}), summaryCache = _g[0], setSummaryCache = _g[1];
+    var _g = useState(function() { return initialSummaryCache || {}; }), summaryCache = _g[0], setSummaryCache = _g[1];
     var _h = useState(false), isSummaryLoading = _h[0], setIsSummaryLoading = _h[1];
     var _j = useState(''), chatInput = _j[0], setChatInput = _j[1];
     var _k = useState([]), messages = _k[0], setMessages = _k[1];
@@ -3407,7 +3516,7 @@ function MaxDrawer(_a) {
     var _s = useState(false), closing = _s[0], setClosing = _s[1];
     /* ── Timeline state ── */
     var _tl0 = useState([]), timelineEvents = _tl0[0], setTimelineEvents = _tl0[1];
-    var _tl1 = useState({}), timelineCache = _tl1[0], setTimelineCache = _tl1[1];
+    var _tl1 = useState(function() { return initialTimelineCache || {}; }), timelineCache = _tl1[0], setTimelineCache = _tl1[1];
     var _tl2 = useState(false), isTimelineLoading = _tl2[0], setIsTimelineLoading = _tl2[1];
     var _tl3 = useState('gemini-lite'), activeTimelineModel = _tl3[0], setActiveTimelineModel = _tl3[1];
     var startY = useRef(0);
@@ -3456,8 +3565,10 @@ function MaxDrawer(_a) {
     useEffect(function () {
         if (!isOpen) return;
         var cacheKey = pageIndex + '-' + contextScope;
-        if (summaryCache[cacheKey]) { setSummary(summaryCache[cacheKey]); return; }
-        generateSummary(activeSummaryModel);
+        if (summaryCache[cacheKey]) { setSummary(summaryCache[cacheKey]); } else { generateSummary(activeSummaryModel); }
+        /* Pre-generate timeline in background so it's ready when user switches tabs */
+        var tlKey = 'tl-' + pageIndex + '-' + contextScope;
+        if (!timelineCache[tlKey]) { generateTimeline(activeTimelineModel); }
     }, [isOpen, pageIndex, contextScope]);
     /* Re-generate when summary model changes (always bypass cache) */
     useEffect(function () {
@@ -3529,7 +3640,9 @@ function MaxDrawer(_a) {
                     setSummary(result_1);
                     setSummaryCache(function (p) {
                         var _a;
-                        return (__assign(__assign({}, p), (_a = {}, _a[cacheKey] = result_1, _a)));
+                        var next = (__assign(__assign({}, p), (_a = {}, _a[cacheKey] = result_1, _a)));
+                        if (onCacheChange) onCacheChange({ summaryCache: next });
+                        return next;
                     });
                     return [3 /*break*/, 9];
                 case 7:
@@ -3564,7 +3677,7 @@ function MaxDrawer(_a) {
                 var parsed = safeExtractJSON(raw);
                 var events = (parsed && Array.isArray(parsed.events)) ? parsed.events : [];
                 setTimelineEvents(events);
-                setTimelineCache(function(prev) { var n = Object.assign({}, prev); n[cacheKey] = events; return n; });
+                setTimelineCache(function(prev) { var n = Object.assign({}, prev); n[cacheKey] = events; if (onCacheChange) onCacheChange({ timelineCache: n }); return n; });
             })
             .catch(function() { setTimelineEvents([]); })
             .finally(function() { setIsTimelineLoading(false); });
@@ -3742,14 +3855,6 @@ function MaxDrawer(_a) {
                         React.createElement("path", { d:"M21 3v6h-6" })),
                     (isSummary ? isSummaryLoading : isTimelineLoading) ? 'তৈরি হচ্ছে…' : 'পুনরায় তৈরি করুন')),
 
-            /* ── Keywords row (summary only) ── */
-            isSummary && !isSummaryLoading && summaryKeywords.length > 0 && React.createElement("div", { className: "md-keywords-row" },
-                summaryKeywords.map(function(kw, i) {
-                    return React.createElement("span", { key: i, className: "md-kw-chip", style:{ animationDelay: (i * 0.04) + 's' } },
-                        React.createElement("span", null, kwIcon(kw)),
-                        kw);
-                })),
-
             /* ── Scrollable content area ── */
             React.createElement("div", { className: "md-content-area custom-scrollbar", onTouchStart: function(e) { e.stopPropagation(); setIsDragging(false); } },
 
@@ -3819,7 +3924,7 @@ function MaxDrawer(_a) {
 // SETTINGS
 // ============================================================
 function Settings(_a) {
-    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onClose = _a.onClose;
+    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onSetMainFontSize = _a.onSetMainFontSize, onSetIlFontSize = _a.onSetIlFontSize, onClose = _a.onClose;
     var _c = useState('general'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState(0), dragY = _d[0], setDragY = _d[1];
     var _f = useState(false), isDragging = _f[0], setIsDragging = _f[1];
@@ -3926,6 +4031,8 @@ function Settings(_a) {
                             { label: 'Bolding Amount', color: 'indigo', val: BOLD_MAP[boldingLevel] || 0, min: 0, max: 4, step: 1, fmt: function (v) { return (BOLD_REV[v] ? BOLD_REV[v].replace('-', ' ') : ''); }, onChange: function (v) { return onSelectBoldingLevel(BOLD_REV[parseInt(v)]); } },
                             { label: 'Bold Brightness', color: 'fuchsia', val: boldness, min: 0.3, max: 1.0, step: 0.1, fmt: function (v) { return "".concat(Math.round(v * 100), "%"); }, onChange: function (v) { return onSetBoldness(parseFloat(v)); } },
                             { label: 'Line Spacing', color: 'emerald', val: lineSpacing, min: 1.0, max: 3.0, step: 0.1, fmt: function (v) { return "".concat(parseFloat(v).toFixed(1), "x"); }, onChange: function (v) { return onSetLineSpacing(parseFloat(v)); } },
+                            { label: 'Main Text Size', color: 'sky', val: mainFontSize, min: 12, max: 28, step: 1, fmt: function (v) { return "".concat(v, "px"); }, onChange: function (v) { return onSetMainFontSize(parseInt(v)); } },
+                            { label: 'Interlinear Size', color: 'violet', val: ilFontSize, min: 10, max: 22, step: 1, fmt: function (v) { return "".concat(v, "px"); }, onChange: function (v) { return onSetIlFontSize(parseInt(v)); } },
                         ].map(function (_a, i) {
                             var label = _a.label, color = _a.color, val = _a.val, min = _a.min, max = _a.max, step = _a.step, fmt = _a.fmt, onChange = _a.onChange;
                             return (React.createElement("div", { key: i, className: "space-y-3" },
@@ -4195,7 +4302,7 @@ function VocabTab() {
 // ============================================================
 function Reader(_a) {
     var _this = this;
-    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
+    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onStateChange = _a.onStateChange;
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
@@ -4263,6 +4370,7 @@ function Reader(_a) {
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
     var _x = useState(false), isAutoScrolling = _x[0], setIsAutoScrolling = _x[1];
+    var _hv = useState(true), headerVisible = _hv[0], setHeaderVisible = _hv[1];
     var _y = useState(false), isOriginalPdfOpen = _y[0], setIsOriginalPdfOpen = _y[1];
     var _z = useState(1.0), pdfViewerZoom = _z[0], setPdfViewerZoom = _z[1];
     var pdfCanvasRef = useRef(null);
@@ -4297,6 +4405,8 @@ function Reader(_a) {
     var _xr0 = useState(false), isXRayOpen = _xr0[0], setIsXRayOpen = _xr0[1];
     var _xr1 = useState(false), isXRayLoading = _xr1[0], setIsXRayLoading = _xr1[1];
     var _xr2 = useState(initialXrayCache || {}), xrayCache = _xr2[0], setXrayCache = _xr2[1];
+    var _sc0 = useState(initialSummaryCache || {}), drawerSummaryCache = _sc0[0], setDrawerSummaryCache = _sc0[1];
+    var _sc1 = useState(initialTimelineCache || {}), drawerTimelineCache = _sc1[0], setDrawerTimelineCache = _sc1[1];
     var _xr3 = useState('all'), xrayFilter = _xr3[0], setXrayFilter = _xr3[1];
     var _xr4 = useState(null), expandedXrayCard = _xr4[0], setExpandedXrayCard = _xr4[1];
     var xrayAbortRef = useRef(null);
@@ -4315,6 +4425,7 @@ function Reader(_a) {
     /* ── BS Detector (Skeptic Mode) state ── */
     var glowTimerRef = useRef(null);
     var triggerGlow = function(btnId) {
+        haptic(30);
         if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
         setActiveGlowBtn(btnId);
         glowTimerRef.current = setTimeout(function() { setActiveGlowBtn(null); }, 2100);
@@ -4331,10 +4442,12 @@ function Reader(_a) {
                 extractedPages: extractedPages,
                 highlights: highlights,
                 rewrittenPages: rewrittenPages,
-                xrayCache: xrayCache
+                xrayCache: xrayCache,
+                summaryCache: drawerSummaryCache,
+                timelineCache: drawerTimelineCache,
             });
         }
-    }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages]);
+    }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages, drawerSummaryCache, drawerTimelineCache]);
     var displayPages = useMemo(function () { return text ? splitIntoPages(text) : []; }, [text]);
     var totalPages = pdfFile ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1)) : displayPages.length;
     /* ── Shared markdown sanitizer: strips hallucinated syntax from AI output ── */
@@ -4365,9 +4478,12 @@ function Reader(_a) {
     };
     // Load PDF
     useEffect(function () {
-        if (!pdfFile || !pdfjsLib)
-            return;
-        var reader = new FileReader();
+        if (!pdfFile) return;
+        var cancelled = false;
+        var doLoad = function(lib) {
+            if (cancelled) return;
+            pdfjsLib = lib;
+            var reader = new FileReader();
         reader.onload = function (e) { return __awaiter(_this, void 0, void 0, function () {
             var doc, start, end, count, status_1, i, err_1;
             return __generator(this, function (_a) {
@@ -4394,6 +4510,9 @@ function Reader(_a) {
             });
         }); };
         reader.readAsArrayBuffer(pdfFile);
+        };
+        ensurePdfJs(doLoad);
+        return function() { cancelled = true; };
     }, [pdfFile]);
     // PDF Page Viewer
     useEffect(function () {
@@ -4408,7 +4527,7 @@ function Reader(_a) {
                         return [4 /*yield*/, pdfDoc.getPage(pageNum)];
                     case 1:
                         page = _a.sent();
-                        var dpr = window.devicePixelRatio || 1;
+                        var dpr = Math.min(window.devicePixelRatio || 1, 2.0);
                         var baseScale = window.innerWidth / page.getViewport({ scale: 1 }).width;
                         var renderScale = baseScale * pdfViewerZoom * dpr;
                         viewport = page.getViewport({ scale: renderScale });
@@ -4444,6 +4563,28 @@ function Reader(_a) {
         return function () { if (autoScrollRef.current)
             clearInterval(autoScrollRef.current); };
     }, [isAutoScrolling, autoScrollSpeed]);
+    /* ── Header hide/show on scroll ── */
+    useEffect(function () {
+        var lastY = window.scrollY;
+        var ticking = false;
+        var onScroll = function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function () {
+                var y = window.scrollY;
+                var delta = y - lastY;
+                if (delta > 6 && y > 60) {
+                    setHeaderVisible(false);
+                } else if (delta < -6) {
+                    setHeaderVisible(true);
+                }
+                lastY = y;
+                ticking = false;
+            });
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return function () { window.removeEventListener('scroll', onScroll); };
+    }, []);
     // PDF OCR scanning
     var OCR_ROTATION = ['gemini-lite'];
     useEffect(function () {
@@ -4484,7 +4625,7 @@ function Reader(_a) {
                             return [4 /*yield*/, pdfDoc.getPage(pdfPageNum)];
                         case 2:
                             page = _a.sent();
-                            viewport = page.getViewport({ scale: 2.0 });
+                            viewport = page.getViewport({ scale: 1.5 });
                             canvas = document.createElement('canvas');
                             context = canvas.getContext('2d');
                             canvas.height = viewport.height;
@@ -4494,7 +4635,7 @@ function Reader(_a) {
                             return [4 /*yield*/, page.render({ canvasContext: context, viewport: viewport }).promise];
                         case 3:
                             _a.sent();
-                            base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                            base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
                             boldingMap = { lower: 'Bold ONLY proper nouns (minimal).', upper_medium: 'Bold key nouns and main verbs.', medium: 'Bold key entities, verbs, numbers.', medium_high: 'Bold most nouns, verbs, adjectives.', high: 'Bold almost every significant word.' };
                             boldingInstruction = (boldingMap[boldingLevel] || boldingMap.high) + ' CRITICAL: When bolding a word, always include its attached suffixes and prefixes inside the ** markers. Example: write **শাহ ফাহাদকে** not **শাহ ফাহাদ**কে, write **সৌদির** not **সৌদি**র. The suffix/prefix must be inside the closing **.';
                             structureInstruction = structureMode === 'original' ? '1. STRUCTURE: Transcribe verbatim. Fix punctuation/spacing only.' : '1. STRUCTURE: Create organized version with headers and bullets.';
@@ -4647,36 +4788,42 @@ function Reader(_a) {
                         userP = "Context: \"".concat(fullContext, "\"\nAnalyze: \"").concat(cleanText, "\"");
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 7, 8, 9]);
+                        _a.trys.push([1, 5, 7, 8]);
                         analysis = {};
                         modelName = MODEL_LABELS[selectedModel] || 'AI';
-                        /* Try Llama Maverick first, fallback to Kimi K2 */
-                        return [4 /*yield*/, (function() {
-                            var tryFetch = function(apiKey, modelId) {
-                                return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
-                            };
-                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-maverick-17b-128e-instruct').then(function(res) {
-                                if (!res.ok && (res.status === 401 || res.status === 429 || res.status === 403)) {
-                                    return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
-                                }
-                                return res;
-                            }).catch(function() {
-                                return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
-                            });
-                        })()];
+                        if (!(selectedModel && selectedModel.includes('gemini'))) return [3 /*break*/, 3];
+                        /* ── Gemini path ── */
+                        return [4 /*yield*/, geminiGenerate(googleApiKey,
+                            selectedModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash',
+                            userP, { systemInstruction: sys + ' Output ONLY a valid JSON object. No markdown, no explanation.', signal: ctrl.signal })];
                     case 2:
-                        r = _a.sent();
-                        if (ctrl.signal.aborted)
-                            throw new Error('Aborted');
-                        return [4 /*yield*/, r.json()];
+                        var _gr2 = _a.sent();
+                        analysis = safeExtractJSON((_gr2 && _gr2.text) ? _gr2.text : '{}') || {};
+                        return [3 /*break*/, 4];
                     case 3:
-                        d = _a.sent();
-                        analysis = safeExtractJSON((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}') || {};
-                        return [3 /*break*/, 6];
-                    case 4: return [3 /*break*/, 6];
-                    case 5: return [3 /*break*/, 6];
-                        _a.label = 6;
-                    case 6:
+                        /* ── Groq path (Maverick → Kimi fallback) ── */
+                        return [4 /*yield*/, (function() {
+                            var tryGroq = function(apiKey, modelId) {
+                                return fetch('https://api.groq.com/openai/v1/chat/completions', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+                                    body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP + '\n\nOutput ONLY a valid JSON object. No markdown fences, no explanation.' }], model: modelId, temperature: 0.2, max_tokens: 500 }),
+                                    signal: ctrl.signal
+                                });
+                            };
+                            return tryGroq(MAVERICK_KEY, 'meta-llama/llama-4-maverick-17b-128e-instruct')
+                                .then(function(res) { return res.ok ? res : tryGroq(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905'); })
+                                .catch(function() { return tryGroq(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905'); })
+                                .then(function(res) { return res.json(); })
+                                .then(function(d) {
+                                    var raw = (d.choices && d.choices[0] && d.choices[0].message) ? d.choices[0].message.content : '{}';
+                                    analysis = safeExtractJSON(raw) || {};
+                                });
+                        })()];
+                    case 4:
+                        _a.sent();
+                        _a.label = 5;
+                    case 5:
                         if (ctrl.signal.aborted)
                             return [2 /*return*/];
                         result = { word: cleanText, meaning: String((analysis && analysis.meaning ? analysis.meaning : '') || 'নির্ধারিত নয়'), context: String((analysis && analysis.explanation ? analysis.explanation : '') || 'বিশ্লেষণ পাওয়া যায়নি।'), searchQuery: (analysis ? analysis.searchQuery : undefined), entityType: (analysis ? analysis.entityType : 'other') || 'other', wikiTitle: (analysis ? analysis.wikiTitle : undefined), smartQuery: (analysis ? analysis.smartQuery : undefined), modelName: modelName, modelId: selectedModel, rawSelection: selection };
@@ -4690,21 +4837,22 @@ function Reader(_a) {
                         return [3 /*break*/, 9];
                     case 7:
                         err_2 = _a.sent();
-                        if (err_2.name === 'AbortError' || err_2.message === 'Aborted')
+                        if (err_2.name === 'AbortError' || err_2.message === 'Aborted' || (ctrl && ctrl.signal && ctrl.signal.aborted))
                             return [2 /*return*/];
-                        if (err_2.name === 'AbortError' || err_2.message === 'Aborted') return [2 /*return*/];
                         if (retryCount < 1) {
                             onRotateKey();
                             setTimeout(function () { return analyzeText(selection, fullContext, selectedModel, retryCount + 1); }, 800);
                         }
                         else {
-                            setNotification({ message: 'API error — check your keys or try again.', type: 'error' });
+                            setNotification({ message: 'বিশ্লেষণ ব্যর্থ — API key বা নেটওয়ার্ক সমস্যা।', type: 'error' });
                             setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         }
                         return [3 /*break*/, 9];
                     case 8:
                         abortControllersRef.current.delete(selection.id);
                         setIsRegenerating(false);
+                        /* Always clear pending highlight on completion/abort/error */
+                        setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         return [7 /*endfinally*/];
                     case 9: return [2 /*return*/];
                 }
@@ -4763,6 +4911,7 @@ function Reader(_a) {
                 setPendingHighlights(function (p) { return __spreadArray(__spreadArray([], p, true), [sel], false); });
                 var curText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
                 analyzeText(sel, curText, activeModel);
+                haptic(40);
                 (window.getSelection() && window.getSelection().removeAllRanges());
             }
         }
@@ -4894,8 +5043,8 @@ function Reader(_a) {
         interlinearAbortRef.current = new AbortController();
         var isBangla = /[\u0980-\u09FF]/.test(nonEmptyLines[0] || '');
         var sysMsg = isBangla
-            ? 'You are a Bengali language expert and educator. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a deeper, more vivid Bengali paraphrase that adds clarity and context — NOT a shortened version\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
-            : 'You are an expert Bengali translator and educator. Given an array of text lines (may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length where each element is a rich, detailed Bengali translation of the corresponding input line.\n- Preserve markdown formatting: use **bold** for key terms, keep heading levels, keep bullet structure\n- For technical or complex lines, add brief clarifying context in Bengali\n- Write naturally flowing Bengali, not robotic\nRespond with ONLY a raw JSON array: ["translation 1","translation 2",...]. No explanation, no markdown fences.';
+            ? 'তুমি একজন দক্ষ বাংলা লেখক। নিচের প্রতিটি লাইনের একটি সহজ, স্বাভাবিক বাংলা ব্যাখ্যা লেখো — যেন একজন বন্ধু বুঝিয়ে দিচ্ছে। নিয়ম:\n- সহজ কথ্য বাংলায় লেখো, সাহিত্যিক বা অনুবাদমূলক ভাষা ব্যবহার করো না\n- কোনো markdown (**, ##, -) ব্যবহার করো না — শুধু plain text\n- জটিল শব্দ বা ধারণা থাকলে সহজভাবে বলো\n- মূল অর্থ ঠিক রেখে নিজের ভাষায় বলো\nReply with ONLY a raw JSON array, same length as input. No markdown fences, no explanation.'
+            : 'তুমি একজন দক্ষ বাংলা অনুবাদক। নিচের ইংরেজি লাইনগুলো স্বাভাবিক, কথ্য বাংলায় অনুবাদ করো — যেন একজন বাংলাদেশি শিক্ষিত মানুষ বলছে। নিয়ম:\n- অনুবাদ শুনতে যেন মানুষের লেখা মনে হয়, রোবটিক বা dictionary-style নয়\n- technical terms বাংলায় থাকলে সেগুলো বাংলায় বলার চেষ্টা করো, না পারলে ইংরেজি রাখো\n- কোনো markdown (**, ##, -) ব্যবহার করো না — শুধু plain text\n- বাক্যের গঠন স্বাভাবিক বাংলায় হোক, word-by-word অনুবাদ নয়\n- উদাহরণ: "The law was passed" → "আইনটি পাস হয়েছিল" নয়, বরং "আইনটা পাশ হয়ে গেল"\nReply with ONLY a raw JSON array, same length as input. No markdown fences, no explanation.';
         var userMsg = JSON.stringify(nonEmptyLines);
         fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -5438,7 +5587,7 @@ function Reader(_a) {
                 var h_1 = hlR.data;
                 var hid = h_1.id || "".concat(h_1.pageIndex, "-").concat(h_1.start, "-").concat(h_1.end);
                 var isPend_1 = hlR.type === 'pending-highlight';
-                content = React.createElement("mark", { key: "hl".concat(p1), "data-hid": hid, className: "premium-highlight ".concat(isPend_1 ? 'highlight-pending' : 'highlight-final', " transition-colors cursor-pointer"), onClick: function (e) { if (isPend_1)
+                content = React.createElement("span", { key: "hl".concat(p1), "data-hid": hid, style: { cursor: isPend_1 ? 'default' : 'pointer' }, onClick: function (e) { if (isPend_1)
                         return; e.preventDefault(); e.stopPropagation(); setModalData(h_1.data); setIsAutoOpen(false); setIsModalOpen(true); } }, content);
             }
             var skR = ranges.find(function (r) { return r.type === 'partial-skeleton' && r.start <= p1 && r.end >= p2; });
@@ -5597,15 +5746,9 @@ function Reader(_a) {
         var ilNode = null;
         if (interlinearMode && line.trim().length > 2) {
             if (ilText) {
-                /* Render markdown in interlinear: parse **bold** into <strong> */
-                var ilParts = ilText.split(/(\*\*.*?\*\*)/g);
-                var ilRendered = ilParts.map(function(p, pi) {
-                    if (p.startsWith('**') && p.endsWith('**')) {
-                        return React.createElement('strong', { key: pi, style: { fontWeight: 800, fontStyle: 'normal', color: 'rgba(147,197,253,0.85)' } }, p.slice(2, -2));
-                    }
-                    return p;
-                });
-                ilNode = React.createElement("span", { key: bk+"-il", className: "interlinear-line" }, ilRendered);
+                /* Strip markdown from interlinear — plain text only, no bold */
+                var ilPlain = ilText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/^#+\s*/, '').replace(/^[-*]\s*/, '');
+                ilNode = React.createElement("span", { key: bk+"-il", className: "interlinear-line", style: { fontSize: (ilFontSize || 14) + 'px' } }, ilPlain);
             } else if (showIlSkeleton) {
                 ilNode = React.createElement("span", { key: bk+"-ilsk", className: "interlinear-skeleton", style:{width: (55 + Math.abs(lineIdx * 7) % 35) + '%'} });
             }
@@ -5652,10 +5795,11 @@ function Reader(_a) {
     }, [ehTooltip]);
 
 
+
     var displayHeader = (function () { var t = getPageHeader(); var ws = t.split(' '); return ws.length > 2 ? ws.slice(0, 2).join(' ') + '...' : t; })();
     return (React.createElement("div", { className: "w-full flex flex-col min-h-screen px-4 pb-40" },
         React.createElement(AnalysisModal, { isOpen: isModalOpen, isAutoOpen: isAutoOpen, data: modalData, isLoading: isRegenerating, autoPlayTTS: autoPlayTTS, onClose: function () { return setIsModalOpen(false); }, onModelChange: handleModelChange, googleApiKey: googleApiKey }),
-        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab }),
+        React.createElement(MaxDrawer, { isOpen: isMaxDrawerOpen, text: cumulativeText, currentPageText: currentPageText, pageIndex: currentPage, onClose: function () { return setIsMaxDrawerOpen(false); }, drawerStateRef: drawerStateRef, drawerActionsRef: drawerActionsRef, activeStructureModel: activeStructureModel, googleApiKey: googleApiKey, onTabChange: setDrawerTab, initialSummaryCache: drawerSummaryCache, initialTimelineCache: drawerTimelineCache, onCacheChange: function(patch) { if (patch.summaryCache) setDrawerSummaryCache(patch.summaryCache); if (patch.timelineCache) setDrawerTimelineCache(patch.timelineCache); } }),
         /* ── LENS Scanning Overlay ── */
         entityScanLoading && React.createElement("div", { className: "lens-scan-overlay" },
             React.createElement("div", { className: "lens-loader" },
@@ -5876,7 +6020,7 @@ function Reader(_a) {
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                         React.createElement("path", { d: "M18 6 6 18" }),
                         React.createElement("path", { d: "m6 6 12 12" })))))),
-        React.createElement("header", { className: "fixed top-0 left-0 w-full py-4 px-6 flex justify-between items-center z-50 border-b ".concat(headerBgClass()), style: { willChange: 'transform', transform: 'translateZ(0)' } },
+        React.createElement("header", { className: "fixed top-0 left-0 w-full py-4 px-6 flex justify-between items-center z-50 border-b ".concat(headerBgClass()), style: { willChange: 'transform', transform: headerVisible ? 'translateY(0)' : 'translateY(-110%)', transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)' } },
             React.createElement("div", { className: "flex items-center min-w-0 flex-1 mr-4" },
                 React.createElement("button", { onClick: function () { return setShowHistoryControls(!showHistoryControls); }, className: "flex items-center space-x-3 text-left group focus:outline-none" },
                     React.createElement("div", { className: "w-8 h-8 shrink-0 rounded-lg flex items-center justify-center border transition-colors ".concat(readerTheme === 'light' || readerTheme === 'sepia' ? 'bg-slate-200 border-slate-300' : 'bg-slate-900 border-white/5 group-hover:border-white/20') },
@@ -5891,7 +6035,7 @@ function Reader(_a) {
                             "/",
                             totalPages)))),
             React.createElement("div", { className: "flex items-center space-x-3 shrink-0" },
-                React.createElement("button", { onClick: function () { return setIsAutoScrolling(!isAutoScrolling); }, className: "p-2 rounded-full border transition-all ".concat(isAutoScrolling ? 'text-cyan-400 bg-cyan-500/20 border-cyan-500/20 animate-pulse' : 'border-white/5 bg-white/5 text-slate-500'), title: "Auto-scroll" },
+                React.createElement("button", { onClick: function () { haptic(30); setIsAutoScrolling(!isAutoScrolling); }, className: "p-2 rounded-full border transition-all ".concat(isAutoScrolling ? 'text-cyan-400 bg-cyan-500/20 border-cyan-500/20 animate-pulse' : 'border-white/5 bg-white/5 text-slate-500'), title: "Auto-scroll", "aria-label": isAutoScrolling ? "অটো স্ক্রল বন্ধ করুন" : "অটো স্ক্রল চালু করুন", "aria-pressed": isAutoScrolling },
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, isAutoScrolling ? React.createElement(React.Fragment, null,
                         React.createElement("rect", { x: "6", y: "4", width: "4", height: "16" }),
                         React.createElement("rect", { x: "14", y: "4", width: "4", height: "16" })) : React.createElement(React.Fragment, null,
@@ -5904,7 +6048,7 @@ function Reader(_a) {
                         React.createElement("path", { d: "M14 17H5" }),
                         React.createElement("circle", { cx: "17", cy: "17", r: "3" }),
                         React.createElement("circle", { cx: "7", cy: "7", r: "3" }))),
-                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages, { highlights: highlights, rewrittenPages: rewrittenPages, xrayCache: xrayCache }); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5') }, "Exit"))),
+                React.createElement("button", { onClick: function () { return onBack(currentPage, extractedPages, { highlights: highlights, rewrittenPages: rewrittenPages, xrayCache: xrayCache }); }, className: "text-[10px] font-bold tracking-[0.2em] uppercase transition-all px-4 py-2 rounded-full border ".concat(readerTheme === 'light' ? 'text-slate-600 border-slate-200' : 'text-slate-500 hover:text-slate-200 border-white/5'), "aria-label": "রিডার থেকে বের হন" }, "Exit"))),
         /* ── Portion Selection Mode Banner ── */
         isSelectingPortion && React.createElement("div", {
             style:{
@@ -6120,7 +6264,7 @@ function Reader(_a) {
                     React.createElement("div", { className: "xray-scroll" }, xrayBody)));
         })(),
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
-            React.createElement("div", { ref: containerRef, className: "manuscript-text serif text-xl ".concat(getThemeTextClass()), style: { lineHeight: lineSpacing } }, renderContent())),
+            React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px' } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: 'translateZ(0)', isolation: 'isolate' } },
             React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
@@ -6151,7 +6295,7 @@ function Reader(_a) {
                     React.createElement("button", { onClick: function () { triggerGlow('max'); setIsMaxDrawerOpen(true); }, className: "flex items-center justify-center w-10 h-10 shrink-0 rounded-full transition-all ".concat(readerTheme === 'light' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30') },
                         React.createElement("span", { className: "text-[10px] font-black" }, "MAX")),
                     React.createElement("button", {
-                        onClick: function() { triggerGlow('intl'); toggleInterlinear(); },
+                        onClick: function() { triggerGlow('intl'); toggleInterlinear(); }, 'aria-label': 'ইন্টারলিনিয়ার অনুবাদ', 'aria-pressed': interlinearMode,
                         className: "intl-btn" + (interlinearMode ? " active" : ""),
                         title: "Interlinear — বাংলা অনুবাদ"
                     },
@@ -6165,7 +6309,7 @@ function Reader(_a) {
                                 React.createElement("line", { x1: "3", y1: "18", x2: "15", y2: "18", strokeDasharray: "2 1", opacity: "0.5" })),
                         React.createElement("span", { className: "intl-btn-label" }, "বাংলা")),
                     React.createElement("button", {
-                        onClick: function() { triggerGlow('lens'); toggleEntityHighlight(); },
+                        onClick: function() { triggerGlow('lens'); toggleEntityHighlight(); }, 'aria-label': 'এন্টিটি হাইলাইট', 'aria-pressed': entityHighlightMode,
                         className: "bino-btn" + (entityHighlightMode ? " active" : ""),
                         title: "Entity Highlight — Characters & Places"
                     },
@@ -6220,22 +6364,25 @@ function Editor(_a) {
                 setSelectedRange(initialPdfRange);
             setUploadProgress(100);
             var reader = new FileReader();
-            reader.onload = function (e) { return __awaiter(_this, void 0, void 0, function () {
-                var doc;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!(e.target && e.target.result && pdfjsLib)) return [3 /*break*/, 2];
-                            return [4 /*yield*/, pdfjsLib.getDocument(e.target.result).promise];
-                        case 1:
-                            doc = _a.sent();
-                            setPdfDoc(doc);
-                            setTotalPdfPages(doc.numPages);
-                            _a.label = 2;
-                        case 2: return [2 /*return*/];
-                    }
-                });
-            }); };
+            reader.onload = function (e) {
+                var result = e.target && e.target.result ? e.target.result : null;
+                if (!result) return;
+                ensurePdfJs(function(lib) { return __awaiter(_this, void 0, void 0, function () {
+                    var doc;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                pdfjsLib = lib;
+                                return [4 /*yield*/, pdfjsLib.getDocument(result).promise];
+                            case 1:
+                                doc = _a.sent();
+                                setPdfDoc(doc);
+                                setTotalPdfPages(doc.numPages);
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+            };
             reader.readAsArrayBuffer(initialPdfFile);
         }
     }, [initialPdfFile]);
@@ -6256,7 +6403,7 @@ function Editor(_a) {
                     return [4 /*yield*/, pdfDoc.getPage(pageNum)];
                 case 2:
                     page = _a.sent();
-                    viewport = page.getViewport({ scale: 2.0 });
+                    viewport = page.getViewport({ scale: 1.2 });
                     canvas = document.createElement('canvas');
                     ctx = canvas.getContext('2d');
                     canvas.height = viewport.height;
@@ -6265,7 +6412,7 @@ function Editor(_a) {
                     return [4 /*yield*/, page.render({ canvasContext: ctx, viewport: viewport }).promise];
                 case 3:
                     _a.sent();
-                    setPreviewImage(canvas.toDataURL('image/jpeg'));
+                    setPreviewImage(canvas.toDataURL('image/jpeg', 0.7));
                     _a.label = 4;
                 case 4: return [3 /*break*/, 6];
                 case 5:
@@ -6445,35 +6592,39 @@ function Editor(_a) {
                     reader = new FileReader();
                     reader.onprogress = function (e) { if (e.lengthComputable)
                         setUploadProgress(Math.round(e.loaded / e.total * 100)); };
-                    reader.onload = function (e) { return __awaiter(_this, void 0, void 0, function () {
-                        var doc, err_4;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    setUploadProgress(100);
-                                    if (!(e.target && e.target.result && pdfjsLib)) return [3 /*break*/, 5];
-                                    _a.label = 1;
-                                case 1:
-                                    _a.trys.push([1, 3, 4, 5]);
-                                    return [4 /*yield*/, pdfjsLib.getDocument(e.target.result).promise];
-                                case 2:
-                                    doc = _a.sent();
-                                    setPdfDoc(doc);
-                                    setTotalPdfPages(doc.numPages);
-                                    setSelectedRange({ start: 1, end: doc.numPages });
-                                    setActivePreviewPage(1);
-                                    return [3 /*break*/, 5];
-                                case 3:
-                                    err_4 = _a.sent();
-                                    console.error(err_4);
-                                    return [3 /*break*/, 5];
-                                case 4:
-                                    setIsPdfLoading(false);
-                                    return [7 /*endfinally*/];
-                                case 5: return [2 /*return*/];
-                            }
-                        });
-                    }); };
+                    reader.onload = function (e) {
+                        var result = e.target && e.target.result ? e.target.result : null;
+                        if (!result) return;
+                        setUploadProgress(100);
+                        ensurePdfJs(function(lib) { return __awaiter(_this, void 0, void 0, function () {
+                            var doc, err_4;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        pdfjsLib = lib;
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, 4, 5]);
+                                        return [4 /*yield*/, pdfjsLib.getDocument(result).promise];
+                                    case 2:
+                                        doc = _a.sent();
+                                        setPdfDoc(doc);
+                                        setTotalPdfPages(doc.numPages);
+                                        setSelectedRange({ start: 1, end: doc.numPages });
+                                        setActivePreviewPage(1);
+                                        return [3 /*break*/, 5];
+                                    case 3:
+                                        err_4 = _a.sent();
+                                        console.error(err_4);
+                                        return [3 /*break*/, 5];
+                                    case 4:
+                                        setIsPdfLoading(false);
+                                        return [7 /*endfinally*/];
+                                    case 5: return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                    };
                     reader.readAsArrayBuffer(file);
                 }
             }
@@ -6717,6 +6868,8 @@ function App() {
     var _rc1 = useState([]), cachedHighlights = _rc1[0], setCachedHighlights = _rc1[1];
     var _rc2 = useState({}), cachedRewrittenPages = _rc2[0], setCachedRewrittenPages = _rc2[1];
     var _rc3 = useState({}), cachedXrayCache = _rc3[0], setCachedXrayCache = _rc3[1];
+    var _rc4 = useState({}), cachedSummaryCache = _rc4[0], setCachedSummaryCache = _rc4[1];
+    var _rc5 = useState({}), cachedTimelineCache = _rc5[0], setCachedTimelineCache = _rc5[1];
     var _h = useState(false), isSettingsOpen = _h[0], setIsSettingsOpen = _h[1];
     var _j = useState('gemini-lite'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
     var _k = useState('gemini-lite'), activeStructureModel = _k[0], setActiveStructureModel = _k[1];
@@ -6729,8 +6882,50 @@ function App() {
     var _s = useState(2), autoScrollSpeed = _s[0], setAutoScrollSpeed = _s[1];
     var _t = useState(false), autoPlayTTS = _t[0], setAutoPlayTTS = _t[1];
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
+    var _fs1 = useState(20), mainFontSize = _fs1[0], setMainFontSize = _fs1[1];
+    var _fs2 = useState(14), ilFontSize = _fs2[0], setIlFontSize = _fs2[1];
+
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
     var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
+    /* ── Auto-save draft session every 10s ── */
+    useEffect(function() {
+        if (!state.isReading || pdfFile) return; /* only for text sessions (PDF files not serializable) */
+        var iv = setInterval(function() {
+            try {
+                var draft = {
+                    ts: Date.now(),
+                    rawText: state.rawText,
+                    currentPage: lastPageIndex,
+                    highlights: cachedHighlights,
+                    rewrittenPages: cachedRewrittenPages,
+                    xrayCache: cachedXrayCache,
+                    summaryCache: cachedSummaryCache,
+                    timelineCache: cachedTimelineCache,
+                };
+                localStorage.setItem('maxofpdf_draft', JSON.stringify(draft));
+            } catch(e) {}
+        }, 10000);
+        return function() { clearInterval(iv); };
+    }, [state.isReading, state.rawText, pdfFile, lastPageIndex, cachedHighlights, cachedRewrittenPages, cachedXrayCache, cachedSummaryCache, cachedTimelineCache]);
+    /* ── Restore draft on init (if < 30 min old and no active session) ── */
+    useEffect(function() {
+        if (state.isReading) return;
+        try {
+            var raw = localStorage.getItem('maxofpdf_draft');
+            if (!raw) return;
+            var draft = JSON.parse(raw);
+            if (!draft || !draft.rawText || (Date.now() - draft.ts) > 30 * 60 * 1000) return;
+            /* Only restore if user has no active reading session */
+            setCachedHighlights(draft.highlights || []);
+            setCachedRewrittenPages(draft.rewrittenPages || {});
+            setCachedXrayCache(draft.xrayCache || {});
+            setCachedSummaryCache(draft.summaryCache || {});
+            setCachedTimelineCache(draft.timelineCache || {});
+            setLastPageIndex(draft.currentPage || 0);
+            setState({ rawText: draft.rawText, isReading: true });
+            localStorage.removeItem('maxofpdf_draft');
+        } catch(e) {}
+    }, []); /* run once on mount */
     /* Listen for clear-history event dispatched from Settings */
     useEffect(function() {
         var handler = function() { setHistory([]); };
@@ -6748,7 +6943,9 @@ function App() {
                 extractedPages: finalExtracted, lastPageIndex: finalLastPage,
                 highlights: (richState && richState.highlights) || [],
                 rewrittenPages: (richState && richState.rewrittenPages) || {},
-                xrayCache: (richState && richState.xrayCache) || {}
+                xrayCache: (richState && richState.xrayCache) || {},
+                summaryCache: (richState && richState.summaryCache) || {},
+                timelineCache: (richState && richState.timelineCache) || {}
             }
         };
         setHistory(function (p) {
@@ -6764,8 +6961,9 @@ function App() {
     var handleStartReading = function (text) {
         setPdfFile(null); setPdfRange(null); setExtractedCache({}); setLastPageIndex(0);
         setCachedHighlights([]); setCachedRewrittenPages({}); setCachedXrayCache({});
+        setCachedSummaryCache({}); setCachedTimelineCache({});
         /* Save entry to history immediately */
-        var item = { id: crypto.randomUUID(), type: 'text', title: text.slice(0, 30) + '...', timestamp: Date.now(), data: { rawText: text, pdfFile: null, pdfRange: null, extractedPages: {}, lastPageIndex: 0, highlights: [], rewrittenPages: {}, xrayCache: {} } };
+        var item = { id: crypto.randomUUID(), type: 'text', title: text.slice(0, 30) + '...', timestamp: Date.now(), data: { rawText: text, pdfFile: null, pdfRange: null, extractedPages: {}, lastPageIndex: 0, highlights: [], rewrittenPages: {}, xrayCache: {}, summaryCache: {}, timelineCache: {} } };
         setHistory(function(p) {
             var next = __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10);
             try { localStorage.setItem('maxofpdf_history', JSON.stringify(next.filter(function(x){ return !x.data.pdfFile; }))); } catch(e) {}
@@ -6779,17 +6977,24 @@ function App() {
         if (!isSameFile || !isSameRange) {
             setExtractedCache({}); setLastPageIndex(0);
             setCachedHighlights([]); setCachedRewrittenPages({}); setCachedXrayCache({});
+            setCachedSummaryCache({}); setCachedTimelineCache({});
         }
         setPdfFile(file);
         setPdfRange(range || null);
         /* Save entry to history immediately */
-        var item = { id: crypto.randomUUID(), type: 'pdf', title: file.name, timestamp: Date.now(), data: { rawText: '', pdfFile: file, pdfRange: range || null, extractedPages: (!isSameFile || !isSameRange) ? {} : extractedCache, lastPageIndex: (!isSameFile || !isSameRange) ? 0 : lastPageIndex, highlights: (!isSameFile || !isSameRange) ? [] : cachedHighlights, rewrittenPages: (!isSameFile || !isSameRange) ? {} : cachedRewrittenPages, xrayCache: (!isSameFile || !isSameRange) ? {} : cachedXrayCache } };
+        var item = { id: crypto.randomUUID(), type: 'pdf', title: file.name, timestamp: Date.now(), data: { rawText: '', pdfFile: file, pdfRange: range || null, extractedPages: (!isSameFile || !isSameRange) ? {} : extractedCache, lastPageIndex: (!isSameFile || !isSameRange) ? 0 : lastPageIndex, highlights: (!isSameFile || !isSameRange) ? [] : cachedHighlights, rewrittenPages: (!isSameFile || !isSameRange) ? {} : cachedRewrittenPages, xrayCache: (!isSameFile || !isSameRange) ? {} : cachedXrayCache, summaryCache: (!isSameFile || !isSameRange) ? {} : cachedSummaryCache, timelineCache: (!isSameFile || !isSameRange) ? {} : cachedTimelineCache } };
         setHistory(function(p) { return __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10); });
         setState({ rawText: '', isReading: true });
     };
     var handleExitReader = function (curPage, curExtracted, richState) {
         setExtractedCache(curExtracted); setLastPageIndex(curPage);
-        if (richState) { setCachedHighlights(richState.highlights || []); setCachedRewrittenPages(richState.rewrittenPages || {}); setCachedXrayCache(richState.xrayCache || {}); }
+        if (richState) {
+            setCachedHighlights(richState.highlights || []);
+            setCachedRewrittenPages(richState.rewrittenPages || {});
+            setCachedXrayCache(richState.xrayCache || {});
+            if (richState.summaryCache) setCachedSummaryCache(richState.summaryCache);
+            if (richState.timelineCache) setCachedTimelineCache(richState.timelineCache);
+        }
         addToHistory(curPage, curExtracted, pdfFile, pdfRange, state.rawText, richState);
         setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); });
     };
@@ -6801,6 +7006,8 @@ function App() {
         setCachedHighlights(item.data.highlights || []);
         setCachedRewrittenPages(item.data.rewrittenPages || {});
         setCachedXrayCache(item.data.xrayCache || {});
+        setCachedSummaryCache(item.data.summaryCache || {});
+        setCachedTimelineCache(item.data.timelineCache || {});
         setState({ rawText: item.data.rawText, isReading: true });
     };
     /* Called by Reader whenever state changes — keeps history in sync */
@@ -6808,14 +7015,18 @@ function App() {
         setCachedHighlights(richState.highlights || []);
         setCachedRewrittenPages(richState.rewrittenPages || {});
         setCachedXrayCache(richState.xrayCache || {});
+        if (richState.summaryCache) setCachedSummaryCache(richState.summaryCache);
+        if (richState.timelineCache) setCachedTimelineCache(richState.timelineCache);
         if (richState.extractedPages) setExtractedCache(richState.extractedPages);
         if (richState.currentPage !== undefined) setLastPageIndex(richState.currentPage);
         /* Live-update the top history entry */
         setHistory(function(prev) {
             if (!prev || prev.length === 0) return prev;
             var top = prev[0];
-            var updated = __assign(__assign({}, top), { timestamp: Date.now(), data: __assign(__assign({}, top.data), { lastPageIndex: richState.currentPage !== undefined ? richState.currentPage : top.data.lastPageIndex, extractedPages: richState.extractedPages || top.data.extractedPages, highlights: richState.highlights || top.data.highlights, rewrittenPages: richState.rewrittenPages || top.data.rewrittenPages, xrayCache: richState.xrayCache || top.data.xrayCache }) });
-            return __spreadArray([updated], prev.slice(1), true);
+            var updated = __assign(__assign({}, top), { timestamp: Date.now(), data: __assign(__assign({}, top.data), { lastPageIndex: richState.currentPage !== undefined ? richState.currentPage : top.data.lastPageIndex, extractedPages: richState.extractedPages || top.data.extractedPages, highlights: richState.highlights || top.data.highlights, rewrittenPages: richState.rewrittenPages || top.data.rewrittenPages, xrayCache: richState.xrayCache || top.data.xrayCache, summaryCache: richState.summaryCache || top.data.summaryCache, timelineCache: richState.timelineCache || top.data.timelineCache }) });
+            var next = __spreadArray([updated], prev.slice(1), true);
+            try { localStorage.setItem('maxofpdf_history', JSON.stringify(next.filter(function(x){ return !x.data.pdfFile; }))); } catch(e) {}
+            return next;
         });
     };
     var getBg = function () {
@@ -6830,11 +7041,16 @@ function App() {
         }
     };
     return (React.createElement("div", { className: "min-h-screen transition-colors duration-700 font-sans ".concat(getBg()) },
-        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey })) : (React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, initialHighlights: cachedHighlights, initialRewrittenPages: cachedRewrittenPages, initialXrayCache: cachedXrayCache, onStateChange: handleReaderStateChange }))),
-        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onClose: function () { return setIsSettingsOpen(false); } })));
+        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(ErrorBoundary, null, React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey }))) : (React.createElement(ErrorBoundary, null, React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, mainFontSize: mainFontSize, ilFontSize: ilFontSize, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, initialHighlights: cachedHighlights, initialRewrittenPages: cachedRewrittenPages, initialXrayCache: cachedXrayCache, initialSummaryCache: cachedSummaryCache, initialTimelineCache: cachedTimelineCache, onStateChange: handleReaderStateChange })))),
+        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, mainFontSize: mainFontSize, ilFontSize: ilFontSize, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onSetMainFontSize: setMainFontSize, onSetIlFontSize: setIlFontSize, onClose: function () { return setIsSettingsOpen(false); } })));
 }
 var container = document.getElementById('root');
-ReactDOM.render(React.createElement(App, null), container);
+ReactDOM.render(
+    React.createElement(ErrorBoundary, null,
+        React.createElement(App, null)
+    ),
+    container
+);
 
 
 
