@@ -3566,9 +3566,6 @@ function MaxDrawer(_a) {
         if (!isOpen) return;
         var cacheKey = pageIndex + '-' + contextScope;
         if (summaryCache[cacheKey]) { setSummary(summaryCache[cacheKey]); } else { generateSummary(activeSummaryModel); }
-        /* Pre-generate timeline in background so it's ready when user switches tabs */
-        var tlKey = 'tl-' + pageIndex + '-' + contextScope;
-        if (!timelineCache[tlKey]) { generateTimeline(activeTimelineModel); }
     }, [isOpen, pageIndex, contextScope]);
     /* Re-generate when summary model changes (always bypass cache) */
     useEffect(function () {
