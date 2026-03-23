@@ -6856,7 +6856,7 @@ function App() {
             var saved = localStorage.getItem('maxofpdf_history');
             if (saved) {
                 var parsed = JSON.parse(saved);
-                return parsed.filter(function(x){ return x && x.data && !x.data.pdfFile; });
+                return parsed.filter(function(x){ return x && x.data; });
             }
         } catch(e) {}
         return [];
@@ -6947,9 +6947,15 @@ function App() {
         };
         setHistory(function (p) {
             var next = __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10);
-            /* Persist to localStorage — skip PDF entries (File objects not serializable) */
+            /* Persist to localStorage — strip File objects, keep all other data */
             try {
-                var serializable = next.filter(function(x){ return !x.data.pdfFile; });
+                var serializable = next.map(function(x) {
+                    if (!x.data.pdfFile) return x;
+                    var d = Object.assign({}, x.data);
+                    delete d.pdfFile;
+                    d.pdfMeta = { name: x.data.pdfFile.name, size: x.data.pdfFile.size };
+                    return Object.assign({}, x, { data: d });
+                });
                 localStorage.setItem('maxofpdf_history', JSON.stringify(serializable));
             } catch(e) {}
             return next;
@@ -6963,7 +6969,15 @@ function App() {
         var item = { id: crypto.randomUUID(), type: 'text', title: text.slice(0, 30) + '...', timestamp: Date.now(), data: { rawText: text, pdfFile: null, pdfRange: null, extractedPages: {}, lastPageIndex: 0, highlights: [], rewrittenPages: {}, xrayCache: {}, summaryCache: {}, timelineCache: {} } };
         setHistory(function(p) {
             var next = __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10);
-            try { localStorage.setItem('maxofpdf_history', JSON.stringify(next.filter(function(x){ return !x.data.pdfFile; }))); } catch(e) {}
+            try {
+                var ser = next.map(function(x) {
+                    if (!x.data.pdfFile) return x;
+                    var d = Object.assign({}, x.data); delete d.pdfFile;
+                    d.pdfMeta = { name: x.data.pdfFile.name, size: x.data.pdfFile.size };
+                    return Object.assign({}, x, { data: d });
+                });
+                localStorage.setItem('maxofpdf_history', JSON.stringify(ser));
+            } catch(e) {}
             return next;
         });
         setState({ rawText: text, isReading: true });
@@ -6996,8 +7010,8 @@ function App() {
         setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); });
     };
     var handleRestoreHistory = function (item) {
-        setPdfFile(item.data.pdfFile);
-        setPdfRange(item.data.pdfRange);
+        setPdfFile(item.data.pdfFile || null);
+        setPdfRange(item.data.pdfRange || null);
         setExtractedCache(item.data.extractedPages || {});
         setLastPageIndex(item.data.lastPageIndex || 0);
         setCachedHighlights(item.data.highlights || []);
@@ -7022,7 +7036,15 @@ function App() {
             var top = prev[0];
             var updated = __assign(__assign({}, top), { timestamp: Date.now(), data: __assign(__assign({}, top.data), { lastPageIndex: richState.currentPage !== undefined ? richState.currentPage : top.data.lastPageIndex, extractedPages: richState.extractedPages || top.data.extractedPages, highlights: richState.highlights || top.data.highlights, rewrittenPages: richState.rewrittenPages || top.data.rewrittenPages, xrayCache: richState.xrayCache || top.data.xrayCache, summaryCache: richState.summaryCache || top.data.summaryCache, timelineCache: richState.timelineCache || top.data.timelineCache }) });
             var next = __spreadArray([updated], prev.slice(1), true);
-            try { localStorage.setItem('maxofpdf_history', JSON.stringify(next.filter(function(x){ return !x.data.pdfFile; }))); } catch(e) {}
+            try {
+                var ser = next.map(function(x) {
+                    if (!x.data.pdfFile) return x;
+                    var d = Object.assign({}, x.data); delete d.pdfFile;
+                    d.pdfMeta = { name: x.data.pdfFile.name, size: x.data.pdfFile.size };
+                    return Object.assign({}, x, { data: d });
+                });
+                localStorage.setItem('maxofpdf_history', JSON.stringify(ser));
+            } catch(e) {}
             return next;
         });
     };
