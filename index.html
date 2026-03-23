@@ -4446,7 +4446,11 @@ function Reader(_a) {
         }
     }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages, drawerSummaryCache, drawerTimelineCache]);
     var displayPages = useMemo(function () { return text ? splitIntoPages(text) : []; }, [text]);
-    var totalPages = pdfFile ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1)) : displayPages.length;
+    var totalPages = pdfFile
+        ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1))
+        : (Object.keys(extractedPages).length > 0
+            ? Object.keys(extractedPages).length
+            : displayPages.length);
     /* ── Shared markdown sanitizer: strips hallucinated syntax from AI output ── */
     var sanitizeMarkdown = function(b) {
         if (!b) return b;
@@ -4863,7 +4867,7 @@ function Reader(_a) {
             var nativeSel = window.getSelection();
             var selText = nativeSel ? nativeSel.toString().trim() : '';
             if (!selText) return;
-            var pageText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
+            var pageText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
             var lines = pageText.split('\n');
             /* Find startLine/endLine by locating selText in pageText by character position */
             var startLine = 0, endLine = lines.length - 1;
@@ -4906,7 +4910,7 @@ function Reader(_a) {
             var pending = pendingHighlights.some(function (p) { return p.id === sel.id; });
             if (!already && !pending) {
                 setPendingHighlights(function (p) { return __spreadArray(__spreadArray([], p, true), [sel], false); });
-                var curText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
+                var curText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
                 analyzeText(sel, curText, activeModel);
                 haptic(40);
                 (window.getSelection() && window.getSelection().removeAllRanges());
@@ -4949,7 +4953,7 @@ function Reader(_a) {
                         });
                         setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== targetPage; }); });
                         setPendingHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== targetPage; }); });
-                        origText = pdfFile ? (extractedPages[targetPage] ? extractedPages[targetPage].body : undefined) : displayPages[targetPage];
+                        origText = (pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[targetPage] ? extractedPages[targetPage].body : undefined) : displayPages[targetPage];
                         if (!origText) {
                             setRewritingStatus(function (p) {
                                 var _a;
@@ -4957,8 +4961,8 @@ function Reader(_a) {
                             });
                             return [2 /*return*/];
                         }
-                        prevText = targetPage > 0 ? (pdfFile ? ((extractedPages[targetPage - 1] ? extractedPages[targetPage - 1].body : '') || '') : (displayPages[targetPage - 1] || '')) : '';
-                        nextText = targetPage < totalPages - 1 ? (pdfFile ? ((extractedPages[targetPage + 1] ? extractedPages[targetPage + 1].body : '') || '') : (displayPages[targetPage + 1] || '')) : '';
+                        prevText = targetPage > 0 ? ((pdfFile || Object.keys(extractedPages).length > 0) ? ((extractedPages[targetPage - 1] ? extractedPages[targetPage - 1].body : '') || '') : (displayPages[targetPage - 1] || '')) : '';
+                        nextText = targetPage < totalPages - 1 ? ((pdfFile || Object.keys(extractedPages).length > 0) ? ((extractedPages[targetPage + 1] ? extractedPages[targetPage + 1].body : '') || '') : (displayPages[targetPage + 1] || '')) : '';
                         boldMap = { lower: 'MINIMAL BOLDING (5-10%).', lower_medium: 'LIGHT BOLDING (15-20%).', medium: 'MODERATE BOLDING (25-30%).', medium_high: 'HEAVY BOLDING (35-45%).', high: 'EXTREMELY HEAVY BOLDING (50%+).' };
                         boldI = boldMap[boldingLevel] || boldMap.high;
                         promptI = mode === 'simple' ? 'Rewrite simpler. Replace complex words.' : mode === 'intermediate' ? 'Rewrite intermediate level.' : mode === 'advanced' ? 'Rewrite advanced, literary vocabulary.' : ("Rewrite style: '".concat(customInstruction, "'."));
@@ -5030,7 +5034,7 @@ function Reader(_a) {
     /* ── Interlinear Translation (indexed array approach) ── */
     var performInterlinearTranslation = function(pageIdx) {
         if (interlinearCache[pageIdx]) return;
-        var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
+        var pageText = rewrittenPages[pageIdx] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
         if (!pageText.trim()) return;
         var allLines = pageText.split('\n');
         var nonEmptyLines = allLines.filter(function(l) { return l.trim().length > 3; });
@@ -5098,7 +5102,7 @@ function Reader(_a) {
     var entityAbortRef = useRef(null);
     var performEntityScan = function(pageIdx) {
         if (entityCache[pageIdx]) return;
-        var pageText = rewrittenPages[pageIdx] || (pdfFile ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
+        var pageText = rewrittenPages[pageIdx] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : '') : displayPages[pageIdx]) || '';
         if (!pageText.trim()) return;
         setEntityScanLoading(true);
         if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
@@ -5181,7 +5185,7 @@ function Reader(_a) {
                 case 0:
                     sel = selectionRewrite;
                     if (!sel) return [2 /*return*/];
-                    pageText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
+                    pageText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
                     lines = pageText.split('\n');
                     startLine = sel.startLine;
                     endLine = sel.endLine;
@@ -5270,7 +5274,7 @@ function Reader(_a) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    pageText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
+                    pageText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') : displayPages[currentPage]) || '';
                     if (!pageText.trim()) return [2 /*return*/];
                     cached = xrayCache[currentPage];
                     if (cached) { setIsXRayOpen(true); return [2 /*return*/]; }
@@ -5324,7 +5328,7 @@ function Reader(_a) {
         case 'forest': return 'bg-[#052e16] border-emerald-500/10 text-emerald-100';
         default: return 'bg-[#0c0c0c] border-white/5 text-slate-300';
     } };
-    var getPageHeader = function () { if (pdfFile && (extractedPages[currentPage] ? extractedPages[currentPage].header : undefined))
+    var getPageHeader = function () { if ((pdfFile || Object.keys(extractedPages).length > 0) && (extractedPages[currentPage] ? extractedPages[currentPage].header : undefined))
         return extractedPages[currentPage].header; return "Folio ".concat((pdfRange ? pdfRange.start : 1) + currentPage); };
     var handleModelChange = function (newModel) {
         onModelChange(newModel);
@@ -5333,18 +5337,18 @@ function Reader(_a) {
             var sel_1 = modalData.rawSelection;
             setHighlights(function (p) { return p.filter(function (h) { return h.id !== sel_1.id; }); });
             setPendingHighlights(function (p) { return __spreadArray(__spreadArray([], p, true), [sel_1], false); });
-            var curText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
+            var curText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
             analyzeText(sel_1, curText, newModel);
         }
     };
     var cumulativeText = useMemo(function () {
         var combined = '';
         for (var i = 0; i <= currentPage; i++) {
-            combined += '--- Folio ' + (i + 1) + ' ---\n' + (pdfFile ? ((extractedPages[i] ? extractedPages[i].body : '[Scanning...]')) : (displayPages[i] || '')) + '\n\n';
+            combined += '--- Folio ' + (i + 1) + ' ---\n' + ((pdfFile || Object.keys(extractedPages).length > 0) ? ((extractedPages[i] ? extractedPages[i].body : '[Scanning...]')) : (displayPages[i] || '')) + '\n\n';
         }
         return combined;
     }, [currentPage, extractedPages, displayPages, pdfFile]);
-    var currentPageText = useMemo(function () { return pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') || '' : displayPages[currentPage] || ''; }, [currentPage, extractedPages, displayPages, pdfFile]);
+    var currentPageText = useMemo(function () { return (pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') || '' : displayPages[currentPage] || ''; }, [currentPage, extractedPages, displayPages, pdfFile]);
     // Render content
     var renderContent = function () {
         if (rewritingStatus[currentPage])
@@ -5353,10 +5357,11 @@ function Reader(_a) {
                 React.createElement("p", { className: "text-[10px] font-black text-indigo-400 uppercase tracking-[0.25em] animate-pulse" }, "Rewriting...")));
         var isViewOrig = !rewrittenPages[currentPage] || isComparing;
         var pageText = isViewOrig ? null : rewrittenPages[currentPage];
+        var hasPdfData = pdfFile || Object.keys(extractedPages).length > 0;
         if (!pageText) {
-            if (pdfFile) {
+            if (hasPdfData) {
                 var ext = extractedPages[currentPage];
-                if (scanningStatus[currentPage] === 'error')
+                if (pdfFile && scanningStatus[currentPage] === 'error')
                     return React.createElement("div", { className: "flex flex-col items-center justify-center pt-24 space-y-4" },
                         React.createElement("p", { className: "text-lg font-bold text-rose-200" }, "Scan Failed"),
                         React.createElement("button", { onClick: function () { return setScanningStatus(function (p) {
@@ -5364,6 +5369,11 @@ function Reader(_a) {
                                 return (__assign(__assign({}, p), (_a = {}, _a[currentPage] = 'pending', _a)));
                             }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase" }, "Retry"));
                 if (!ext) {
+                    if (!pdfFile) {
+                        /* Restored PDF session — no file, no extracted text for this page */
+                        return React.createElement("div", { className: "flex flex-col items-center justify-center pt-24 space-y-3" },
+                            React.createElement("p", { className: "text-slate-500 text-sm" }, "এই পাতার তথ্য পাওয়া যাচ্ছে না।"));
+                    }
                     var pageLabel = ((pdfRange ? pdfRange.start : 1) || 1) + currentPage;
                     var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : 'Llama 4 Maverick';
                     var keyNum = GEMINI_KEYS.indexOf(apiKeyRef.current) + 1 || 1;
@@ -7010,16 +7020,26 @@ function App() {
         setState(function (p) { return (__assign(__assign({}, p), { isReading: false })); });
     };
     var handleRestoreHistory = function (item) {
-        setPdfFile(item.data.pdfFile || null);
+        var extractedPages = item.data.extractedPages || {};
+        /* PDF entries have rawText='' — rebuild from extractedPages */
+        var rawText = item.data.rawText || '';
+        if (!rawText && item.type === 'pdf' && Object.keys(extractedPages).length > 0) {
+            var indices = Object.keys(extractedPages).map(Number).sort(function(a,b){ return a-b; });
+            rawText = indices.map(function(i) {
+                var pg = extractedPages[i];
+                return pg ? (pg.body || pg || '') : '';
+            }).filter(Boolean).join('\n\n');
+        }
+        setPdfFile(null); /* File object not serializable — PDF mode disabled but text available */
         setPdfRange(item.data.pdfRange || null);
-        setExtractedCache(item.data.extractedPages || {});
+        setExtractedCache(extractedPages);
         setLastPageIndex(item.data.lastPageIndex || 0);
         setCachedHighlights(item.data.highlights || []);
         setCachedRewrittenPages(item.data.rewrittenPages || {});
         setCachedXrayCache(item.data.xrayCache || {});
         setCachedSummaryCache(item.data.summaryCache || {});
         setCachedTimelineCache(item.data.timelineCache || {});
-        setState({ rawText: item.data.rawText, isReading: true });
+        setState({ rawText: rawText, isReading: true });
     };
     /* Called by Reader whenever state changes — keeps history in sync */
     var handleReaderStateChange = function (richState) {
