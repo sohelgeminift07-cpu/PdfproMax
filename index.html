@@ -2772,7 +2772,63 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
 // ============================================================
 // HELPERS
 // ============================================================
-/* ── Haptic feedback utility ── */
+/* ── IndexedDB PDF Storage ── */
+var _idb = null;
+function openPdfDB() {
+    if (_idb) return Promise.resolve(_idb);
+    return new Promise(function(resolve, reject) {
+        var req = indexedDB.open('maxofpdf_files', 1);
+        req.onupgradeneeded = function(e) {
+            e.target.result.createObjectStore('pdfs', { keyPath: 'id' });
+        };
+        req.onsuccess = function(e) { _idb = e.target.result; resolve(_idb); };
+        req.onerror = function() { reject(req.error); };
+    });
+}
+function savePdfToDB(id, file) {
+    return openPdfDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('pdfs', 'readwrite');
+            tx.objectStore('pdfs').put({ id: id, file: file, ts: Date.now() });
+            tx.oncomplete = function() { resolve(); };
+            tx.onerror = function() { reject(tx.error); };
+        });
+    }).catch(function(e) { console.warn('[PdfDB] save failed', e); });
+}
+function getPdfFromDB(id) {
+    return openPdfDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('pdfs', 'readonly');
+            var req = tx.objectStore('pdfs').get(id);
+            req.onsuccess = function() { resolve(req.result ? req.result.file : null); };
+            req.onerror = function() { reject(req.error); };
+        });
+    }).catch(function(e) { console.warn('[PdfDB] get failed', e); return null; });
+}
+function deletePdfFromDB(id) {
+    return openPdfDB().then(function(db) {
+        return new Promise(function(resolve) {
+            var tx = db.transaction('pdfs', 'readwrite');
+            tx.objectStore('pdfs').delete(id);
+            tx.oncomplete = resolve;
+        });
+    }).catch(function() {});
+}
+/* Cleanup old IDB entries not in history */
+function cleanupPdfDB(activeIds) {
+    openPdfDB().then(function(db) {
+        var tx = db.transaction('pdfs', 'readwrite');
+        var store = tx.objectStore('pdfs');
+        store.openCursor().onsuccess = function(e) {
+            var cursor = e.target.result;
+            if (!cursor) return;
+            if (activeIds.indexOf(cursor.key) === -1) store.delete(cursor.key);
+            cursor.continue();
+        };
+    }).catch(function() {});
+}
+
+
 function haptic(ms) {
     try { if (navigator.vibrate) navigator.vibrate(ms || 50); } catch(_e) {}
 }
@@ -4431,6 +4487,7 @@ function Reader(_a) {
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
+    useEffect(function () { window.scrollTo({ top: 0, behavior: 'instant' }); }, [currentPage]);
     /* Auto-save rich session state to parent whenever key state changes */
     useEffect(function () {
         if (onStateChange) {
@@ -5587,8 +5644,11 @@ function Reader(_a) {
             if (isBoldMk || markerR)
                 content = React.createElement("span", { className: "md-marker" }, seg);
             else if (boldR) {
+                /* Only render at the start of bold range — skip interior segments */
+                if (p1 !== boldR.start) { return "continue"; }
+                var boldContent = line.substring(boldR.start + 2, boldR.end - 2);
                 var ac = readerTheme === 'dark' || readerTheme === 'midnight' ? '#ffffff' : '#000000';
-                content = React.createElement("span", { className: "md-bold-text", style: { color: ac, opacity: boldness } }, content);
+                content = React.createElement("span", { className: "md-bold-text", style: { color: ac, opacity: boldness } }, boldContent);
             }
             if (hlR) {
                 var h_1 = hlR.data;
@@ -6877,6 +6937,7 @@ function App() {
     var _rc3 = useState({}), cachedXrayCache = _rc3[0], setCachedXrayCache = _rc3[1];
     var _rc4 = useState({}), cachedSummaryCache = _rc4[0], setCachedSummaryCache = _rc4[1];
     var _rc5 = useState({}), cachedTimelineCache = _rc5[0], setCachedTimelineCache = _rc5[1];
+    var _rc6 = useState(null), currentPdfDbId = _rc6[0], setCurrentPdfDbId = _rc6[1];
     var _h = useState(false), isSettingsOpen = _h[0], setIsSettingsOpen = _h[1];
     var _j = useState('gemini-lite'), activeReaderModel = _j[0], setActiveReaderModel = _j[1];
     var _k = useState('gemini-lite'), activeStructureModel = _k[0], setActiveStructureModel = _k[1];
@@ -6940,6 +7001,11 @@ function App() {
         return function() { window.removeEventListener('maxofpdf_clear_history', handler); };
     }, []);
     var addToHistory = function (finalLastPage, finalExtracted, file, range, text, richState) {
+        /* Use current session's pdfDbId — fallback to history lookup */
+        var pdfDbId = currentPdfDbId || (function() {
+            var found = history.find(function(x) { return file && x.data && x.data.pdfMeta && x.data.pdfMeta.name === file.name && x.data.pdfMeta.size === file.size; });
+            return found ? found.data.pdfDbId : null;
+        })();
         var item = {
             id: crypto.randomUUID(),
             type: file ? 'pdf' : 'text',
@@ -6947,6 +7013,8 @@ function App() {
             timestamp: Date.now(),
             data: {
                 rawText: text, pdfFile: file, pdfRange: range,
+                pdfDbId: pdfDbId || null,
+                pdfMeta: file ? { name: file.name, size: file.size } : null,
                 extractedPages: finalExtracted, lastPageIndex: finalLastPage,
                 highlights: (richState && richState.highlights) || [],
                 rewrittenPages: (richState && richState.rewrittenPages) || {},
@@ -7002,9 +7070,27 @@ function App() {
         }
         setPdfFile(file);
         setPdfRange(range || null);
+        /* Reuse existing pdfDbId for same file, otherwise create new one */
+        var existingEntry = history.find(function(x) { return x.data && x.data.pdfMeta && x.data.pdfMeta.name === file.name && x.data.pdfMeta.size === file.size; });
+        var pdfDbId = (existingEntry && existingEntry.data.pdfDbId) || crypto.randomUUID();
+        setCurrentPdfDbId(pdfDbId);
+        savePdfToDB(pdfDbId, file);
         /* Save entry to history immediately */
-        var item = { id: crypto.randomUUID(), type: 'pdf', title: file.name, timestamp: Date.now(), data: { rawText: '', pdfFile: file, pdfRange: range || null, extractedPages: (!isSameFile || !isSameRange) ? {} : extractedCache, lastPageIndex: (!isSameFile || !isSameRange) ? 0 : lastPageIndex, highlights: (!isSameFile || !isSameRange) ? [] : cachedHighlights, rewrittenPages: (!isSameFile || !isSameRange) ? {} : cachedRewrittenPages, xrayCache: (!isSameFile || !isSameRange) ? {} : cachedXrayCache, summaryCache: (!isSameFile || !isSameRange) ? {} : cachedSummaryCache, timelineCache: (!isSameFile || !isSameRange) ? {} : cachedTimelineCache } };
-        setHistory(function(p) { return __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10); });
+        var item = { id: crypto.randomUUID(), type: 'pdf', title: file.name, timestamp: Date.now(), data: { rawText: '', pdfFile: file, pdfRange: range || null, pdfDbId: pdfDbId, pdfMeta: { name: file.name, size: file.size }, extractedPages: (!isSameFile || !isSameRange) ? {} : extractedCache, lastPageIndex: (!isSameFile || !isSameRange) ? 0 : lastPageIndex, highlights: (!isSameFile || !isSameRange) ? [] : cachedHighlights, rewrittenPages: (!isSameFile || !isSameRange) ? {} : cachedRewrittenPages, xrayCache: (!isSameFile || !isSameRange) ? {} : cachedXrayCache, summaryCache: (!isSameFile || !isSameRange) ? {} : cachedSummaryCache, timelineCache: (!isSameFile || !isSameRange) ? {} : cachedTimelineCache } };
+        setHistory(function(p) {
+            var next = __spreadArray([item], p.filter(function(x){ return x.title !== item.title; }), true).slice(0, 10);
+            /* Cleanup IDB entries for removed history items */
+            cleanupPdfDB(next.map(function(x){ return x.data.pdfDbId; }).filter(Boolean));
+            try {
+                var ser = next.map(function(x) {
+                    if (!x.data.pdfFile) return x;
+                    var d = Object.assign({}, x.data); delete d.pdfFile;
+                    return Object.assign({}, x, { data: d });
+                });
+                localStorage.setItem('maxofpdf_history', JSON.stringify(ser));
+            } catch(e) {}
+            return next;
+        });
         setState({ rawText: '', isReading: true });
     };
     var handleExitReader = function (curPage, curExtracted, richState) {
@@ -7021,16 +7107,9 @@ function App() {
     };
     var handleRestoreHistory = function (item) {
         var extractedPages = item.data.extractedPages || {};
-        /* PDF entries have rawText='' — rebuild from extractedPages */
         var rawText = item.data.rawText || '';
-        if (!rawText && item.type === 'pdf' && Object.keys(extractedPages).length > 0) {
-            var indices = Object.keys(extractedPages).map(Number).sort(function(a,b){ return a-b; });
-            rawText = indices.map(function(i) {
-                var pg = extractedPages[i];
-                return pg ? (pg.body || pg || '') : '';
-            }).filter(Boolean).join('\n\n');
-        }
-        setPdfFile(null); /* File object not serializable — PDF mode disabled but text available */
+        /* Set all cached state immediately */
+        setPdfFile(null);
         setPdfRange(item.data.pdfRange || null);
         setExtractedCache(extractedPages);
         setLastPageIndex(item.data.lastPageIndex || 0);
@@ -7039,7 +7118,36 @@ function App() {
         setCachedXrayCache(item.data.xrayCache || {});
         setCachedSummaryCache(item.data.summaryCache || {});
         setCachedTimelineCache(item.data.timelineCache || {});
-        setState({ rawText: rawText, isReading: true });
+        if (item.type === 'pdf' && item.data.pdfDbId) {
+            /* Try to restore actual PDF file from IndexedDB */
+            getPdfFromDB(item.data.pdfDbId).then(function(file) {
+                if (file) {
+                    setPdfFile(file);
+                    setCurrentPdfDbId(item.data.pdfDbId);
+                    setState({ rawText: '', isReading: true });
+                } else {
+                    /* File not in IDB — fall back to extracted text */
+                    if (!rawText && Object.keys(extractedPages).length > 0) {
+                        var indices = Object.keys(extractedPages).map(Number).sort(function(a,b){ return a-b; });
+                        rawText = indices.map(function(i) {
+                            var pg = extractedPages[i];
+                            return pg ? (pg.body || pg || '') : '';
+                        }).filter(Boolean).join('\n\n');
+                    }
+                    setState({ rawText: rawText, isReading: true });
+                }
+            });
+        } else {
+            /* Text session or PDF without IDB entry */
+            if (!rawText && Object.keys(extractedPages).length > 0) {
+                var indices = Object.keys(extractedPages).map(Number).sort(function(a,b){ return a-b; });
+                rawText = indices.map(function(i) {
+                    var pg = extractedPages[i];
+                    return pg ? (pg.body || pg || '') : '';
+                }).filter(Boolean).join('\n\n');
+            }
+            setState({ rawText: rawText, isReading: true });
+        }
     };
     /* Called by Reader whenever state changes — keeps history in sync */
     var handleReaderStateChange = function (richState) {
