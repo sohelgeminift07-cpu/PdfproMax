@@ -4727,22 +4727,10 @@ function Reader(_a) {
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
                             body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
-                            return [4 /*yield*/, (function() {
-                                var pageSignal = (scanAbortControllersRef.current.get(pageIndex) || {}).signal;
-                                var timeoutCtrl = new AbortController();
-                                var timeoutId = setTimeout(function() { timeoutCtrl.abort('OCR_TIMEOUT'); }, 10000);
-                                var combined = new AbortController();
-                                var forwardAbort = function() { combined.abort(); };
-                                if (pageSignal) pageSignal.addEventListener('abort', forwardAbort);
-                                timeoutCtrl.signal.addEventListener('abort', function() { combined.abort('OCR_TIMEOUT'); });
-                                return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: combined.signal })
-                                    .then(function(res) { clearTimeout(timeoutId); return res; })
-                                    .catch(function(err) {
-                                        clearTimeout(timeoutId);
-                                        if (timeoutCtrl.signal.aborted) { var te = new Error('OCR_TIMEOUT_10S'); te.name = 'TimeoutError'; throw te; }
-                                        throw err;
-                                    });
-                            })()]];
+                            return [4 /*yield*/, Promise.race([
+                                fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal }),
+                                new Promise(function(_, rej) { setTimeout(function() { var te = new Error('OCR_TIMEOUT_10S'); te.name = 'TimeoutError'; rej(te); }, 10000); })
+                            ])];
                         case 4:
                             r = _a.sent();
                             if (!r.ok)
@@ -4792,8 +4780,6 @@ function Reader(_a) {
                                 return [2 /*return*/];
                             }
                             console.error("Scan error page ".concat(pageIndex), e_4);
-                            isQuota = (e_4.message && (e_4.message.includes('429') || e_4.message.includes('403') || e_4.message.includes('RESOURCE_EXHAUSTED') || e_4.message.includes('quota')));
-                            var isTimeout = (e_4.name === 'TimeoutError' || (e_4.message && e_4.message.includes('OCR_TIMEOUT')));
                             isQuota = (e_4.message && (e_4.message.includes('429') || e_4.message.includes('403') || e_4.message.includes('RESOURCE_EXHAUSTED') || e_4.message.includes('quota')));
                             var isTimeout = (e_4.name === 'TimeoutError' || (e_4.message && e_4.message.includes('OCR_TIMEOUT')));
                             /* Key chain: K1→K2→K3→K4→K5→fail (retryCount 0..4 = 5 attempts total) */
