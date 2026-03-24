@@ -2828,10 +2828,6 @@ function cleanupPdfDB(activeIds) {
     }).catch(function() {});
 }
 
-
-function haptic(ms) {
-    try { if (navigator.vibrate) navigator.vibrate(ms || 50); } catch(_e) {}
-}
 var safeExtractJSON = function (text) {
     try {
         var clean = text.replace(/```json\n?|```/g, '').trim();
@@ -4356,7 +4352,7 @@ function VocabTab() {
 function Reader(_a) {
     var _this = this;
     var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onStateChange = _a.onStateChange;
-    var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
+    var _b = useState(initialPageIndex != null ? initialPageIndex : 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
     var _f = useState(null), modalData = _f[0], setModalData = _f[1];
@@ -4451,6 +4447,7 @@ function Reader(_a) {
     var selectionTimerRef = useRef(null);
     var isPointerDownRef = useRef(false);
     var abortControllersRef = useRef(new Map());
+    var scanAbortControllersRef = useRef(new Map());
     var drawerStateRef = useRef({ isChatActive: false, lastTranscribed: '', isInputStructured: false });
     var drawerActionsRef = useRef({ structureText: function () { }, revertText: function () { } });
     var autoScrollRef = useRef(null);
@@ -4478,7 +4475,6 @@ function Reader(_a) {
     /* ── BS Detector (Skeptic Mode) state ── */
     var glowTimerRef = useRef(null);
     var triggerGlow = function(btnId) {
-        haptic(30);
         if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
         setActiveGlowBtn(btnId);
         glowTimerRef.current = setTimeout(function() { setActiveGlowBtn(null); }, 2100);
@@ -4487,7 +4483,16 @@ function Reader(_a) {
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
-    useEffect(function () { window.scrollTo({ top: 0, behavior: 'instant' }); }, [currentPage]);
+    var prevPageRef = useRef(initialPageIndex != null ? initialPageIndex : 0);
+    useEffect(function () {
+        var prev = prevPageRef.current;
+        if (currentPage > prev) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        } else if (currentPage < prev) {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
+        }
+        prevPageRef.current = currentPage;
+    }, [currentPage]);
     /* Auto-save rich session state to parent whenever key state changes */
     useEffect(function () {
         if (onStateChange) {
@@ -4651,6 +4656,13 @@ function Reader(_a) {
         var startPage = (pdfRange ? pdfRange.start : 1) || 1;
         var endPage = (pdfRange ? pdfRange.end : pdfDoc.numPages) || pdfDoc.numPages;
         var totalInRange = endPage - startPage + 1;
+        /* Abort background scans that are outside current vicinity (currentPage to currentPage+2) */
+        scanAbortControllersRef.current.forEach(function(ctrl, pageIdx) {
+            if (pageIdx < currentPage || pageIdx > currentPage + 2) {
+                ctrl.abort();
+                scanAbortControllersRef.current.delete(pageIdx);
+            }
+        });
         var scanPage = function (pageIndex_1) {
             var args_1 = [];
             for (var _i = 1; _i < arguments.length; _i++) {
@@ -4670,6 +4682,12 @@ function Reader(_a) {
                                     return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'complete', _a)));
                                 });
                                 return [2 /*return*/];
+                            }
+                            /* Register AbortController for this page (only on first attempt) */
+                            if (retryCount === 0) {
+                                var _prevCtrl = scanAbortControllersRef.current.get(pageIndex);
+                                if (_prevCtrl) _prevCtrl.abort();
+                                scanAbortControllersRef.current.set(pageIndex, new AbortController());
                             }
                             setScanningStatus(function (p) {
                                 var _a;
@@ -4705,7 +4723,7 @@ function Reader(_a) {
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
                             body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
-                            return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
+                            return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal })];
                         case 4:
                             r = _a.sent();
                             if (!r.ok)
@@ -4719,7 +4737,7 @@ function Reader(_a) {
                         case 6:
                             modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
                             key = MAVERICK_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                            return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }) })];
+                            return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal })];
                         case 7:
                             r = _a.sent();
                             if (!r.ok)
@@ -4742,6 +4760,7 @@ function Reader(_a) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = { body: result_2.body || '', header: cleanH_1, pageNumber: cleanPN_1, model: currentModel }, _a)));
                             });
+                            scanAbortControllersRef.current.delete(pageIndex);
                             setScanningStatus(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'complete', _a)));
@@ -4749,6 +4768,10 @@ function Reader(_a) {
                             return [3 /*break*/, 13];
                         case 10:
                             e_4 = _a.sent();
+                            if (e_4 && e_4.name === 'AbortError') {
+                                scanAbortControllersRef.current.delete(pageIndex);
+                                return [2 /*return*/];
+                            }
                             console.error("Scan error page ".concat(pageIndex), e_4);
                             isQuota = (e_4.message && (e_4.message.includes('429') || e_4.message.includes('403') || e_4.message.includes('RESOURCE_EXHAUSTED') || e_4.message.includes('quota')));
                             if (!(isQuota && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
@@ -4969,7 +4992,6 @@ function Reader(_a) {
                 setPendingHighlights(function (p) { return __spreadArray(__spreadArray([], p, true), [sel], false); });
                 var curText = rewrittenPages[currentPage] || ((pdfFile || Object.keys(extractedPages).length > 0) ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
                 analyzeText(sel, curText, activeModel);
-                haptic(40);
                 (window.getSelection() && window.getSelection().removeAllRanges());
             }
         }
@@ -6102,7 +6124,7 @@ function Reader(_a) {
                             "/",
                             totalPages)))),
             React.createElement("div", { className: "flex items-center space-x-3 shrink-0" },
-                React.createElement("button", { onClick: function () { haptic(30); setIsAutoScrolling(!isAutoScrolling); }, className: "p-2 rounded-full border transition-all ".concat(isAutoScrolling ? 'text-cyan-400 bg-cyan-500/20 border-cyan-500/20 animate-pulse' : 'border-white/5 bg-white/5 text-slate-500'), title: "Auto-scroll", "aria-label": isAutoScrolling ? "অটো স্ক্রল বন্ধ করুন" : "অটো স্ক্রল চালু করুন", "aria-pressed": isAutoScrolling },
+                React.createElement("button", { onClick: function () { setIsAutoScrolling(!isAutoScrolling); }, className: "p-2 rounded-full border transition-all ".concat(isAutoScrolling ? 'text-cyan-400 bg-cyan-500/20 border-cyan-500/20 animate-pulse' : 'border-white/5 bg-white/5 text-slate-500'), title: "Auto-scroll", "aria-label": isAutoScrolling ? "অটো স্ক্রল বন্ধ করুন" : "অটো স্ক্রল চালু করুন", "aria-pressed": isAutoScrolling },
                     React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, isAutoScrolling ? React.createElement(React.Fragment, null,
                         React.createElement("rect", { x: "6", y: "4", width: "4", height: "16" }),
                         React.createElement("rect", { x: "14", y: "4", width: "4", height: "16" })) : React.createElement(React.Fragment, null,
