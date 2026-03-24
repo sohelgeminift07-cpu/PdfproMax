@@ -4201,8 +4201,18 @@ function Settings(_a) {
                                         (item.data.xrayCache && Object.keys(item.data.xrayCache).length > 0) && React.createElement("span", { style:{fontSize:'10px', color:'rgba(56,189,248,0.7)', fontWeight:700} }, '⬡ X-Ray'),
                                         (item.data.rewrittenPages && Object.keys(item.data.rewrittenPages).length > 0) && React.createElement("span", { style:{fontSize:'10px', color:'rgba(167,139,250,0.7)', fontWeight:700} }, '✎ Rewritten')
                                     ))),
-                            React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", style:{color:'rgba(100,116,139,0.4)', flexShrink:0} },
-                                React.createElement("path", { d: "m9 18 6-6-6-6" }))
+                            React.createElement("div", { style:{display:'flex', alignItems:'center', gap:'6px', flexShrink:0} },
+                                React.createElement("button", { onClick: function(e) {
+                                    e.stopPropagation();
+                                    try {
+                                        var saved = JSON.parse(localStorage.getItem('maxofpdf_history') || '[]');
+                                        var filtered = saved.filter(function(h){ return h.id !== item.id; });
+                                        localStorage.setItem('maxofpdf_history', JSON.stringify(filtered));
+                                        window.dispatchEvent(new CustomEvent('maxofpdf_delete_history', { detail: { id: item.id } }));
+                                    } catch(e) {}
+                                }, style:{width:'28px', height:'28px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.15)', color:'rgba(239,68,68,0.5)', cursor:'pointer', fontSize:'14px', lineHeight:1, transition:'all 0.15s'}, onMouseEnter:function(e){e.currentTarget.style.background='rgba(239,68,68,0.18)';e.currentTarget.style.color='rgba(239,68,68,0.9)';}, onMouseLeave:function(e){e.currentTarget.style.background='rgba(239,68,68,0.08)';e.currentTarget.style.color='rgba(239,68,68,0.5)';} }, "×"),
+                                React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", style:{color:'rgba(100,116,139,0.4)', flexShrink:0} },
+                                    React.createElement("path", { d: "m9 18 6-6-6-6" })))
                         ));
                     })
                 )));
@@ -7030,6 +7040,16 @@ function App() {
         var handler = function() { setHistory([]); };
         window.addEventListener('maxofpdf_clear_history', handler);
         return function() { window.removeEventListener('maxofpdf_clear_history', handler); };
+    }, []);
+    /* Listen for single-item delete event dispatched from Settings history tab */
+    useEffect(function() {
+        var handler = function(e) {
+            var id = e.detail && e.detail.id;
+            if (!id) return;
+            setHistory(function(prev) { return prev.filter(function(h) { return h.id !== id; }); });
+        };
+        window.addEventListener('maxofpdf_delete_history', handler);
+        return function() { window.removeEventListener('maxofpdf_delete_history', handler); };
     }, []);
     var addToHistory = function (finalLastPage, finalExtracted, file, range, text, richState) {
         /* Use current session's pdfDbId — fallback to history lookup */
