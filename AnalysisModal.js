@@ -8,10 +8,8 @@ function AnalysisModal(_a) {
     var _d = useState(false), isModelDropdownOpen = _d[0], setIsModelDropdownOpen = _d[1];
     var _f = useState('analysis'), activeTab = _f[0], setActiveTab = _f[1];
 
-    var _h = useState(null), localAudio = _h[0], setLocalAudio = _h[1];
-    var _j = useState(false), isGeneratingAudio = _j[0], setIsGeneratingAudio = _j[1];
-    var audioCtxRef = useRef(null);
-    var audioSrcRef = useRef(null);
+    var liveAudioRef = useRef(null);
+    var _j = useState(false), isStreamingAudio = _j[0], setIsStreamingAudio = _j[1];
     var modalContentRef = useRef(null);
     var shouldCloseOnLiftRef = useRef(false);
     var _k = useState(0), dragY = _k[0], setDragY = _k[1];
@@ -26,7 +24,12 @@ function AnalysisModal(_a) {
     var _pq4 = useState(true), isGeneratingQuestions = _pq4[0], setIsGeneratingQuestions = _pq4[1];
     var analysisChatEndRef = useRef(null);
     var startY = useRef(0);
-    useEffect(function () { setLocalAudio(null); setIsGeneratingAudio(false); setActiveTab('analysis'); setAnalysisChatMessages([]); setAnalysisChatInput(''); setPreloadedQuestions(null); setPreloadedAnswers({}); setLoadingAnswerIdx(null); setIsGeneratingQuestions(true); }, [(data && data.word ? data.word : undefined)]);
+    useEffect(function () {
+        if (liveAudioRef.current) { liveAudioRef.current.stop(); liveAudioRef.current = null; }
+        setIsStreamingAudio(false);
+        setActiveTab('analysis');
+        setAnalysisChatMessages([]); setAnalysisChatInput(''); setPreloadedQuestions(null); setPreloadedAnswers({}); setLoadingAnswerIdx(null); setIsGeneratingQuestions(true);
+    }, [(data && data.word ? data.word : undefined)]);
     /* Generate 3 preloaded questions when data arrives */
     useEffect(function() {
         if (!data || !data.word || !isOpen) return;
@@ -60,101 +63,36 @@ function AnalysisModal(_a) {
         setIsDragging(false);
     } }, [isOpen]);
     useEffect(function () { if (!isOpen) {
-        stopAudio();
+        if (liveAudioRef.current) { liveAudioRef.current.stop(); liveAudioRef.current = null; }
+        setIsStreamingAudio(false);
+        setIsPlaying(false);
         setIsModelDropdownOpen(false);
     } }, [isOpen]);
     var stopAudio = function () {
-        if (audioSrcRef.current) {
-            try {
-                audioSrcRef.current.stop();
-                audioSrcRef.current.disconnect();
-            }
-            catch (_e) { }
-            audioSrcRef.current = null;
-        }
-        if (audioCtxRef.current) {
-            if (audioCtxRef.current.state !== 'closed')
-                audioCtxRef.current.close().catch(function () { });
-            audioCtxRef.current = null;
-        }
+        if (liveAudioRef.current) { liveAudioRef.current.stop(); liveAudioRef.current = null; }
+        setIsStreamingAudio(false);
         setIsPlaying(false);
     };
-    var playAudio = function (b64) { return __awaiter(_this, void 0, void 0, function () {
-        var bin, len, bytes, i, i16, AC, ctx, buf, ch, i, src;
-        return __generator(this, function (_a) {
-            if (isPlaying)
-                stopAudio();
-            try {
-                bin = atob(b64), len = bin.length;
-                bytes = new Uint8Array(len);
-                for (i = 0; i < len; i++)
-                    bytes[i] = bin.charCodeAt(i);
-                i16 = new Int16Array(bytes.buffer);
-                AC = window.AudioContext || window.webkitAudioContext;
-                ctx = new AC({ sampleRate: 24000 });
-                audioCtxRef.current = ctx;
-                buf = ctx.createBuffer(1, i16.length, 24000);
-                ch = buf.getChannelData(0);
-                for (i = 0; i < i16.length; i++)
-                    ch[i] = i16[i] / 32768.0;
-                src = ctx.createBufferSource();
-                src.buffer = buf;
-                src.connect(ctx.destination);
-                src.onended = function () { setIsPlaying(false); if ((audioCtxRef.current && audioCtxRef.current.state !== 'closed'))
-                    (audioCtxRef.current && audioCtxRef.current.close()); audioCtxRef.current = null; audioSrcRef.current = null; };
-                audioSrcRef.current = src;
-                src.start(0);
-                setIsPlaying(true);
-            }
-            catch (e) {
-                console.error(e);
-                setIsPlaying(false);
-            }
-            return [2 /*return*/];
+    var startLiveAudio = function () {
+        if (isStreamingAudio || !data)
+            return;
+        if (liveAudioRef.current) { liveAudioRef.current.stop(); liveAudioRef.current = null; }
+        setIsStreamingAudio(true);
+        setIsPlaying(true);
+        var textToSpeak = data.word;
+        liveAudioRef.current = geminiLiveAudio(googleApiKey, textToSpeak, {
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } },
+            onStart: function () { },
+            onEnd: function () { setIsStreamingAudio(false); setIsPlaying(false); },
+            onError: function (err) { console.error('Live audio error:', err); setIsStreamingAudio(false); setIsPlaying(false); }
         });
-    }); };
-    var generateAndPlayAudio = function () { return __awaiter(_this, void 0, void 0, function () {
-        var hasBengali, textToSpeak, res, b64, e_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (isGeneratingAudio || !data)
-                        return [2 /*return*/];
-                    setIsGeneratingAudio(true);
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, 4, 5]);
-                    hasBengali = /[\u0980-\u09FF]/.test(data.word);
-                    textToSpeak = hasBengali ? data.meaning : data.word;
-                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-3.1-flash', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } } })];
-                case 2:
-                    res = _a.sent();
-                    b64 = ((res.candidates && res.candidates[0] && res.candidates[0].content && res.candidates[0].content.parts) ? ((res.candidates[0].content.parts.find(function (p) { return p.inlineData; }) || {}).inlineData || {}).data : undefined);
-                    if (b64) {
-                        setLocalAudio(b64);
-                        playAudio(b64);
-                    }
-                    return [3 /*break*/, 5];
-                case 3:
-                    e_1 = _a.sent();
-                    console.error(e_1);
-                    return [3 /*break*/, 5];
-                case 4:
-                    setIsGeneratingAudio(false);
-                    return [7 /*endfinally*/];
-                case 5: return [2 /*return*/];
-            }
-        });
-    }); };
+    };
     useEffect(function () {
         if (isOpen && data && autoPlayTTS && !isLoading && activeTab === 'analysis') {
-            var t_1 = setTimeout(function () { if (localAudio)
-                playAudio(localAudio);
-            else
-                generateAndPlayAudio(); }, 100);
+            var t_1 = setTimeout(function () { startLiveAudio(); }, 100);
             return function () { return clearTimeout(t_1); };
         }
-    }, [isOpen, data, autoPlayTTS, isLoading, localAudio, activeTab]);
+    }, [isOpen, data, autoPlayTTS, isLoading, activeTab]);
     useEffect(function () {
         if (!isOpen || !isAutoOpen)
             return;
@@ -310,14 +248,14 @@ function AnalysisModal(_a) {
                     React.createElement("div", { className: "relative bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-6 min-h-[100px] flex flex-col justify-center backdrop-blur-md" },
                         React.createElement("div", { className: "flex items-center justify-between mb-3" },
                             React.createElement("span", { className: "text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]" }, wordCount > 2 ? 'Translation & Meaning' : 'Definition'),
-                            (localAudio || isGeneratingAudio) && (React.createElement("button", { onClick: function (e) { e.stopPropagation(); localAudio && playAudio(localAudio); }, disabled: isGeneratingAudio, className: "px-4 py-2 rounded-full transition-all flex items-center space-x-2 ".concat(isPlaying ? 'bg-emerald-500 text-black' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20') },
-                                isGeneratingAudio ? React.createElement("div", { className: "w-3 h-3 border border-emerald-400 border-t-transparent rounded-full animate-spin" }) : isPlaying ? React.createElement("div", { className: "flex space-x-1" },
+                            React.createElement("button", { onClick: function (e) { e.stopPropagation(); isPlaying ? stopAudio() : startLiveAudio(); }, disabled: isStreamingAudio && !isPlaying, className: "px-4 py-2 rounded-full transition-all flex items-center space-x-2 ".concat(isPlaying ? 'bg-emerald-500 text-black' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20') },
+                                isStreamingAudio && !isPlaying ? React.createElement("div", { className: "w-3 h-3 border border-emerald-400 border-t-transparent rounded-full animate-spin" }) : isPlaying ? React.createElement("div", { className: "flex space-x-1" },
                                     React.createElement("div", { className: "w-0.5 h-3 bg-black animate-bounce" }),
                                     React.createElement("div", { className: "w-0.5 h-3 bg-black animate-bounce", style: { animationDelay: '0.2s' } }),
                                     React.createElement("div", { className: "w-0.5 h-3 bg-black animate-bounce", style: { animationDelay: '0.4s' } })) : React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
                                     React.createElement("polygon", { points: "11 5 6 9 2 9 2 15 6 15 11 19 11 5" }),
                                     React.createElement("path", { d: "M15.54 8.46a5 5 0 0 1 0 7.07" })),
-                                React.createElement("span", { className: "text-[10px] font-bold uppercase" }, isGeneratingAudio ? 'Generating...' : isPlaying ? 'Playing' : 'Listen')))),
+                                React.createElement("span", { className: "text-[10px] font-bold uppercase" }, isStreamingAudio && !isPlaying ? 'Connecting...' : isPlaying ? 'Playing' : 'Listen')),
                         React.createElement("p", { className: "serif text-[15px] text-emerald-100 font-medium leading-relaxed" }, renderMeaning(data.meaning)))),
                 React.createElement("div", { className: "space-y-3" },
                     React.createElement("h4", { className: "text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] flex items-center gap-2 px-1" },
