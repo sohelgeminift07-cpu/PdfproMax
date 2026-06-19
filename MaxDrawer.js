@@ -130,7 +130,7 @@ function MaxDrawer(_a) {
                     return [3 /*break*/, 6];
                 case 3:
                     _a = getGroqModel(mToUse), modelId = _a.modelId, key = _a.key, endpoint = _a.endpoint;
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: "You are a professional editor. ".concat(promptCtx) }, { role: 'user', content: srcText }], model: modelId, temperature: 0.7 }) })];
+                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: "You are a professional editor. ".concat(promptCtx) }, { role: 'user', content: srcText }], model: modelId, temperature: 0.7 }) })];
                 case 4:
                     r = _b.sent();
                     return [4 /*yield*/, r.json()];
@@ -208,7 +208,7 @@ function MaxDrawer(_a) {
                     return [3 /*break*/, 6];
                 case 3:
                     _a = getGroqModel(activeChatModel), modelId = _a.modelId, key = _a.key, endpoint = _a.endpoint;
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId }) })];
+                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId }) })];
                 case 4:
                     r = _b.sent();
                     return [4 /*yield*/, r.json()];

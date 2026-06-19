@@ -131,7 +131,7 @@ function Editor(_a) {
                             modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
                             key = MAVERICK_KEY;
                         }
-                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: text }], model: modelId, temperature: 0.3, max_tokens: 16384 }) })];
+                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: text }], model: modelId, temperature: 0.3, max_tokens: 16384 }) })];
                     case 4:
                         r = _a.sent();
                         if (!!r.ok) return [3 /*break*/, 6];
