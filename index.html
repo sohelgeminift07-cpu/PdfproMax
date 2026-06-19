@@ -6698,11 +6698,16 @@ function Editor(_a) {
                     reader.readAsArrayBuffer(file);
                 }
                 if (file.name.endsWith('.txt') || file.type === 'text/plain') {
+                    // 1. Instantly trigger the native loading UI/overlays
+                    if (typeof setIsLoading === 'function') setIsLoading(true);
+                    if (typeof setUploadStage === 'function') setUploadStage('processing');
+
                     var txtReader = new FileReader();
                     txtReader.onload = function(evt) {
                         var fullText = evt.target.result;
                         var chunks = [];
-                        var pageSize = 2000;
+                        var pageSize = 2000; // Character boundary equivalent to standard page viewport
+
                         if (fullText.includes('\f')) {
                             chunks = fullText.split('\f');
                         } else {
@@ -6710,15 +6715,32 @@ function Editor(_a) {
                                 chunks.push(fullText.substring(i, i + pageSize));
                             }
                         }
+
                         var formattedPages = chunks.map(function(pageText, index) {
-                            return { pageNumber: index + 1, text: pageText, items: [] };
+                            return {
+                                pageNumber: index + 1,
+                                text: pageText,
+                                items: [] // Retains structurally matched layout interfaces for text selection
+                            };
                         });
-                        if (typeof setExtractedPages === 'function') {
-                            setExtractedPages(formattedPages);
-                        } else if (typeof handleTextLoaded === 'function') {
-                            handleTextLoaded(formattedPages);
-                        }
+
+                        // 2. Add a tiny artificial delay to let the processing animations dynamically complete smoothly
+                        setTimeout(function() {
+                            if (typeof handlePdfExtracted === 'function') {
+                                // Pipe directly into your primary PDF display controller
+                                handlePdfExtracted(formattedPages, file.name);
+                            } else if (typeof setExtractedPages === 'function') {
+                                setExtractedPages(formattedPages);
+                                if (typeof setIsLoading === 'function') setIsLoading(false);
+                            }
+                        }, 1200);
                     };
+
+                    txtReader.onerror = function() {
+                        if (typeof setIsLoading === 'function') setIsLoading(false);
+                        alert("Failed to process text file.");
+                    };
+
                     txtReader.readAsText(file);
                 }
             }
