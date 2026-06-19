@@ -672,8 +672,11 @@
         0 -2px 0 rgba(100,140,255,0.06);
       overflow: clip;
       touch-action: pan-y;
-      transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
+      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
       will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      contain: layout paint;
     }
     .bottom-drawer-handle {
       display: flex; flex-direction: column;

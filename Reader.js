@@ -17,53 +17,66 @@ function Reader(_a) {
     var _o = useState({}), rewritingStatus = _o[0], setRewritingStatus = _o[1];
     var _p = useState(false), isCustomizerOpen = _p[0], setIsCustomizerOpen = _p[1];
     var _q = useState(false), isCustomizerClosing = _q[0], setIsCustomizerClosing = _q[1];
-    var custDragY = 0;
     var custIsDragging = useRef(false);
     var custStartY = useRef(0);
     var custShellRef = useRef(null);
+    var custRaf = useRef(null);
+    var custDragY = useRef(0);
     var closeCustomizer = function () {
         setIsCustomizerClosing(true);
         setTimeout(function () { setIsCustomizerClosing(false); setIsCustomizerOpen(false); }, 260);
+    };
+    var _snapDrawer = function () {
+        var el = custShellRef.current;
+        if (!el) return;
+        var d = custDragY.current;
+        if (d > 80) { closeCustomizer(); return; }
+        el.style.transition = 'transform 0.28s cubic-bezier(0.22,1,0.36,1)';
+        el.style.transform = 'translate3d(0,0,0)';
+        var onEnd = function (e) {
+            if (e.propertyName === 'transform') {
+                el.style.transition = '';
+                el.removeEventListener('transitionend', onEnd);
+            }
+        };
+        el.addEventListener('transitionend', onEnd);
+    };
+    var _setDragY = function (y) {
+        custDragY.current = y;
+        if (custRaf.current) cancelAnimationFrame(custRaf.current);
+        custRaf.current = requestAnimationFrame(function () {
+            var el = custShellRef.current;
+            if (el) el.style.transform = 'translate3d(0,' + y + 'px,0)';
+            custRaf.current = null;
+        });
     };
     var custDragHandlers = {
         onMouseDown: function (e) { custIsDragging.current = true; custStartY.current = e.clientY; },
         onMouseMove: function (e) {
             if (!custIsDragging.current) return;
             var d = e.clientY - custStartY.current;
-            if (d > 0 && custShellRef.current) custShellRef.current.style.transform = 'translateY(' + d + 'px)';
+            if (d > 0) _setDragY(d);
         },
         onMouseUp: function () {
             if (!custIsDragging.current) return;
             custIsDragging.current = false;
-            var el = custShellRef.current;
-            if (!el) return;
-            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
-            if (d > 80) { closeCustomizer(); }
-            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+            _snapDrawer();
         },
         onMouseLeave: function () {
             if (!custIsDragging.current) return;
             custIsDragging.current = false;
-            var el = custShellRef.current;
-            if (!el) return;
-            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
-            if (d > 80) { closeCustomizer(); }
-            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+            _snapDrawer();
         },
         onTouchStart: function (e) { custIsDragging.current = true; custStartY.current = e.touches[0].clientY; },
         onTouchMove: function (e) {
             if (!custIsDragging.current) return;
             var d = e.touches[0].clientY - custStartY.current;
-            if (d > 0 && custShellRef.current) custShellRef.current.style.transform = 'translateY(' + d + 'px)';
+            if (d > 0) _setDragY(d);
         },
         onTouchEnd: function () {
             if (!custIsDragging.current) return;
             custIsDragging.current = false;
-            var el = custShellRef.current;
-            if (!el) return;
-            var d = parseFloat(el.style.transform.replace('translateY(','')) || 0;
-            if (d > 80) { closeCustomizer(); }
-            else { el.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)'; el.style.transform = 'translateY(0)'; setTimeout(function(){ if(el) el.style.transition=''; }, 250); }
+            _snapDrawer();
         },
     };
     var _t = useState('gemini-lite'), customizerModel = _t[0], setCustomizerModel = _t[1];
