@@ -705,18 +705,12 @@ function Reader(_a) {
             ? 'You are a Bengali language expert and educator. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a deeper, more vivid Bengali paraphrase that adds clarity and context — NOT a shortened version\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
             : 'You are an expert Bengali translator and educator. Given an array of text lines (may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length where each element is a rich, detailed Bengali translation of the corresponding input line.\n- Preserve markdown formatting: use **bold** for key terms, keep heading levels, keep bullet structure\n- For technical or complex lines, add brief clarifying context in Bengali\n- Write naturally flowing Bengali, not robotic\nRespond with ONLY a raw JSON array: ["translation 1","translation 2",...]. No explanation, no markdown fences.';
         var userMsg = JSON.stringify(nonEmptyLines);
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-            body: JSON.stringify({
-                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: userMsg }],
-                model: 'moonshotai/kimi-k2-instruct-0905',
-                max_tokens: 4096,
-                temperature: 0.2
-            }),
-            signal: interlinearAbortRef.current.signal
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite-preview', userMsg, {
+            systemInstruction: sysMsg,
+            temperature: 0.2,
+            maxOutputTokens: 4096
+        }).then(function(r) {
+            var raw = r.text || '';
             /* Strip markdown fences */
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             /* Try parse as array */
@@ -766,18 +760,12 @@ function Reader(_a) {
         if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
         entityAbortRef.current = new AbortController();
         var sysMsg = 'You are an elite named entity recognition engine specialized in Bengali and English text. Your job is to extract EVERY single named entity — missing even one important name is a failure.\n\nGiven a page of text (Bengali, English, or mixed), you MUST:\n1. Extract ALL people (historical figures, politicians, authors, scientists, religious leaders, military commanders, rulers, etc.)\n2. Extract ALL places (cities, countries, regions, rivers, mountains, buildings, battlefields, etc.)\n3. Extract ALL organizations (governments, armies, parties, institutions, companies, etc.)\n4. Extract ALL important concepts, events, treaties, laws, doctrines\n5. Extract ALL technical/scientific terms\n\nCRITICAL RULES:\n- NEVER skip a person\'s name, even if mentioned only once\n- For Bengali text: detect names written in Bengali script (e.g. হিরোশিমা, হ্যারি ট্রুম্যান, মুজিবুর রহমান, হুমায়ূন আহমেদ)\n- "name" field MUST be the EXACT substring as it appears in the text — copy character-for-character, do NOT correct spelling, do NOT translate, do NOT paraphrase\n- For each entity provide:\n  * "name": EXACT string as it appears in the input text (copy verbatim)\n  * "type": one of person|place|org|concept|term\n  * "description": 1 concise sentence in BENGALI explaining who/what this is\n- Extract up to 40 entities — PRIORITIZE people and places\n- Return ONLY a raw JSON array, NO markdown, NO code fences, NO explanation\n\nExample: if text says "হুমায়ন আহমেদ" then name must be "হুমায়ন আহমেদ" exactly as written.';
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-            body: JSON.stringify({
-                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: 'Text:\n' + pageText.slice(0, 5000) }],
-                model: 'moonshotai/kimi-k2-instruct-0905',
-                max_tokens: 3000,
-                temperature: 0.1
-            }),
-            signal: entityAbortRef.current.signal
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite-preview', 'Text:\n' + pageText.slice(0, 5000), {
+            systemInstruction: sysMsg,
+            temperature: 0.1,
+            maxOutputTokens: 3000
+        }).then(function(r) {
+            var raw = r.text || '';
             console.log('[LENS] raw response:', raw.slice(0, 300));
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             var parsed = null;
