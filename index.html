@@ -5145,18 +5145,12 @@ function Reader(_a) {
             ? 'তুমি একজন দক্ষ বাংলা লেখক। নিচের প্রতিটি লাইনের একটি সহজ, স্বাভাবিক বাংলা ব্যাখ্যা লেখো — যেন একজন বন্ধু বুঝিয়ে দিচ্ছে। নিয়ম:\n- সহজ কথ্য বাংলায় লেখো, সাহিত্যিক বা অনুবাদমূলক ভাষা ব্যবহার করো না\n- কোনো markdown (**, ##, -) ব্যবহার করো না — শুধু plain text\n- জটিল শব্দ বা ধারণা থাকলে সহজভাবে বলো\n- মূল অর্থ ঠিক রেখে নিজের ভাষায় বলো\nReply with ONLY a raw JSON array, same length as input. No markdown fences, no explanation.'
             : 'তুমি একজন দক্ষ বাংলা অনুবাদক। নিচের ইংরেজি লাইনগুলো স্বাভাবিক, কথ্য বাংলায় অনুবাদ করো — যেন একজন বাংলাদেশি শিক্ষিত মানুষ বলছে। নিয়ম:\n- অনুবাদ শুনতে যেন মানুষের লেখা মনে হয়, রোবটিক বা dictionary-style নয়\n- technical terms বাংলায় থাকলে সেগুলো বাংলায় বলার চেষ্টা করো, না পারলে ইংরেজি রাখো\n- কোনো markdown (**, ##, -) ব্যবহার করো না — শুধু plain text\n- বাক্যের গঠন স্বাভাবিক বাংলায় হোক, word-by-word অনুবাদ নয়\n- উদাহরণ: "The law was passed" → "আইনটি পাস হয়েছিল" নয়, বরং "আইনটা পাশ হয়ে গেল"\nReply with ONLY a raw JSON array, same length as input. No markdown fences, no explanation.';
         var userMsg = JSON.stringify(nonEmptyLines);
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-            body: JSON.stringify({
-                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: userMsg }],
-                model: 'moonshotai/kimi-k2-instruct-0905',
-                max_tokens: 4096,
-                temperature: 0.2
-            }),
-            signal: interlinearAbortRef.current.signal
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite-preview', userMsg, {
+            systemInstruction: sysMsg,
+            temperature: 0.2,
+            maxOutputTokens: 4096
+        }).then(function(r) {
+            var raw = r.text || '';
             /* Strip markdown fences */
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             /* Try parse as array */
@@ -5206,18 +5200,12 @@ function Reader(_a) {
         if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
         entityAbortRef.current = new AbortController();
         var sysMsg = 'You are an elite named entity recognition engine specialized in Bengali and English text. Your job is to extract EVERY single named entity — missing even one important name is a failure.\n\nGiven a page of text (Bengali, English, or mixed), you MUST:\n1. Extract ALL people (historical figures, politicians, authors, scientists, religious leaders, military commanders, rulers, etc.)\n2. Extract ALL places (cities, countries, regions, rivers, mountains, buildings, battlefields, etc.)\n3. Extract ALL organizations (governments, armies, parties, institutions, companies, etc.)\n4. Extract ALL important concepts, events, treaties, laws, doctrines\n5. Extract ALL technical/scientific terms\n\nCRITICAL RULES:\n- NEVER skip a person\'s name, even if mentioned only once\n- For Bengali text: detect names written in Bengali script (e.g. হিরোশিমা, হ্যারি ট্রুম্যান, মুজিবুর রহমান, হুমায়ূন আহমেদ)\n- "name" field MUST be the EXACT substring as it appears in the text — copy character-for-character, do NOT correct spelling, do NOT translate, do NOT paraphrase\n- For each entity provide:\n  * "name": EXACT string as it appears in the input text (copy verbatim)\n  * "type": one of person|place|org|concept|term\n  * "description": 1 concise sentence in BENGALI explaining who/what this is\n- Extract up to 40 entities — PRIORITIZE people and places\n- Return ONLY a raw JSON array, NO markdown, NO code fences, NO explanation\n\nExample: if text says "হুমায়ন আহমেদ" then name must be "হুমায়ন আহমেদ" exactly as written.';
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-            body: JSON.stringify({
-                messages: [{ role: 'system', content: sysMsg }, { role: 'user', content: 'Text:\n' + pageText.slice(0, 5000) }],
-                model: 'moonshotai/kimi-k2-instruct-0905',
-                max_tokens: 3000,
-                temperature: 0.1
-            }),
-            signal: entityAbortRef.current.signal
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var raw = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite-preview', 'Text:\n' + pageText.slice(0, 5000), {
+            systemInstruction: sysMsg,
+            temperature: 0.1,
+            maxOutputTokens: 3000
+        }).then(function(r) {
+            var raw = r.text || '';
             console.log('[LENS] raw response:', raw.slice(0, 300));
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             var parsed = null;
