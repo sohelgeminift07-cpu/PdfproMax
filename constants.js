@@ -20,9 +20,13 @@ var GEMINI_KEYS = [
 var MODEL_LABELS = {
     "gemini-lite": "Gemini 3.1 Flash-Lite",
     
-    kimi: "Kimi K2 Instruct",
-    "llama-maverick": "Llama Maverick",
+    kimi: "Qwen 3.6 27B",
+    "llama-maverick": "Llama 4 Scout",
 };
+function stripThink(text) {
+    if (!text) return text;
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
 // ============================================================
 // GEMINI API HELPER (replaces @google/genai)
 // ============================================================

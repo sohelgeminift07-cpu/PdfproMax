@@ -42,7 +42,7 @@ function AnalysisModal(_a) {
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
             body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
         }).then(function(r) { return r.json(); }).then(function(d) {
-            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}';
+            var text = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}';
             var clean = text.replace(/```json\n?|```/g, '').trim();
             var parsed;
             try { parsed = JSON.parse(clean); } catch(e) { parsed = {}; }
@@ -188,7 +188,7 @@ function AnalysisModal(_a) {
                     return [4, r.json()];
                 case 3:
                     d = _b.sent();
-                    aiText = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'No response.';
+                    aiText = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || 'No response.';
                     setAnalysisChatMessages(function(p) { return __spreadArray(__spreadArray([], p, true), [{ role: 'ai', content: aiText }], false); });
                     return [3, 6];
                 case 4:
@@ -216,7 +216,7 @@ function AnalysisModal(_a) {
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
             body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId, max_tokens: 400 })
         }).then(function(r) { return r.json(); }).then(function(d) {
-            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'কোনো উত্তর পাওয়া যায়নি।';
+            var text = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || 'কোনো উত্তর পাওয়া যায়নি।';
             setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]=text; return n; });
         }).catch(function(e) {
             setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]='Error: ' + e.message; return n; });

@@ -339,7 +339,7 @@ function Reader(_a) {
                             result_2 = safeExtractJSON(txt) || {};
                             return [3 /*break*/, 9];
                         case 6:
-                            modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+                            modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
                             key = MAVERICK_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                             return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }) })];
                         case 7:
@@ -349,7 +349,7 @@ function Reader(_a) {
                             return [4 /*yield*/, r.json()];
                         case 8:
                             d = _a.sent();
-                            result_2 = safeExtractJSON((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}') || {};
+                            result_2 = safeExtractJSON(stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}') || {};
                             _a.label = 9;
                         case 9:
                             if (!result_2 || !result_2.body)
@@ -476,13 +476,13 @@ function Reader(_a) {
                             var tryFetch = function(apiKey, modelId) {
                                 return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
                             };
-                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-maverick-17b-128e-instruct').then(function(res) {
+                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-scout-17b-16e-instruct').then(function(res) {
                                 if (!res.ok && (res.status === 401 || res.status === 429 || res.status === 403)) {
-                                    return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
+                                    return tryFetch(GROQ_API_KEY, 'qwen/qwen3.6-27b');
                                 }
                                 return res;
                             }).catch(function() {
-                                return tryFetch(GROQ_API_KEY, 'moonshotai/kimi-k2-instruct-0905');
+                                return tryFetch(GROQ_API_KEY, 'qwen/qwen3.6-27b');
                             });
                         })()];
                     case 2:
@@ -492,7 +492,7 @@ function Reader(_a) {
                         return [4 /*yield*/, r.json()];
                     case 3:
                         d = _a.sent();
-                        analysis = safeExtractJSON((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}') || {};
+                        analysis = safeExtractJSON(stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}') || {};
                         return [3 /*break*/, 6];
                     case 4: return [3 /*break*/, 6];
                     case 5: return [3 /*break*/, 6];
@@ -652,9 +652,9 @@ function Reader(_a) {
                         newText_1 = r.text || '';
                         return [3 /*break*/, 6];
                     case 3:
-                        modelId = 'moonshotai/kimi-k2-instruct-0905', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                         if (customizerModel === 'llama-maverick') {
-                            modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+                            modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
                             key = MAVERICK_KEY;
                         }
                         return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: 'Professional editor.' }, { role: 'user', content: fullP }], model: modelId }) })];
@@ -663,7 +663,7 @@ function Reader(_a) {
                         return [4 /*yield*/, r.json()];
                     case 5:
                         d = _a.sent();
-                        newText_1 = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+                        newText_1 = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '';
                         _a.label = 6;
                     case 6:
                         if (newText_1)
@@ -883,15 +883,15 @@ function Reader(_a) {
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    modelId = 'moonshotai/kimi-k2-instruct-0905'; key = GROQ_API_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                    if (customizerModel === 'llama-maverick') { modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct'; key = MAVERICK_KEY; }
+                    modelId = 'qwen/qwen3.6-27b'; key = GROQ_API_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    if (customizerModel === 'llama-maverick') { modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; }
                     return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
                 case 4:
                     rr = _a.sent();
                     return [4 /*yield*/, rr.json()];
                 case 5:
                     d = _a.sent();
-                    newChunk = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '';
+                    newChunk = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '';
                     _a.label = 6;
                 case 6:
                     if (newChunk) {
@@ -946,7 +946,7 @@ function Reader(_a) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, 5, 6]);
-                    xrayModelId = 'moonshotai/kimi-k2-instruct-0905';
+                    xrayModelId = 'qwen/qwen3.6-27b';
                     xrayKey = GROQ_API_KEY;
                     xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
                     return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
@@ -955,7 +955,7 @@ function Reader(_a) {
                     return [4 /*yield*/, r.json()];
                 case 3:
                     d = _a.sent();
-                    rawText = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}';
+                    rawText = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}';
                     clean = rawText.replace(/```json\n?|```/g, '').trim();
                     try { parsed = JSON.parse(clean); } catch(e3) { parsed = {}; }
                     entities = Array.isArray(parsed.entities) ? parsed.entities : [];
