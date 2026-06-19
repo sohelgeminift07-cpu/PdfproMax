@@ -5689,11 +5689,8 @@ function Reader(_a) {
             if (isBoldMk || markerR)
                 content = React.createElement("span", { className: "md-marker" }, seg);
             else if (boldR) {
-                /* Only render at the start of bold range — skip interior segments */
-                if (p1 !== boldR.start) { return "continue"; }
-                var boldContent = line.substring(boldR.start + 2, boldR.end - 2);
                 var ac = readerTheme === 'dark' || readerTheme === 'midnight' ? '#ffffff' : '#000000';
-                content = React.createElement("span", { className: "md-bold-text", style: { color: ac, opacity: boldness } }, boldContent);
+                content = React.createElement("span", { className: "md-bold-text", style: { color: ac, opacity: boldness } }, content);
             }
             if (hlR) {
                 var h_1 = hlR.data;
