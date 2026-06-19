@@ -1,4 +1,29 @@
 // ============================================================
+// LLAMA SCOUT PAGE DESIGN PROCESSOR
+// ============================================================
+function runLlamaScoutPageDesign(pageText) {
+    if (!pageText) return '';
+
+    // Safe HTML Escape to guarantee absolute code/text preservation
+    var safeText = pageText
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // Llama Scout Structural Tokenizer Layer: Apply structural markup design
+    // preserving every single original character inside high-performance style tags
+    var styled = safeText
+        // Detect and style bold tags (**text**)
+        .replace(/(\*\*.*?\*\*)/g, '<span class="llama-scout-bold" style="color: #a78bfa; font-weight: 700; text-shadow: 0 0 12px rgba(167,139,250,0.4);">$1</span>')
+        // Detect and style secondary emphasis (*text*)
+        .replace(/(\*.*?\*)/g, '<span class="llama-scout-italic" style="color: #fbbf24; font-style: italic;">$1</span>')
+        // Detect and emphasize line spaces/structural breaks dynamically without adding extra hard characters
+        .replace(/(\n\s*\n)/g, '$1<div class="llama-scout-spacer" style="height: 0.75rem; border-left: 2px dashed rgba(255,255,255,0.07); margin: 0.25rem 0;"></div>');
+
+    return styled;
+}
+
+// ============================================================
 // READER COMPONENT
 // ============================================================
 function Reader(_a) {
@@ -1919,7 +1944,7 @@ function Reader(_a) {
                     React.createElement("div", { className: "xray-scroll" }, xrayBody)));
         })(),
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
-            React.createElement("div", { ref: containerRef, className: "manuscript-text serif text-xl ".concat(getThemeTextClass()), style: { lineHeight: lineSpacing } }, renderContent())),
+            React.createElement("div", { ref: containerRef, className: "manuscript-text serif text-xl llama-scout-processed-view ".concat(getThemeTextClass()), style: { lineHeight: lineSpacing } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: 'translateZ(0)', isolation: 'isolate' } },
             React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
