@@ -476,14 +476,7 @@ function Reader(_a) {
                             var tryFetch = function(apiKey, modelId) {
                                 return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
                             };
-                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-scout-17b-16e-instruct').then(function(res) {
-                                if (!res.ok && (res.status === 401 || res.status === 429 || res.status === 403)) {
-                                    return tryFetch(GROQ_API_KEY, 'qwen/qwen3.6-27b');
-                                }
-                                return res;
-                            }).catch(function() {
-                                return tryFetch(GROQ_API_KEY, 'qwen/qwen3.6-27b');
-                            });
+                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-scout-17b-16e-instruct');
                         })()];
                     case 2:
                         r = _a.sent();
@@ -652,11 +645,9 @@ function Reader(_a) {
                         newText_1 = r.text || '';
                         return [3 /*break*/, 6];
                     case 3:
-                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                        if (customizerModel === 'llama-maverick') {
-                            modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                            key = MAVERICK_KEY;
-                        }
+                        modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
+                        key = MAVERICK_KEY;
+                        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                         return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: 'Professional editor.' }, { role: 'user', content: fullP }], model: modelId }) })];
                     case 4:
                         r = _a.sent();
@@ -883,8 +874,7 @@ function Reader(_a) {
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    modelId = 'qwen/qwen3.6-27b'; key = GROQ_API_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                    if (customizerModel === 'llama-maverick') { modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; }
+                    modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                     return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
                 case 4:
                     rr = _a.sent();
@@ -946,8 +936,8 @@ function Reader(_a) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, 5, 6]);
-                    xrayModelId = 'qwen/qwen3.6-27b';
-                    xrayKey = GROQ_API_KEY;
+                    xrayModelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
+                    xrayKey = MAVERICK_KEY;
                     xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
                     return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
                 case 2:

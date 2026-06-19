@@ -19,8 +19,6 @@ var GEMINI_KEYS = [
 ];
 var MODEL_LABELS = {
     "gemini-lite": "Gemini 3.1 Flash-Lite",
-    
-    kimi: "Qwen 3.6 27B",
     "llama-maverick": "Llama 4 Scout",
 };
 function stripThink(text) {

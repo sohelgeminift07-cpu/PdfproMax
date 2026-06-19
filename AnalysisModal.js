@@ -182,7 +182,7 @@ function AnalysisModal(_a) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 4, 5, 6]);
-                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'moonshotai/kimi-k2-instruct-0905' }) })];
+                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + MAVERICK_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'meta-llama/llama-4-scout-17b-16e-instruct' }) })];
                 case 2:
                     r = _b.sent();
                     return [4, r.json()];
