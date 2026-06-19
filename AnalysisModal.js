@@ -126,7 +126,7 @@ function AnalysisModal(_a) {
                     _a.trys.push([1, 3, 4, 5]);
                     hasBengali = /[\u0980-\u09FF]/.test(data.word);
                     textToSpeak = hasBengali ? data.meaning : data.word;
-                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-2.5-flash-preview-tts', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } } })];
+                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-3.1-flash', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } } })];
                 case 2:
                     res = _a.sent();
                     b64 = ((res.candidates && res.candidates[0] && res.candidates[0].content && res.candidates[0].content.parts) ? ((res.candidates[0].content.parts.find(function (p) { return p.inlineData; }) || {}).inlineData || {}).data : undefined);
