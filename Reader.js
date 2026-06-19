@@ -321,12 +321,12 @@ function Reader(_a) {
                             structureInstruction = structureMode === 'original' ? '1. STRUCTURE: Transcribe verbatim. Fix punctuation/spacing only.' : '1. STRUCTURE: Create organized version with headers and bullets.';
                             prevText = (extractedPages[pageIndex - 1] ? extractedPages[pageIndex - 1].body : '') || '';
                             contextPrompt = prevText ? "PREVIOUS: \"...".concat(prevText.slice(-800), "\". Continue flow naturally.") : 'First page.';
-                            prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Inline page/citation references (footnote numbers, bracketed page numbers): wrap them in [N] format. Example: transcribe "see page 365" as "see page [365]", and "footnote 12" as "footnote [12]".\n10. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n11. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
+                            prompt_1 = "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
                             geminiModel = currentModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
-                            url = '/api/proxy/gemini';
-                            body = { model: geminiModel, contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], config: { responseMimeType: 'application/json', temperature: 0.1 } };
+                            url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
+                            body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
                             return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
                         case 4:
                             r = _a.sent();
@@ -340,8 +340,8 @@ function Reader(_a) {
                             return [3 /*break*/, 9];
                         case 6:
                             modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                            key = MAVERICK_KEY, endpoint = '/api/proxy/groq';
-                            return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }) })];
+                            key = MAVERICK_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                            return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }) })];
                         case 7:
                             r = _a.sent();
                             if (!r.ok)
@@ -474,7 +474,7 @@ function Reader(_a) {
                         /* Try Llama Maverick first, fallback to Kimi K2 */
                         return [4 /*yield*/, (function() {
                             var tryFetch = function(apiKey, modelId) {
-                                return fetch('/api/proxy/groq', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
+                                return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
                             };
                             return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-scout-17b-16e-instruct');
                         })()];
@@ -647,8 +647,8 @@ function Reader(_a) {
                     case 3:
                         modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
                         key = MAVERICK_KEY;
-                        endpoint = '/api/proxy/groq';
-                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: 'Professional editor.' }, { role: 'user', content: fullP }], model: modelId }) })];
+                        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: 'Professional editor.' }, { role: 'user', content: fullP }], model: modelId }) })];
                     case 4:
                         r = _a.sent();
                         return [4 /*yield*/, r.json()];
@@ -874,8 +874,8 @@ function Reader(_a) {
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; endpoint = '/api/proxy/groq';
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
+                    modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
                 case 4:
                     rr = _a.sent();
                     return [4 /*yield*/, rr.json()];
@@ -938,8 +938,8 @@ function Reader(_a) {
                     _a.trys.push([1, 4, 5, 6]);
                     xrayModelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
                     xrayKey = MAVERICK_KEY;
-                    xrayEndpoint = '/api/proxy/groq';
-                    return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
+                    xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
                 case 2:
                     r = _a.sent();
                     return [4 /*yield*/, r.json()];
@@ -1180,9 +1180,6 @@ function Reader(_a) {
             while ((match = mathRx.exec(line)) !== null)
                 ranges.push({ start: match.index, end: match.index + match[0].length, type: 'math' });
         }
-        var citeRx = /\[(\d+)\]/g;
-        while ((match = citeRx.exec(line)) !== null)
-            ranges.push({ start: match.index, end: match.index + match[0].length, type: 'citation' });
         var lineEnd = lineStart + line.length;
         var pageHL = __spreadArray(__spreadArray([], highlights.filter(function (h) { return h.pageIndex === currentPage && h.start < lineEnd && h.end > lineStart; }).map(function (h) { return (__assign(__assign({}, h), { isPending: false })); }), true), pendingHighlights.filter(function (ph) { return ph.pageIndex === currentPage && ph.start < lineEnd && ph.end > lineStart; }).map(function (ph) { return (__assign(__assign({}, ph), { isPending: true })); }), true);
         pageHL.forEach(function (h) { return ranges.push({ start: Math.max(0, h.start - lineStart), end: Math.min(line.length, h.end - lineStart), type: h.isPending ? 'pending-highlight' : 'highlight', data: h }); });
@@ -1250,11 +1247,6 @@ function Reader(_a) {
             var glowR = ranges.find(function (r) { return r.type === 'rewritten-glow' && r.start <= p1 && r.end >= p2; });
             if (glowR) {
                 content = React.createElement("mark", { key: "gw".concat(p1), className: "rewritten-inline-glow" }, content);
-            }
-            var citeR = ranges.find(function (r) { return r.type === 'citation' && r.start <= p1 && r.end >= p2; });
-            if (citeR) {
-                var num = seg.replace(/^\[|\]$/g, '');
-                content = React.createElement("sup", { key: "ct".concat(p1), className: "citation-sup", style: { fontSize: '0.75em', fontWeight: 700, color: '#6b7280', marginLeft: '1px', marginRight: '1px', lineHeight: 1 } }, num);
             }
             nodes.push(React.createElement(React.Fragment, { key: "s".concat(p1) }, content));
         };

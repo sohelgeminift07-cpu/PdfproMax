@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server.js"
+args = "serve . --listen 5000 --no-clipboard"
 waitForPort = 5000
 
 [[ports]]
@@ -37,8 +37,3 @@ externalPort = 80
 [deployment]
 deploymentTarget = "static"
 publicDir = "."
-
-[userenv]
-
-[userenv.shared]
-GEMINI_API_KEY = "AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c,AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM,AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA,AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs"

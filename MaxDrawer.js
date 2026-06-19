@@ -91,10 +91,10 @@ function MaxDrawer(_a) {
     }, [activeTimelineModel]);
     var getGroqModel = function (m) {
         if (m === 'kimi-2')
-            return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: '/api/proxy/groq' };
+            return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
         if (m === 'llama-maverick')
-            return { modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct', key: MAVERICK_KEY, endpoint: '/api/proxy/groq' };
-        return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: '/api/proxy/groq' };
+            return { modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct', key: MAVERICK_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
+        return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
     };
     var generateSummary = function (modelOverride, forceRegen) { return __awaiter(_this, void 0, void 0, function () {
         var mToUse, cacheKey, srcText, promptCtx, result_1, gemApiModel, r, _a, modelId, key, endpoint, r, d, e_2;
@@ -130,7 +130,7 @@ function MaxDrawer(_a) {
                     return [3 /*break*/, 6];
                 case 3:
                     _a = getGroqModel(mToUse), modelId = _a.modelId, key = _a.key, endpoint = _a.endpoint;
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: "You are a professional editor. ".concat(promptCtx) }, { role: 'user', content: srcText }], model: modelId, temperature: 0.7 }) })];
+                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: "You are a professional editor. ".concat(promptCtx) }, { role: 'user', content: srcText }], model: modelId, temperature: 0.7 }) })];
                 case 4:
                     r = _b.sent();
                     return [4 /*yield*/, r.json()];
@@ -208,7 +208,7 @@ function MaxDrawer(_a) {
                     return [3 /*break*/, 6];
                 case 3:
                     _a = getGroqModel(activeChatModel), modelId = _a.modelId, key = _a.key, endpoint = _a.endpoint;
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId }) })];
+                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId }) })];
                 case 4:
                     r = _b.sent();
                     return [4 /*yield*/, r.json()];
