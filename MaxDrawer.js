@@ -91,10 +91,10 @@ function MaxDrawer(_a) {
     }, [activeTimelineModel]);
     var getGroqModel = function (m) {
         if (m === 'kimi-2')
-            return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
+            return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: '/api/proxy/groq' };
         if (m === 'llama-maverick')
-            return { modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct', key: MAVERICK_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
-        return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
+            return { modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct', key: MAVERICK_KEY, endpoint: '/api/proxy/groq' };
+        return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: '/api/proxy/groq' };
     };
     var generateSummary = function (modelOverride, forceRegen) { return __awaiter(_this, void 0, void 0, function () {
         var mToUse, cacheKey, srcText, promptCtx, result_1, gemApiModel, r, _a, modelId, key, endpoint, r, d, e_2;

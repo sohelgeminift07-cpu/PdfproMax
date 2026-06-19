@@ -5,12 +5,12 @@
 
 function geminiGenerate(apiKey_1, model_1, contents_1) {
     return __awaiter(this, arguments, void 0, function (apiKey, model, contents, config) {
-        var url, body, res, err, data, text, audioBase64;
+        var url, body, proxyBody, res, err, data, text, audioBase64;
         if (config === void 0) { config = {}; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(model, ":generateContent?key=").concat(apiKey);
+                    url = "/api/proxy/gemini";
                     body = {
                         contents: Array.isArray(contents) ? contents.map(function (c) { return typeof c === 'string' ? { parts: [{ text: c }], role: 'user' } : c; }) : [{ parts: [{ text: contents }], role: 'user' }],
                         generationConfig: { maxOutputTokens: config.maxOutputTokens || 8192 }
@@ -25,7 +25,9 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
+                    proxyBody = { model: model, contents: body.contents, config: body.generationConfig };
+                    if (body.systemInstruction) proxyBody.systemInstruction = body.systemInstruction;
+                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(proxyBody) })];
                 case 1:
                     res = _a.sent();
                     if (!!res.ok) return [3 /*break*/, 3];

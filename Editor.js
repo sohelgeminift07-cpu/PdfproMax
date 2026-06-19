@@ -124,7 +124,7 @@ function Editor(_a) {
                         result = r.text || '';
                         return [3 /*break*/, 8];
                     case 3:
-                        modelId = 'moonshotai/kimi-k2-instruct-0905', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        modelId = 'moonshotai/kimi-k2-instruct-0905', key = GROQ_API_KEY, endpoint = '/api/proxy/groq';
                         if (activeStructureModel === 'kimi')
                             modelId = 'moonshotai/kimi-k2-instruct-0905';
                         else if (activeStructureModel === 'llama-maverick') {

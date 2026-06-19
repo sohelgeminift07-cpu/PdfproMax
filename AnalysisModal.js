@@ -37,9 +37,9 @@ function AnalysisModal(_a) {
         var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
         var sys = 'You are a question generator. Given a selected word/phrase and its meaning, generate exactly 3 short, distinct, insightful questions that a curious reader would want answered. Questions should be in the same language as the meaning text (Bengali or English). Return ONLY valid JSON: {"questions":["q1","q2","q3"]}';
         var userP = 'Word/phrase: "' + data.word + '"\nMeaning: ' + data.meaning + '\nContext clues: ' + (data.context || '');
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
+        fetch('/api/proxy/groq', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
         }).then(function(r) { return r.json(); }).then(function(d) {
             var text = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}';
@@ -126,7 +126,7 @@ function AnalysisModal(_a) {
                     _a.trys.push([1, 3, 4, 5]);
                     hasBengali = /[\u0980-\u09FF]/.test(data.word);
                     textToSpeak = hasBengali ? data.meaning : data.word;
-                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-2.5-flash-preview-tts', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } } })];
+                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-3.1-flash', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } }, temperature: 0.1, maxOutputTokens: 1024 })];
                 case 2:
                     res = _a.sent();
                     b64 = ((res.candidates && res.candidates[0] && res.candidates[0].content && res.candidates[0].content.parts) ? ((res.candidates[0].content.parts.find(function (p) { return p.inlineData; }) || {}).inlineData || {}).data : undefined);
@@ -182,7 +182,7 @@ function AnalysisModal(_a) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 4, 5, 6]);
-                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + MAVERICK_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'meta-llama/llama-4-scout-17b-16e-instruct' }) })];
+                    return [4, fetch('/api/proxy/groq', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'meta-llama/llama-4-scout-17b-16e-instruct' }) })];
                 case 2:
                     r = _b.sent();
                     return [4, r.json()];
@@ -211,9 +211,9 @@ function AnalysisModal(_a) {
         var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
         var sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the question. Keep the answer short — 2-4 sentences or a brief bullet list.';
         var userPrompt = 'The user is analyzing: "' + (data.word || '') + '".\nMeaning: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nQuestion: ' + question;
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
+        fetch('/api/proxy/groq', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId, max_tokens: 400 })
         }).then(function(r) { return r.json(); }).then(function(d) {
             var text = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || 'কোনো উত্তর পাওয়া যায়নি।';

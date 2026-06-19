@@ -2738,12 +2738,12 @@ var MODEL_LABELS = {
 // ============================================================
 function geminiGenerate(apiKey_1, model_1, contents_1) {
     return __awaiter(this, arguments, void 0, function (apiKey, model, contents, config) {
-        var url, body, res, err, data, text, audioBase64;
+        var url, body, proxyBody, res, err, data, text, audioBase64;
         if (config === void 0) { config = {}; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(model, ":generateContent?key=").concat(apiKey);
+                    url = "/api/proxy/gemini";
                     body = {
                         contents: Array.isArray(contents) ? contents.map(function (c) { return typeof c === 'string' ? { parts: [{ text: c }], role: 'user' } : c; }) : [{ parts: [{ text: contents }], role: 'user' }],
                         generationConfig: { maxOutputTokens: config.maxOutputTokens || 8192 }
@@ -2758,7 +2758,9 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: config.signal || undefined })];
+                    proxyBody = { model: model, contents: body.contents, config: body.generationConfig };
+                    if (body.systemInstruction) proxyBody.systemInstruction = body.systemInstruction;
+                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(proxyBody), signal: config.signal || undefined })];
                 case 1:
                     res = _a.sent();
                     if (!!res.ok) return [3 /*break*/, 3];
@@ -3079,7 +3081,7 @@ function AnalysisModal(_a) {
         var modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
         var sys = 'You are a question generator. Given a selected word/phrase and its meaning, generate exactly 3 short, distinct, insightful questions that a curious reader would want answered. Questions should be in the same language as the meaning text (Bengali or English). Return ONLY valid JSON: {"questions":["q1","q2","q3"]}';
         var userP = 'Word/phrase: "' + data.word + '"\nMeaning: ' + data.meaning + '\nContext clues: ' + (data.context || '');
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
+        fetch('/api/proxy/groq', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
             body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
@@ -3168,7 +3170,7 @@ function AnalysisModal(_a) {
                     _a.trys.push([1, 3, 4, 5]);
                     hasBengali = /[\u0980-\u09FF]/.test(data.word);
                     textToSpeak = hasBengali ? data.meaning : data.word;
-                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-2.5-flash-preview-tts', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } } })];
+                    return [4 /*yield*/, geminiGenerate(googleApiKey, 'gemini-3.1-flash', [{ parts: [{ text: textToSpeak }], role: 'user' }], { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } }, temperature: 0.1, maxOutputTokens: 1024 })];
                 case 2:
                     res = _a.sent();
                     b64 = ((res.candidates && res.candidates[0] && res.candidates[0].content && res.candidates[0].content.parts) ? ((res.candidates[0].content.parts.find(function (p) { return p.inlineData; }) || {}).inlineData || {}).data : undefined);
@@ -3224,7 +3226,7 @@ function AnalysisModal(_a) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 4, 5, 6]);
-                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'qwen/qwen3.6-27b' }) })];
+                    return [4, fetch('/api/proxy/groq', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'qwen/qwen3.6-27b' }) })];
                 case 2:
                     r = _b.sent();
                     return [4, r.json()];
@@ -3253,7 +3255,7 @@ function AnalysisModal(_a) {
         var modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
         var sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the question. Keep the answer short — 2-4 sentences or a brief bullet list.';
         var userPrompt = 'The user is analyzing: "' + (data.word || '') + '".\nMeaning: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nQuestion: ' + question;
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
+        fetch('/api/proxy/groq', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
             body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId, max_tokens: 400 })
@@ -3610,8 +3612,8 @@ function MaxDrawer(_a) {
     }, [activeTimelineModel]);
     var getGroqModel = function (m) {
         if (m === 'llama-maverick')
-            return { modelId: 'meta-llama/llama-4-scout-17b-16e-instruct', key: MAVERICK_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
-        return { modelId: 'meta-llama/llama-4-scout-17b-16e-instruct', key: MAVERICK_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
+            return { modelId: 'meta-llama/llama-4-scout-17b-16e-instruct', key: MAVERICK_KEY, endpoint: '/api/proxy/groq' };
+        return { modelId: 'meta-llama/llama-4-scout-17b-16e-instruct', key: MAVERICK_KEY, endpoint: '/api/proxy/groq' };
     };
     var generateSummary = function (modelOverride, forceRegen) { return __awaiter(_this, void 0, void 0, function () {
         var mToUse, cacheKey, srcText, promptCtx, result_1, gemApiModel, r, _a, modelId, key, endpoint, r, d, e_2;
@@ -4712,8 +4714,8 @@ function Reader(_a) {
                             result_2 = {};
                             geminiModel = currentModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
-                            url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
-                            body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
+                            url = '/api/proxy/gemini';
+                            body = { model: geminiModel, contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], config: { responseMimeType: 'application/json', temperature: 0.1 } };
                             return [4 /*yield*/, Promise.race([
                                 fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal }),
                                 new Promise(function(_, rej) { setTimeout(function() { var te = new Error('OCR_TIMEOUT_10S'); te.name = 'TimeoutError'; rej(te); }, 10000); })
@@ -4730,7 +4732,7 @@ function Reader(_a) {
                             return [3 /*break*/, 9];
                         case 6:
                             modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                            key = MAVERICK_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                            key = MAVERICK_KEY, endpoint = '/api/proxy/groq';
                             return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal })];
                         case 7:
                             r = _a.sent();
@@ -4881,7 +4883,7 @@ function Reader(_a) {
                         /* ── Groq path (Maverick → Kimi fallback) ── */
                         return [4 /*yield*/, (function() {
                             var tryGroq = function(apiKey, modelId) {
-                                return fetch('https://api.groq.com/openai/v1/chat/completions', {
+                                return fetch('/api/proxy/groq', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
                                     body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP + '\n\nOutput ONLY a valid JSON object. No markdown fences, no explanation.' }], model: modelId, temperature: 0.2, max_tokens: 500 }),
@@ -5056,7 +5058,7 @@ function Reader(_a) {
                         newText_1 = r.text || '';
                         return [3 /*break*/, 6];
                     case 3:
-                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = '/api/proxy/groq';
                         if (customizerModel === 'llama-maverick') {
                             modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
                             key = MAVERICK_KEY;
@@ -5287,7 +5289,7 @@ function Reader(_a) {
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    modelId = 'qwen/qwen3.6-27b'; key = GROQ_API_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    modelId = 'qwen/qwen3.6-27b'; key = GROQ_API_KEY; endpoint = '/api/proxy/groq';
                     if (customizerModel === 'llama-maverick') { modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; }
                     return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
                 case 4:
@@ -5352,7 +5354,7 @@ function Reader(_a) {
                     _a.trys.push([1, 4, 5, 6]);
                     xrayModelId = 'qwen/qwen3.6-27b';
                     xrayKey = GROQ_API_KEY;
-                    xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                    xrayEndpoint = '/api/proxy/groq';
                     return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
                 case 2:
                     r = _a.sent();
@@ -6527,7 +6529,7 @@ function Editor(_a) {
                         result = r.text || '';
                         return [3 /*break*/, 8];
                     case 3:
-                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        modelId = 'qwen/qwen3.6-27b', key = GROQ_API_KEY, endpoint = '/api/proxy/groq';
                         if (activeStructureModel === 'kimi')
                             modelId = 'qwen/qwen3.6-27b';
                         else if (activeStructureModel === 'llama-maverick') {
