@@ -2835,6 +2835,75 @@ function cleanupPdfDB(activeIds) {
     }).catch(function() {});
 }
 
+/* ── IndexedDB Custom Font Storage ── */
+var _fontDB = null;
+function openFontDB() {
+    if (_fontDB) return Promise.resolve(_fontDB);
+    return new Promise(function(resolve, reject) {
+        var req = indexedDB.open('maxofpdf_custom_fonts', 1);
+        req.onupgradeneeded = function(e) {
+            e.target.result.createObjectStore('fonts', { keyPath: 'id' });
+        };
+        req.onsuccess = function(e) { _fontDB = e.target.result; resolve(_fontDB); };
+        req.onerror = function() { reject(req.error); };
+    });
+}
+function saveFontToDB(id, name, blob) {
+    return openFontDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('fonts', 'readwrite');
+            tx.objectStore('fonts').put({ id: id, name: name, blob: blob, ts: Date.now() });
+            tx.oncomplete = function() { resolve(); };
+            tx.onerror = function() { reject(tx.error); };
+        });
+    }).catch(function(e) { console.warn('[FontDB] save failed', e); });
+}
+function getFontsFromDB() {
+    return openFontDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('fonts', 'readonly');
+            var store = tx.objectStore('fonts');
+            var req = store.openCursor();
+            var results = [];
+            req.onsuccess = function(e) {
+                var cursor = e.target.result;
+                if (!cursor) { resolve(results); return; }
+                results.push(cursor.value);
+                cursor.continue();
+            };
+            req.onerror = function() { reject(req.error); };
+        });
+    }).catch(function(e) { console.warn('[FontDB] get failed', e); return []; });
+}
+function deleteFontFromDB(id) {
+    return openFontDB().then(function(db) {
+        return new Promise(function(resolve) {
+            var tx = db.transaction('fonts', 'readwrite');
+            tx.objectStore('fonts').delete(id);
+            tx.oncomplete = resolve;
+        });
+    }).catch(function() {});
+}
+/* Register a custom font blob as an @font-face in the document */
+function registerFontInDocument(name, blob) {
+    var url = URL.createObjectURL(blob);
+    var style = document.createElement('style');
+    style.setAttribute('data-custom-font', name);
+    style.textContent = "@font-face { font-family: '" + name + "'; src: url('" + url + "'); }";
+    document.head.appendChild(style);
+    return url;
+}
+/* Remove previously injected @font-face for a font name */
+function unregisterFontInDocument(name) {
+    var existing = document.querySelectorAll("style[data-custom-font='" + name + "']");
+    existing.forEach(function(el) {
+        var text = el.textContent;
+        var match = text.match(/url\('([^']+)'\)/);
+        if (match) { try { URL.revokeObjectURL(match[1]); } catch(e) {} }
+        el.remove();
+    });
+}
+
 var safeExtractJSON = function (text) {
     try {
         var clean = text.replace(/```json\n?|```/g, '').trim();
@@ -3943,7 +4012,7 @@ function MaxDrawer(_a) {
 // SETTINGS
 // ============================================================
 function Settings(_a) {
-    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onSetMainFontSize = _a.onSetMainFontSize, onSetIlFontSize = _a.onSetIlFontSize, onClose = _a.onClose;
+    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, _sf = _a.readerFontFamily, readerFontFamily = _sf === void 0 ? '' : _sf, _sc = _a.customFonts, customFonts = _sc === void 0 ? [] : _sc, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onSetMainFontSize = _a.onSetMainFontSize, onSetIlFontSize = _a.onSetIlFontSize, onSelectFontFamily = _a.onSelectFontFamily, onUploadFont = _a.onUploadFont, onDeleteFont = _a.onDeleteFont, onClose = _a.onClose;
     var _c = useState('general'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState(0), dragY = _d[0], setDragY = _d[1];
     var _f = useState(false), isDragging = _f[0], setIsDragging = _f[1];
@@ -4099,6 +4168,38 @@ function Settings(_a) {
                                 }),
                                 React.createElement("div", { className: "glider-container" },
                                     React.createElement("div", { className: "glider" }))))));
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Typography"),
+                        React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs space-y-3" },
+                            React.createElement("div", null,
+                                React.createElement("label", { className: "text-[10px] text-slate-500 uppercase tracking-widest block mb-2" }, "Font Family"),
+                                React.createElement("select", { value: readerFontFamily, onChange: function(e) { onSelectFontFamily && onSelectFontFamily(e.target.value); }, className: "w-full bg-[#1a1a1e] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-slate-300 focus:outline-none focus:border-indigo-500/50" },
+                                    React.createElement("option", { value: "" }, "Default (serif)"),
+                                    React.createElement("option", { value: "Amiri" }, "Amiri"),
+                                    React.createElement("option", { value: "Playfair Display" }, "Playfair Display"),
+                                    React.createElement("option", { value: "Merriweather" }, "Merriweather"),
+                                    React.createElement("option", { value: "Noto Serif Bengali" }, "Noto Serif Bengali"),
+                                    React.createElement("optgroup", { label: "Custom Fonts" },
+                                        customFonts.map(function(f) {
+                                            return React.createElement("option", { key: f.id, value: f.name }, f.name);
+                                        })))),
+                            React.createElement("div", null,
+                                React.createElement("label", { className: "text-[10px] text-slate-500 uppercase tracking-widest block mb-2" }, "Upload Custom Font"),
+                                React.createElement("input", { type: "file", accept: ".ttf,.woff,.woff2", onChange: function(e) {
+                                    var file = e.target.files && e.target.files[0];
+                                    if (!file) return;
+                                    onUploadFont && onUploadFont(file);
+                                    e.target.value = '';
+                                }, className: "block w-full text-[11px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30" }),
+                                React.createElement("p", { className: "text-[9px] text-slate-600 mt-1" }, "Supports .ttf, .woff, .woff2"))),
+                    customFonts.length > 0 && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Custom Fonts"),
+                        React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs space-y-2" },
+                            customFonts.map(function(f) {
+                                return React.createElement("div", { key: f.id, className: "flex items-center justify-between" },
+                                    React.createElement("span", { className: "text-[13px] text-slate-300", style: { fontFamily: f.name } }, f.name),
+                                    React.createElement("button", { onClick: function() { onDeleteFont && onDeleteFont(f.id, f.name); }, className: "text-[10px] text-rose-400 hover:text-rose-300 px-2 py-1 rounded hover:bg-rose-500/10" }, "Remove"));
+                            }))));
                 if (activeTab === 'structure') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl" }, [{ id: 'original', color: 'amber', icon: React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                                 React.createElement("path", { d: "M4 7V4h16v3" }),
@@ -4329,7 +4430,7 @@ function VocabTab() {
 // ============================================================
 function Reader(_a) {
     var _this = this;
-    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onStateChange = _a.onStateChange;
+    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, _rf = _a.readerFontFamily, readerFontFamily = _rf === void 0 ? '' : _rf, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onStateChange = _a.onStateChange;
     var _b = useState(initialPageIndex != null ? initialPageIndex : 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
@@ -6334,7 +6435,7 @@ function Reader(_a) {
                     React.createElement("div", { className: "xray-scroll" }, xrayBody)));
         })(),
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
-            React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px' } }, renderContent())),
+            React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px', fontFamily: readerFontFamily || undefined } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: 'translateZ(0)', isolation: 'isolate' } },
             React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
@@ -6974,6 +7075,10 @@ function App() {
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
     var _fs1 = useState(20), mainFontSize = _fs1[0], setMainFontSize = _fs1[1];
     var _fs2 = useState(14), ilFontSize = _fs2[0], setIlFontSize = _fs2[1];
+    var _ff1 = useState(function() {
+        try { var s = localStorage.getItem('maxofpdf_reader_font'); return s || ''; } catch(e) { return ''; }
+    }), readerFontFamily = _ff1[0], setReaderFontFamily = _ff1[1];
+    var _cf1 = useState([]), customFonts = _cf1[0], setCustomFonts = _cf1[1];
 
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
     var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
@@ -7031,6 +7136,18 @@ function App() {
         };
         window.addEventListener('maxofpdf_delete_history', handler);
         return function() { window.removeEventListener('maxofpdf_delete_history', handler); };
+    }, []);
+    /* ── Load custom fonts from IndexedDB on mount ── */
+    useEffect(function() {
+        getFontsFromDB().then(function(fonts) {
+            if (!fonts || fonts.length === 0) return;
+            fonts.forEach(function(f) {
+                if (f && f.name && f.blob) {
+                    registerFontInDocument(f.name, f.blob);
+                }
+            });
+            setCustomFonts(fonts.map(function(f) { return { id: f.id, name: f.name }; }));
+        });
     }, []);
     var addToHistory = function (finalLastPage, finalExtracted, file, range, text, richState) {
         /* Use current session's pdfDbId — fallback to history lookup */
@@ -7181,6 +7298,31 @@ function App() {
             setState({ rawText: rawText, isReading: true });
         }
     };
+    var handleSelectFontFamily = function (name) {
+        setReaderFontFamily(name);
+        try { localStorage.setItem('maxofpdf_reader_font', name || ''); } catch(e) {}
+    };
+    var handleUploadFont = function (file) {
+        var name = file.name.replace(/\.(ttf|woff2?)$/i, '').trim();
+        if (!name) return;
+        saveFontToDB(name, file).then(function (id) {
+            registerFontInDocument(name, file);
+            setCustomFonts(function (prev) {
+                var filtered = prev.filter(function (f) { return f.id !== id; });
+                return __spreadArray(__spreadArray([], filtered, true), [{ id: id, name: name }], false);
+            });
+        });
+    };
+    var handleDeleteFont = function (id, name) {
+        deleteFontFromDB(id).then(function () {
+            unregisterFontInDocument(name);
+            setCustomFonts(function (prev) { return prev.filter(function (f) { return f.id !== id; }); });
+            if (readerFontFamily === name) {
+                setReaderFontFamily('');
+                try { localStorage.removeItem('maxofpdf_reader_font'); } catch(e) {}
+            }
+        });
+    };
     /* Called by Reader whenever state changes — keeps history in sync */
     var handleReaderStateChange = function (richState) {
         setCachedHighlights(richState.highlights || []);
@@ -7220,8 +7362,8 @@ function App() {
         }
     };
     return (React.createElement("div", { className: "min-h-screen transition-colors duration-700 font-sans ".concat(getBg()) },
-        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(ErrorBoundary, null, React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey }))) : (React.createElement(ErrorBoundary, null, React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, mainFontSize: mainFontSize, ilFontSize: ilFontSize, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, initialHighlights: cachedHighlights, initialRewrittenPages: cachedRewrittenPages, initialXrayCache: cachedXrayCache, initialSummaryCache: cachedSummaryCache, initialTimelineCache: cachedTimelineCache, onStateChange: handleReaderStateChange })))),
-        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, mainFontSize: mainFontSize, ilFontSize: ilFontSize, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onSetMainFontSize: setMainFontSize, onSetIlFontSize: setIlFontSize, onClose: function () { return setIsSettingsOpen(false); } })));
+        React.createElement("main", { className: "flex-grow flex flex-col items-center justify-center min-h-screen" }, !state.isReading ? (React.createElement(ErrorBoundary, null, React.createElement(Editor, { onStart: handleStartReading, onPdfUpload: handleStartPdfReading, initialValue: state.rawText, initialPdfFile: pdfFile, initialPdfRange: pdfRange, history: history, onRestoreHistory: handleRestoreHistory, activeStructureModel: activeStructureModel, structureMode: structureMode, boldingLevel: boldingLevel, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey }))) : (React.createElement(ErrorBoundary, null, React.createElement(Reader, { text: state.rawText, pdfFile: pdfFile, pdfRange: pdfRange, initialExtractedPages: extractedCache, initialPageIndex: lastPageIndex, activeModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, onModelChange: setActiveReaderModel, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoScrollSpeed: autoScrollSpeed, autoPlayTTS: autoPlayTTS, mainFontSize: mainFontSize, ilFontSize: ilFontSize, readerFontFamily: readerFontFamily, onBack: handleExitReader, onOpenSettings: function () { return setIsSettingsOpen(true); }, googleApiKey: googleApiKey, onRotateKey: handleRotateKey, initialHighlights: cachedHighlights, initialRewrittenPages: cachedRewrittenPages, initialXrayCache: cachedXrayCache, initialSummaryCache: cachedSummaryCache, initialTimelineCache: cachedTimelineCache, onStateChange: handleReaderStateChange })))),
+        React.createElement(Settings, { isOpen: isSettingsOpen, history: history, onSelectHistory: function (item) { handleRestoreHistory(item); setIsSettingsOpen(false); }, activeReaderModel: activeReaderModel, activeStructureModel: activeStructureModel, structureMode: structureMode, activeScanningModel: activeScanningModel, readerTheme: readerTheme, boldingLevel: boldingLevel, lineSpacing: lineSpacing, boldness: boldness, autoPlayTTS: autoPlayTTS, apiKey1: GEMINI_KEYS[0], apiKey2: GEMINI_KEYS[1], activeKeyIndex: activeKeyIndex, autoScrollSpeed: autoScrollSpeed, mainFontSize: mainFontSize, ilFontSize: ilFontSize, readerFontFamily: readerFontFamily, customFonts: customFonts, onSelectReaderModel: setActiveReaderModel, onSelectStructureModel: setActiveStructureModel, onSelectStructureMode: setStructureMode, onSelectScanningModel: setActiveScanningModel, onSelectTheme: setReaderTheme, onSelectBoldingLevel: setBoldingLevel, onSetLineSpacing: setLineSpacing, onSetBoldness: setBoldness, onToggleAutoPlayTTS: function () { return setAutoPlayTTS(!autoPlayTTS); }, onSetApiKey1: function(){}, onSetApiKey2: function(){}, onSetAutoScrollSpeed: setAutoScrollSpeed, onSetMainFontSize: setMainFontSize, onSetIlFontSize: setIlFontSize, onSelectFontFamily: handleSelectFontFamily, onUploadFont: handleUploadFont, onDeleteFont: handleDeleteFont, onClose: function () { return setIsSettingsOpen(false); } })));
 }
 var container = document.getElementById('root');
 ReactDOM.render(
