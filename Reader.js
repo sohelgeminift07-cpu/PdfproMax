@@ -484,6 +484,7 @@ function Reader(_a) {
         return __awaiter(_this, __spreadArray([selection_1, fullContext_1, selectedModel_1], args_1, true), void 0, function (selection, fullContext, selectedModel, retryCount) {
             var ctrl, cleanText, wc, isSentence, wordSys, sentSys, sys, userP, analysis, modelName, geminiM, r, modelId, key, endpoint, r, d, result, newHL_1, err_2;
             if (retryCount === void 0) { retryCount = 0; }
+            setIsRegenerating(true);
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -529,8 +530,6 @@ function Reader(_a) {
                         setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         try { var _vRaw = localStorage.getItem('maxofpdf_vocab'); var _vStore = _vRaw ? JSON.parse(_vRaw) : {}; var _vKey = cleanText.trim().toLowerCase(); _vStore[_vKey] = { word: result.word, meaning: result.meaning, m: result.meaning, entityType: result.entityType, ts: Date.now() }; localStorage.setItem('maxofpdf_vocab', JSON.stringify(_vStore)); window.dispatchEvent(new CustomEvent('maxofpdf_vocab_updated')); } catch(_e) {}
                         setModalData(result);
-                        setIsAutoOpen(true);
-                        setIsModalOpen(true);
                         return [3 /*break*/, 9];
                     case 7:
                         err_2 = _a.sent();
@@ -606,6 +605,7 @@ function Reader(_a) {
             if (!already && !pending) {
                 setPendingHighlights(function (p) { return __spreadArray(__spreadArray([], p, true), [sel], false); });
                 var curText = rewrittenPages[currentPage] || (pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage]);
+                setIsModalOpen(true); setIsAutoOpen(true); setIsRegenerating(true);
                 analyzeText(sel, curText, activeModel);
                 (window.getSelection() && window.getSelection().removeAllRanges());
             }
@@ -617,7 +617,7 @@ function Reader(_a) {
     useEffect(function () {
         var onSelChange = function () { if (selectionTimerRef.current)
             clearTimeout(selectionTimerRef.current); if (!isPointerDownRef.current)
-            selectionTimerRef.current = setTimeout(processSelection, 200); };
+            selectionTimerRef.current = setTimeout(processSelection, 50); };
         var onPtrDown = function (e) { if (e.target.closest('button'))
             return; isPointerDownRef.current = true; };
         var onPtrUp = function () { isPointerDownRef.current = false; processSelection(); };
