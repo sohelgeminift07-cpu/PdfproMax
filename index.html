@@ -4525,6 +4525,7 @@ function Reader(_a) {
     var _y = useState(false), isOriginalPdfOpen = _y[0], setIsOriginalPdfOpen = _y[1];
     var _z = useState(1.0), pdfViewerZoom = _z[0], setPdfViewerZoom = _z[1];
     var pdfCanvasRef = useRef(null);
+    var pdfRenderTaskRef = useRef(null);
     var _0 = useState(null), pdfDoc = _0[0], setPdfDoc = _0[1];
     var _1 = useState(initialExtractedPages || {}), extractedPages = _1[0], setExtractedPages = _1[1];
     var _2 = useState({}), scanningStatus = _2[0], setScanningStatus = _2[1];
@@ -4725,6 +4726,10 @@ function Reader(_a) {
                         canvas = pdfCanvasRef.current;
                         if (!canvas)
                             return [2 /*return*/];
+                        /* Cancel any active rendering task before starting a new one */
+                        if (pdfRenderTaskRef.current) {
+                            try { pdfRenderTaskRef.current.cancel(); } catch(e) {}
+                        }
                         /* Canvas internal pixels = full resolution */
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
@@ -4733,9 +4738,12 @@ function Reader(_a) {
                         canvas.style.width = displayW + 'px';
                         canvas.style.height = (viewport.height / dpr) + 'px';
                         ctx = canvas.getContext('2d');
-                        return [4 /*yield*/, page.render({ canvasContext: ctx, viewport: viewport }).promise];
+                        var renderTask = page.render({ canvasContext: ctx, viewport: viewport });
+                        pdfRenderTaskRef.current = renderTask;
+                        return [4 /*yield*/, renderTask.promise];
                     case 2:
                         _a.sent();
+                        pdfRenderTaskRef.current = null;
                         return [2 /*return*/];
                 }
             });
