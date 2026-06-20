@@ -426,18 +426,16 @@ function Reader(_a) {
                         case 10:
                             e_4 = _a.sent();
                             console.error("Scan error page ".concat(pageIndex), e_4);
-                            isQuota = (e_4.message && (e_4.message.includes('429') || e_4.message.includes('403') || e_4.message.includes('RESOURCE_EXHAUSTED') || e_4.message.includes('quota')));
-                            if (!(isQuota && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
-                            /* Rotate to next key and immediately retry with same model */
+                            /* ANY error → rotate to next key and retry, until all keys exhausted */
+                            if (!(retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
                             onRotateKey();
-                            /* Use next key directly from array (don't wait for state update) */
                             apiKeyRef.current = GEMINI_KEYS[(GEMINI_KEYS.indexOf(apiKeyRef.current) + 1) % GEMINI_KEYS.length];
                             return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, currentModel)];
                         case 11:
                             _a.sent();
                             return [2 /*return*/];
                         case 12:
-                            if (!(activeScanningModel.includes('gemini') && !modelOverride && retryCount < 3 && !isQuota)) return [3 /*break*/, 14];
+                            if (!(activeScanningModel.includes('gemini') && !modelOverride && retryCount < 3)) return [3 /*break*/, 14];
                             idx = OCR_ROTATION.indexOf(currentModel);
                             if (!(idx !== -1)) return [3 /*break*/, 14];
                             return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, OCR_ROTATION[(idx + 1) % OCR_ROTATION.length])];
