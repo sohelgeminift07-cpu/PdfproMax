@@ -1,23 +1,27 @@
 // ============================================================
 // LLAMA SCOUT PAGE DESIGN PROCESSOR
 // ============================================================
-function runLlamaScoutPageDesign(pageText) {
+function runLlamaScoutPageDesign(pageText, pageNum, highlightsArray) {
     if (!pageText) return '';
 
-    // Safe HTML Escape to guarantee absolute code/text preservation
     var safeText = pageText
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // Llama Scout Structural Tokenizer Layer: Apply structural markup design
-    // preserving every single original character inside high-performance style tags
+    if (highlightsArray && highlightsArray.length > 0) {
+        highlightsArray.forEach(function(hl) {
+            if (hl.pageNumber === pageNum && hl.text && hl.text.trim().length > 1) {
+                var escapedHlText = hl.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                var hlRegex = new RegExp('(' + escapedHlText + ')', 'gi');
+                safeText = safeText.replace(hlRegex, '<span class="looked-up-word-marker" style="border-bottom: 2px dotted #fbbf24; cursor: pointer; background: rgba(251, 191, 36, 0.08);">$1</span>');
+            }
+        });
+    }
+
     var styled = safeText
-        // Detect and style bold tags (**text**)
         .replace(/(\*\*.*?\*\*)/g, '<span class="llama-scout-bold" style="color: #a78bfa; font-weight: 700; text-shadow: 0 0 12px rgba(167,139,250,0.4);">$1</span>')
-        // Detect and style secondary emphasis (*text*)
         .replace(/(\*.*?\*)/g, '<span class="llama-scout-italic" style="color: #fbbf24; font-style: italic;">$1</span>')
-        // Detect and emphasize line spaces/structural breaks dynamically without adding extra hard characters
         .replace(/(\n\s*\n)/g, '$1<div class="llama-scout-spacer" style="height: 0.75rem; border-left: 2px dashed rgba(255,255,255,0.07); margin: 0.25rem 0;"></div>');
 
     return styled;
@@ -32,6 +36,7 @@ function Reader(_a) {
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
+    var _lu = useState([]), lookedUpHighlights = _lu[0], setLookedUpHighlights = _lu[1];
     var _f = useState(null), modalData = _f[0], setModalData = _f[1];
     var _g = useState(false), isModalOpen = _g[0], setIsModalOpen = _g[1];
     var _h = useState(false), isAutoOpen = _h[0], setIsAutoOpen = _h[1];
@@ -604,6 +609,9 @@ function Reader(_a) {
                 analyzeText(sel, curText, activeModel);
                 (window.getSelection() && window.getSelection().removeAllRanges());
             }
+            /* Push looked-up text into persistent tracker for dotted underline rendering */
+            var newLu = { id: 'lookup-' + Date.now(), pageNumber: currentPage, text: sel.text, timestamp: new Date().toISOString() };
+            setLookedUpHighlights(function (prev) { return prev.concat(newLu); });
         }
     };
     useEffect(function () {
@@ -1208,6 +1216,12 @@ function Reader(_a) {
         var lineEnd = lineStart + line.length;
         var pageHL = __spreadArray(__spreadArray([], highlights.filter(function (h) { return h.pageIndex === currentPage && h.start < lineEnd && h.end > lineStart; }).map(function (h) { return (__assign(__assign({}, h), { isPending: false })); }), true), pendingHighlights.filter(function (ph) { return ph.pageIndex === currentPage && ph.start < lineEnd && ph.end > lineStart; }).map(function (ph) { return (__assign(__assign({}, ph), { isPending: true })); }), true);
         pageHL.forEach(function (h) { return ranges.push({ start: Math.max(0, h.start - lineStart), end: Math.min(line.length, h.end - lineStart), type: h.isPending ? 'pending-highlight' : 'highlight', data: h }); });
+        /* Inline looked-up word highlight markers */
+        lookedUpHighlights.filter(function (lu) { return lu.pageNumber === currentPage && lu.text && lu.text.length > 1; }).forEach(function (lu) {
+            var idx = line.indexOf(lu.text);
+            if (idx !== -1)
+                ranges.push({ start: idx, end: idx + lu.text.length, type: 'looked-up' });
+        });
         /* Inline partial-rewrite skeleton */
         if (partialRewritePending && partialRewritePending.start < lineEnd && partialRewritePending.end > lineStart) {
             ranges.push({ start: Math.max(0, partialRewritePending.start - lineStart), end: Math.min(line.length, partialRewritePending.end - lineStart), type: 'partial-skeleton' });
@@ -1272,6 +1286,10 @@ function Reader(_a) {
             var glowR = ranges.find(function (r) { return r.type === 'rewritten-glow' && r.start <= p1 && r.end >= p2; });
             if (glowR) {
                 content = React.createElement("mark", { key: "gw".concat(p1), className: "rewritten-inline-glow" }, content);
+            }
+            var luR = ranges.find(function (r) { return r.type === 'looked-up' && r.start <= p1 && r.end >= p2; });
+            if (luR) {
+                content = React.createElement("span", { className: "looked-up-word-marker" }, content);
             }
             nodes.push(React.createElement(React.Fragment, { key: "s".concat(p1) }, content));
         };

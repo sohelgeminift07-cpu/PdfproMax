@@ -56,3 +56,15 @@
       animation: fadeIn 0.3s ease-out 0.2s both;
     }
 
+    /* ── Looked-Up Word Highlight Markers ── */
+    .looked-up-word-marker {
+        border-bottom: 2px dotted #fbbf24;
+        cursor: pointer;
+        background: rgba(251, 191, 36, 0.08);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .looked-up-word-marker:hover {
+        background: rgba(251, 191, 36, 0.18) !important;
+        box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15);
+    }
+
