@@ -6431,7 +6431,7 @@ function Reader(_a) {
         })(),
         React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
             React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px', fontFamily: readerFontFamily || undefined } }, renderContent())),
-        React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: 'translateZ(0)', isolation: 'isolate' } },
+        React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: headerVisible ? 'translateY(0)' : 'translateY(120px)', transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)', isolation: 'isolate' } },
             React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
                 React.createElement("div", { className: "dock-poda-layer dock-poda-dark" }),
