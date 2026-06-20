@@ -25,6 +25,9 @@ function nextGeminiKey() {
 
 app.get('/api/config', (req, res) => {
     res.json({
+        geminiKeys: GEMINI_KEYS,
+        groqKey: GROQ_API_KEY || null,
+        maverickKey: MAVERICK_KEY || null,
         hasGemini: GEMINI_KEYS.length > 0,
         hasGroq: !!GROQ_API_KEY,
         hasMaverick: !!MAVERICK_KEY,
@@ -33,21 +36,39 @@ app.get('/api/config', (req, res) => {
 
 app.post('/api/gemini/:model/generateContent', async (req, res) => {
     const { model } = req.params;
-    const apiKey = nextGeminiKey();
-    if (!apiKey) return res.status(500).json({ error: 'No Gemini API key configured' });
+    const fetch = (await import('node-fetch')).default;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    try {
-        const fetch = (await import('node-fetch')).default;
-        const upstream = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(req.body),
-        });
-        const data = await upstream.json();
-        res.status(upstream.status).json(data);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    let lastError = null;
+    for (let i = 0; i < GEMINI_KEYS.length; i++) {
+        const apiKey = nextGeminiKey();
+        if (!apiKey) break;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        try {
+            const upstream = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req.body),
+            });
+            const data = await upstream.json();
+            // If OK, return immediately
+            if (upstream.ok) return res.status(200).json(data);
+            // If rate limit (429) or key error (400/403), try next key
+            if (upstream.status === 429 || upstream.status === 400 || upstream.status === 403) {
+                lastError = { status: upstream.status, data };
+                continue;
+            }
+            // For other errors (e.g. 404 model not found), return immediately
+            return res.status(upstream.status).json(data);
+        } catch (err) {
+            lastError = { error: err.message };
+            continue;
+        }
+    }
+
+    if (lastError) {
+        res.status(lastError.status || 500).json(lastError.data || { error: lastError.error || 'All keys failed' });
+    } else {
+        res.status(500).json({ error: 'No Gemini API key configured' });
     }
 });
 

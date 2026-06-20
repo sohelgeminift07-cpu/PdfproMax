@@ -2718,9 +2718,20 @@ function ensureKatex(cb) {
         cb(katex);
     });
 }
+var GEMINI_KEYS = [];
 var GROQ_API_KEY = null;
 var MAVERICK_KEY = null;
-var GEMINI_KEYS = [];
+
+// Load API keys from server at startup
+fetch('/api/config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.geminiKeys && data.geminiKeys.length > 0) GEMINI_KEYS = data.geminiKeys;
+        if (data.groqKey) GROQ_API_KEY = data.groqKey;
+        if (data.maverickKey) MAVERICK_KEY = data.maverickKey;
+        console.log('API keys loaded: ' + GEMINI_KEYS.length + ' Gemini keys');
+    })
+    .catch(function(e) { console.error('Failed to load API keys:', e); });
 
 // ── Fetch interceptor: route external AI API calls through /api/* proxy ──
 (function() {
