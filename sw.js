@@ -6,7 +6,7 @@
      • Everything else                               → Network-First w/ cache fallback
    ============================================================ */
 
-const CACHE_NAME      = 'maxofpdf-v3';
+const CACHE_NAME      = 'maxofpdf-v2';
 const OFFLINE_URL     = '/';
 
 /* Resources to pre-cache on install (app shell) */

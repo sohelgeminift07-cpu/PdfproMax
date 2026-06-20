@@ -3,22 +3,18 @@ const path = require('path');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-
-// Only serve static files in local development (not in Vercel serverless)
-if (require.main === module) {
-    app.use(express.static(path.join(__dirname)));
-}
+app.use(express.static(path.join(__dirname)));
 
 const GEMINI_KEYS = [
-    process.env.GEMINI_KEY_1 || 'AIzaSyAYZh4z6B7auyHj8LHNgTWWDUcevd6D1Tk',
-    process.env.GEMINI_KEY_2 || 'AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c',
-    process.env.GEMINI_KEY_3 || 'AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM',
-    process.env.GEMINI_KEY_4 || 'AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA',
-    process.env.GEMINI_KEY_5 || 'AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs',
-].filter(Boolean);
+    'AIzaSyAYZh4z6B7auyHj8LHNgTWWDUcevd6D1Tk',
+    'AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c',
+    'AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM',
+    'AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA',
+    'AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs',
+];
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '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';
-const MAVERICK_KEY = process.env.MAVERICK_KEY || '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';
+const GROQ_API_KEY = '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';
+const MAVERICK_KEY = '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';
 
 let geminiKeyIndex = 0;
 function nextGeminiKey() {
@@ -104,11 +100,7 @@ app.get('/api/gemini-ws-token', (req, res) => {
     res.json({ key });
 });
 
-module.exports = app;
-
-if (require.main === module) {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`MaxOfPdf server running on port ${PORT}`);
-    });
-}
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`MaxOfPdf server running on port ${PORT}`);
+});
