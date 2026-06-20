@@ -739,7 +739,7 @@ function Reader(_a) {
         interlinearAbortRef.current = new AbortController();
         var isBangla = /[\u0980-\u09FF]/.test(nonEmptyLines[0] || '');
         var sysMsg = isBangla
-            ? 'You are a Bengali language expert and educator. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a deeper, more vivid Bengali paraphrase that adds clarity and context — NOT a shortened version\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
+            ? 'You are a Bengali language expert and educator specializing in Bengali literature. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a simple, easy-to-understand Bengali explanation (সহজবোধ্য বাংলা অর্থ) that captures the core meaning in plain, modern Bengali — NOT a shortened version, but a rephrasing that makes the meaning crystal clear to a general reader\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
             : 'You are an expert Bengali translator and educator. Given an array of text lines (may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length where each element is a rich, detailed Bengali translation of the corresponding input line.\n- Preserve markdown formatting: use **bold** for key terms, keep heading levels, keep bullet structure\n- For technical or complex lines, add brief clarifying context in Bengali\n- Write naturally flowing Bengali, not robotic\nRespond with ONLY a raw JSON array: ["translation 1","translation 2",...]. No explanation, no markdown fences.';
         var userMsg = JSON.stringify(nonEmptyLines);
         geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite-preview', userMsg, {
@@ -1443,7 +1443,7 @@ function Reader(_a) {
                 var ilParts = ilText.split(/(\*\*.*?\*\*)/g);
                 var ilRendered = ilParts.map(function(p, pi) {
                     if (p.startsWith('**') && p.endsWith('**')) {
-                        return React.createElement('strong', { key: pi, style: { fontWeight: 800, fontStyle: 'normal', color: 'rgba(147,197,253,0.85)' } }, p.slice(2, -2));
+                        return React.createElement('strong', { key: pi, style: { fontWeight: 800, fontStyle: 'normal', color: 'rgba(255,255,255,0.9)' } }, p.slice(2, -2));
                     }
                     return p;
                 });
