@@ -117,7 +117,7 @@ function Editor(_a) {
                         _a.trys.push([1, 9, 10, 11]);
                         result = '';
                         if (!activeStructureModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = activeStructureModel === 'gemini-lite' ? 'gemini-3.5-flash' : 'gemini-2.0-flash';
+                        gemM = activeStructureModel === 'gemini-lite' ? 'gemini-2.0-flash' : 'gemini-2.0-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, text, { systemInstruction: systemPrompt, temperature: 0.3, maxOutputTokens: 16384 })];
                     case 2:
                         r = _a.sent();
