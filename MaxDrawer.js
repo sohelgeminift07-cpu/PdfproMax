@@ -122,7 +122,7 @@ function MaxDrawer(_a) {
                     _b.trys.push([1, 7, 8, 9]);
                     result_1 = '';
                     if (!(mToUse === 'gemini-lite')) return [3 /*break*/, 3];
-                    gemApiModel = mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                    gemApiModel = mToUse === 'gemini-lite' ? 'gemini-1.5-flash' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, srcText, { systemInstruction: promptCtx })];
                 case 2:
                     r = _b.sent();
@@ -170,7 +170,7 @@ function MaxDrawer(_a) {
         setTimelineEvents([]);
         var sysPrompt = 'Extract dates and events from the text. Write "event" and "description" fields in Bengali. Reply ONLY with valid JSON, no markdown fences: {"events":[{"date":"...","event":"...","description":"...","category":"war|birth|death|law|treaty|rule|other"}]}';
         var userPrompt = 'Extract all dates and events:\n\n' + srcText.slice(0, 2500);
-        var gemApiModel = mToUse === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+        var gemApiModel = mToUse === 'gemini-lite' ? 'gemini-1.5-flash' : 'gemini-2.0-flash';
         geminiGenerate(googleApiKey, gemApiModel, userPrompt, { systemInstruction: sysPrompt, maxOutputTokens: 800 })
             .then(function(r) {
                 var raw = (r && r.text) ? r.text : '{"events":[]}';
@@ -200,7 +200,7 @@ function MaxDrawer(_a) {
                     _b.trys.push([1, 7, 8, 9]);
                     aiText_1 = '';
                     if (!(activeChatModel === 'gemini-lite')) return [3 /*break*/, 3];
-                    gemApiModel = activeChatModel === 'gemini-lite' ? 'gemini-3.1-flash-lite-preview' : 'gemini-2.0-flash';
+                    gemApiModel = activeChatModel === 'gemini-lite' ? 'gemini-1.5-flash' : 'gemini-2.0-flash';
                     return [4 /*yield*/, geminiGenerate(googleApiKey, gemApiModel, userPrompt, { systemInstruction: sysPrompt })];
                 case 2:
                     r = _b.sent();
