@@ -2674,20 +2674,22 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useMemo = React.useMemo, useCallback = React.useCallback;
 // ── Lazy script loader ─────────────────────────────────────
 var _scriptCache = {};
-function loadScript(src, onload) {
-    if (_scriptCache[src]) { if (onload) onload(); return; }
-    if (document.querySelector('script[src="' + src + '"]')) {
-        // already injected, poll until ready
-        var poll = setInterval(function() {
-            if (_scriptCache[src]) { clearInterval(poll); if (onload) onload(); }
-        }, 50);
-        return;
-    }
-    var s = document.createElement('script');
-    s.src = src; s.crossOrigin = 'anonymous';
-    s.onload = function() { _scriptCache[src] = true; if (onload) onload(); };
-    s.onerror = function() { console.warn('[PdfMax] Failed to load', src); };
-    document.head.appendChild(s);
+function loadScript(src) {
+    return new Promise(function(resolve, reject) {
+        if (_scriptCache[src]) { resolve(); return; }
+        var existing = document.querySelector('script[src="' + src + '"]');
+        if (existing) {
+            var poll = setInterval(function() {
+                if (_scriptCache[src]) { clearInterval(poll); resolve(); }
+            }, 50);
+            return;
+        }
+        var s = document.createElement('script');
+        s.src = src; s.crossOrigin = 'anonymous';
+        s.onload = function() { _scriptCache[src] = true; resolve(); };
+        s.onerror = function() { reject(new Error('Failed to load: ' + src)); };
+        document.head.appendChild(s);
+    });
 }
 var PDF_JS_SRC    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var PDF_WORKER    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2704,20 +2706,40 @@ var katex    = window.katex    || null;
 // Lazy-load PDF.js when first needed
 function ensurePdfJs(cb) {
     if (pdfjsLib) { cb(pdfjsLib); return; }
-    loadScript(PDF_JS_SRC, function() {
+    loadScript(PDF_JS_SRC).then(function() {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
         pdfjsLib = window.pdfjsLib;
         cb(pdfjsLib);
-    });
+    }).catch(console.warn);
 }
 // Lazy-load KaTeX when first needed
 function ensureKatex(cb) {
     if (katex) { cb(katex); return; }
-    loadScript(KATEX_JS_SRC, function() {
+    loadScript(KATEX_JS_SRC).then(function() {
         katex = window.katex;
         cb(katex);
-    });
+    }).catch(console.warn);
 }
+
+/* Background Idle Preloader: Preload both libraries 2 seconds after mount */
+setTimeout(function() {
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(function() {
+            Promise.all([loadScript(PDF_JS_SRC), loadScript(KATEX_JS_SRC)]).then(function() {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+                pdfjsLib = window.pdfjsLib;
+                katex = window.katex;
+                console.log('[Preloader] PDF.js & KaTeX background preloading complete.');
+            }).catch(function() {});
+        });
+    } else {
+        Promise.all([loadScript(PDF_JS_SRC), loadScript(KATEX_JS_SRC)]).then(function() {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+            pdfjsLib = window.pdfjsLib;
+            katex = window.katex;
+        }).catch(function() {});
+    }
+}, 2000);
 /* Keys loaded dynamically from serverless environment */
 var GEMINI_KEYS = [];
 var GROQ_API_KEY = '';
