@@ -164,9 +164,18 @@
     .table-scroll-container::-webkit-scrollbar { height:8px; }
     .table-scroll-container::-webkit-scrollbar-track { background:rgba(255,255,255,0.05); border-radius:4px; }
     .table-scroll-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:4px; }
-    ::-webkit-scrollbar { width:4px; height:4px; }
+    /* Hide global scrollbars completely for a distraction-free experience */
+    html, body {
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE/Edge */
+    }
+    ::-webkit-scrollbar {
+        display: none !important; /* Safari and Chrome */
+        width: 0 !important;
+        height: 0 !important;
+    }
     ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:#18181b; border-radius:10px; }
+    ::-webkit-scrollbar-thumb { background:transparent; }
     ::selection { background-color:rgba(79,70,229,0.4); color:#fff; }
     .no-scrollbar::-webkit-scrollbar { display:none; }
     .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
