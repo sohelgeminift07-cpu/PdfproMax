@@ -3,7 +3,7 @@
 // ============================================================
 // ============================================================
 function Settings(_a) {
-    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onClose = _a.onClose;
+    var isOpen = _a.isOpen, _b = _a.history, history = _b === void 0 ? [] : _b, onSelectHistory = _a.onSelectHistory, activeReaderModel = _a.activeReaderModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, activeScanningModel = _a.activeScanningModel, activeOcrPromptMode = _a.activeOcrPromptMode, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoPlayTTS = _a.autoPlayTTS, apiKey1 = _a.apiKey1, apiKey2 = _a.apiKey2, activeKeyIndex = _a.activeKeyIndex, autoScrollSpeed = _a.autoScrollSpeed, onSelectReaderModel = _a.onSelectReaderModel, onSelectStructureModel = _a.onSelectStructureModel, onSelectStructureMode = _a.onSelectStructureMode, onSelectScanningModel = _a.onSelectScanningModel, onSelectOcrPromptMode = _a.onSelectOcrPromptMode, onSelectTheme = _a.onSelectTheme, onSelectBoldingLevel = _a.onSelectBoldingLevel, onSetLineSpacing = _a.onSetLineSpacing, onSetBoldness = _a.onSetBoldness, onToggleAutoPlayTTS = _a.onToggleAutoPlayTTS, onSetApiKey1 = _a.onSetApiKey1, onSetApiKey2 = _a.onSetApiKey2, onSetAutoScrollSpeed = _a.onSetAutoScrollSpeed, onClose = _a.onClose;
     var _c = useState('general'), activeTab = _c[0], setActiveTab = _c[1];
     var _d = useState(0), dragY = _d[0], setDragY = _d[1];
     var _f = useState(false), isDragging = _f[0], setIsDragging = _f[1];
@@ -122,24 +122,46 @@ function Settings(_a) {
                     React.createElement("div", { className: "space-y-3 max-w-xl" },
                         React.createElement("label", { className: "text-xs font-bold text-amber-400 uppercase tracking-widest block" }, "Reading Atmosphere"),
                         React.createElement("div", { className: "grid grid-cols-5 gap-3" }, THEMES.map(function (theme) { return (React.createElement("button", { key: theme.id, onClick: function () { return onSelectTheme(theme.id); }, className: "aspect-square rounded-2xl border-2 transition-all flex items-center justify-center ".concat(theme.color, " ").concat(readerTheme === theme.id ? 'scale-110 ' + theme.border + ' shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'), title: theme.label }, readerTheme === theme.id && React.createElement("div", { className: "w-2 h-2 rounded-full ".concat(theme.id === 'light' || theme.id === 'sepia' ? 'bg-slate-900' : 'bg-white') }))); }))));
-                if (activeTab === 'ocr') return React.createElement("div", { className: "space-y-4 animate-in fade-in" },
-                    React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500" }, "Select Scanning Model"),
-                    React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
-                        React.createElement("div", { className: "radio-container scanning-radio", style: { '--total-radio': 3 } },
-                            SCANNING_OPTIONS.map(function (m) {
-                                var icons = { 'llama': '⬡', 'llama-maverick': '⬡' };
-                                var subs = { 'llama': 'Meta · Groq Vision' };
-                                var rid = "ocr-radio-".concat(m.id);
-                                return (React.createElement(React.Fragment, { key: m.id },
-                                    React.createElement("input", { id: rid, name: "ocr-model-radio", type: "radio", checked: activeScanningModel === m.id, onChange: function () { return onSelectScanningModel(m.id); } }),
-                                    React.createElement("label", { htmlFor: rid },
-                                        React.createElement("span", { className: "r-icon" }, icons[m.id] || '◉'),
-                                        React.createElement("span", null,
-                                            m.label,
-                                            React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
-                            }),
-                            React.createElement("div", { className: "glider-container" },
-                                React.createElement("div", { className: "glider" })))));
+                if (activeTab === 'ocr') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Select Scanning Model"),
+                        React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
+                            React.createElement("div", { className: "radio-container scanning-radio", style: { '--total-radio': 3 } },
+                                SCANNING_OPTIONS.map(function (m) {
+                                    var icons = { 'llama': '⬡', 'llama-maverick': '⬡' };
+                                    var subs = { 'llama': 'Meta · Groq Vision' };
+                                    var rid = "ocr-radio-".concat(m.id);
+                                    return (React.createElement(React.Fragment, { key: m.id },
+                                        React.createElement("input", { id: rid, name: "ocr-model-radio", type: "radio", checked: activeScanningModel === m.id, onChange: function () { return onSelectScanningModel(m.id); } }),
+                                        React.createElement("label", { htmlFor: rid },
+                                            React.createElement("span", { className: "r-icon" }, icons[m.id] || '◉'),
+                                            React.createElement("span", null,
+                                                m.label,
+                                                React.createElement("span", { className: "r-sub" }, subs[m.id] || m.provider)))));
+                                }),
+                                React.createElement("div", { className: "glider-container" },
+                                    React.createElement("div", { className: "glider" }))))),
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "OCR Enhancement Mode"),
+                        React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl" }, [
+                            { id: 'default', color: 'slate', label: 'Default', desc: 'Standard OCR with no special enhancement.' },
+                            { id: 'noise', color: 'amber', label: 'Noise & Low Light', desc: 'Shadows, low contrast, blurry text compensation.' },
+                            { id: 'hybrid', color: 'emerald', label: 'Hybrid Text Layer', desc: 'Compares raw PDF text with image for accuracy.' },
+                            { id: 'bengali', color: 'rose', label: 'Bengali Ligatures', desc: 'Complex scripts, small fonts, যুক্তবর্ণ handling.' },
+                            { id: 'multicolumn', color: 'cyan', label: 'Multi-Column', desc: 'Newspapers, academic papers with column layout.' },
+                            { id: 'context', color: 'violet', label: 'Context-Aware', desc: 'Uses previous page context for spelling consistency.' }
+                        ].map(function (_a) {
+                            var id = _a.id, color = _a.color, label = _a.label, desc = _a.desc;
+                            return (React.createElement("button", { key: id, onClick: function () { return onSelectOcrPromptMode(id); }, className: "relative p-4 rounded-2xl border transition-all text-left ".concat(activeOcrPromptMode === id ? 'bg-' + color + '-500/10 border-' + color + '-500/40' : 'bg-white/5 border-white/5 hover:bg-white/10') },
+                                React.createElement("div", { className: "flex items-center space-x-2 mb-2" },
+                                    React.createElement("div", { className: 'w-7 h-7 rounded-lg flex items-center justify-center ' + (activeOcrPromptMode === id ? 'bg-' + color + '-500 text-black' : 'bg-white/10 text-slate-400') },
+                                        React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
+                                            React.createElement("path", { d: "M4 7V4h16v3" }),
+                                            React.createElement("path", { d: "M9 20h6" }),
+                                            React.createElement("path", { d: "M12 4v16" }))),
+                                    React.createElement("span", { className: 'text-xs font-bold uppercase ' + (activeOcrPromptMode === id ? 'text-' + color + '-200' : 'text-slate-400') }, label)),
+                                React.createElement("p", { className: "text-[10px] text-slate-500" }, desc)));
+                        }))));
                 if (activeTab === 'reader') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
                     React.createElement("div", null,
                         React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Select Reader AI Model"),
