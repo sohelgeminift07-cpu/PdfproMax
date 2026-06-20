@@ -2718,15 +2718,41 @@ function ensureKatex(cb) {
         cb(katex);
     });
 }
-var GROQ_API_KEY = "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";
-var MAVERICK_KEY = "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";
-var GEMINI_KEYS = [
-    "AIzaSyAYZh4z6B7auyHj8LHNgTWWDUcevd6D1Tk",
-    "AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c",
-    "AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM",
-    "AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA",
-    "AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs"
-];
+var GROQ_API_KEY = null;
+var MAVERICK_KEY = null;
+var GEMINI_KEYS = [];
+
+// ── Fetch interceptor: route external AI API calls through /api/* proxy ──
+(function() {
+    var _origFetch = window.fetch;
+    window.fetch = function(input, init) {
+        var url = (input instanceof Request) ? input.url : String(input);
+        // Intercept Groq calls
+        if (url.indexOf('api.groq.com') !== -1) {
+            var isMaverick = url.indexOf('llama-4') !== -1 ||
+                (init && init.body && String(init.body).indexOf('llama-4') !== -1);
+            var proxyUrl = '/api/groq' + (isMaverick ? '?maverick=1' : '');
+            var newInit = Object.assign({}, init);
+            var headers = new Headers(init && init.headers ? init.headers : {});
+            headers.delete('Authorization');
+            headers.set('Content-Type', 'application/json');
+            newInit.headers = headers;
+            return _origFetch(proxyUrl, newInit);
+        }
+        // Intercept Gemini REST calls
+        if (url.indexOf('generativelanguage.googleapis.com') !== -1) {
+            var modelMatch = url.match(/models\/([^/:?]+)/);
+            var model = modelMatch ? modelMatch[1] : 'gemini-2.0-flash';
+            var newUrl = '/api/gemini/' + encodeURIComponent(model) + '/generateContent';
+            var newInit2 = Object.assign({}, init);
+            var headers2 = new Headers(init && init.headers ? init.headers : {});
+            headers2.set('Content-Type', 'application/json');
+            newInit2.headers = headers2;
+            return _origFetch(newUrl, newInit2);
+        }
+        return _origFetch.apply(this, arguments);
+    };
+})();
 var MODEL_LABELS = {
     "gemini-lite": "Gemini 3.1 Flash-Lite",
     

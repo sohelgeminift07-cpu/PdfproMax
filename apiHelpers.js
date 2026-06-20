@@ -1,16 +1,16 @@
 // ============================================================
 // API HELPERS
-// geminiGenerate() — Gemini REST API wrapper
+// All external API calls go through /api/* server proxy.
+// API keys are never exposed to the browser.
 // ============================================================
 
 function geminiGenerate(apiKey_1, model_1, contents_1) {
     return __awaiter(this, arguments, void 0, function (apiKey, model, contents, config) {
-        var url, body, res, err, data, text, audioBase64;
+        var body, res, err, data, text, audioBase64;
         if (config === void 0) { config = {}; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(model, ":generateContent?key=").concat(apiKey);
                     body = {
                         contents: Array.isArray(contents) ? contents.map(function (c) { return typeof c === 'string' ? { parts: [{ text: c }], role: 'user' } : c; }) : [{ parts: [{ text: contents }], role: 'user' }],
                         generationConfig: { maxOutputTokens: config.maxOutputTokens || 8192 }
@@ -25,20 +25,24 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
+                    return [4, fetch('/api/gemini/' + encodeURIComponent(model) + '/generateContent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    })];
                 case 1:
                     res = _a.sent();
-                    if (!!res.ok) return [3 /*break*/, 3];
-                    return [4 /*yield*/, res.text()];
+                    if (!!res.ok) return [3, 3];
+                    return [4, res.text()];
                 case 2:
                     err = _a.sent();
-                    throw new Error("Gemini API ".concat(res.status, ": ").concat(err));
-                case 3: return [4 /*yield*/, res.json()];
+                    throw new Error("Gemini API " + res.status + ": " + err);
+                case 3: return [4, res.json()];
                 case 4:
                     data = _a.sent();
                     text = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) ? data.candidates[0].content.parts.filter(function (p) { return p.text; }).map(function (p) { return p.text; }).join('') : '') || '';
                     audioBase64 = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) ? ((data.candidates[0].content.parts.find(function (p) { return p.inlineData; }) || {}).inlineData || {}).data : undefined);
-                    return [2 /*return*/, { text: text, audioBase64: audioBase64, candidates: data.candidates }];
+                    return [2, { text: text, audioBase64: audioBase64, candidates: data.candidates }];
             }
         });
     });
@@ -46,8 +50,9 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
 
 // ============================================================
 // LIVE AUDIO STREAMING (Gemini Live API via WebSocket)
+// The server provides a short-lived token via /api/gemini-ws-token
+// so the key never appears in browser-visible URLs.
 // ============================================================
-// WebSocket endpoint: wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent
 
 function LiveAudioPlayer() {
     this.audioCtx = null;
@@ -129,89 +134,83 @@ LiveAudioPlayer.prototype.stop = function() {
 
 // ============================================================
 // geminiLiveAudio — real-time streaming TTS via WebSocket
-// Returns: { ws, stop() }
+// Fetches a token from the server so the key is never in the browser.
+// Returns: { stop() }
 // ============================================================
 function geminiLiveAudio(apiKey, text, options) {
     if (options === void 0) { options = {}; }
-    var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + apiKey;
-    var ws = new WebSocket(url);
     var player = new LiveAudioPlayer();
     var isSetupComplete = false;
     var onStart = options.onStart || function() {};
     var onEnd = options.onEnd || function() {};
     var onError = options.onError || function() {};
+    var ws = null;
 
-    player.onEnd = function() {
-        onEnd();
-    };
+    player.onEnd = function() { onEnd(); };
 
-    ws.onopen = function() {
-        ws.send(JSON.stringify({
-            setup: {
-                model: 'models/gemini-3.1-flash',
-                generation_config: {
-                    response_modalities: ['AUDIO'],
-                    speech_config: options.speechConfig || {
-                        voice_config: {
-                            prebuilt_voice_config: {
-                                voice_name: 'Fenrir'
+    fetch('/api/gemini-ws-token')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.key) { onError(new Error('No Gemini key available')); return; }
+            var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + data.key;
+            ws = new WebSocket(url);
+
+            ws.onopen = function() {
+                ws.send(JSON.stringify({
+                    setup: {
+                        model: 'models/gemini-2.0-flash-live-001',
+                        generation_config: {
+                            response_modalities: ['AUDIO'],
+                            speech_config: options.speechConfig || {
+                                voice_config: {
+                                    prebuilt_voice_config: { voice_name: 'Fenrir' }
+                                }
                             }
                         }
                     }
+                }));
+            };
+
+            ws.onmessage = function(event) {
+                var msg;
+                try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+                if (msg.setupComplete) {
+                    isSetupComplete = true;
+                    ws.send(JSON.stringify({
+                        client_content: {
+                            turns: [{ role: 'user', parts: [{ text: text }] }],
+                            turn_complete: true
+                        }
+                    }));
+                    onStart();
                 }
-            }
-        }));
-    };
 
-    ws.onmessage = function(event) {
-        var msg;
-        try {
-            msg = JSON.parse(event.data);
-        } catch(e) {
-            return;
-        }
-
-        if (msg.setupComplete) {
-            isSetupComplete = true;
-            ws.send(JSON.stringify({
-                client_content: {
-                    turns: [{ role: 'user', parts: [{ text: text }] }],
-                    turn_complete: true
+                if (msg.serverContent && msg.serverContent.modelTurn) {
+                    var parts = msg.serverContent.modelTurn.parts || [];
+                    for (var i = 0; i < parts.length; i++) {
+                        if (parts[i].inlineData && parts[i].inlineData.data) {
+                            player.feed(parts[i].inlineData.data);
+                        }
+                    }
                 }
-            }));
-            onStart();
-        }
 
-        if (msg.serverContent && msg.serverContent.modelTurn) {
-            var parts = msg.serverContent.modelTurn.parts || [];
-            for (var i = 0; i < parts.length; i++) {
-                var part = parts[i];
-                if (part.inlineData && part.inlineData.data) {
-                    player.feed(part.inlineData.data);
+                if (msg.serverContent && msg.serverContent.turnComplete) {
+                    player.finish();
                 }
-            }
-        }
+            };
 
-        if (msg.serverContent && msg.serverContent.turnComplete) {
-            player.finish();
-        }
-    };
-
-    ws.onerror = function(err) {
-        onError(err);
-    };
-
-    ws.onclose = function() {
-        if (!isSetupComplete) {
-            onError(new Error('Live connection closed'));
-        }
-    };
+            ws.onerror = function(err) { onError(err); };
+            ws.onclose = function() {
+                if (!isSetupComplete) onError(new Error('Live connection closed'));
+            };
+        })
+        .catch(function(err) { onError(err); });
 
     return {
-        ws: ws,
         stop: function() {
             player.stop();
-            try { ws.close(); } catch(e) {}
+            if (ws) { try { ws.close(); } catch(e) {} }
         }
     };
 }
