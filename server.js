@@ -6,15 +6,15 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
 const GEMINI_KEYS = [
-    process.env.GEMINI_KEY_1,
-    process.env.GEMINI_KEY_2,
-    process.env.GEMINI_KEY_3,
-    process.env.GEMINI_KEY_4,
-    process.env.GEMINI_KEY_5,
-].filter(Boolean);
+    'AIzaSyAYZh4z6B7auyHj8LHNgTWWDUcevd6D1Tk',
+    'AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c',
+    'AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM',
+    'AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA',
+    'AIzaSyCr8197yFllVFnpsf9o7A1llgKXwTbK7Qs',
+];
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const MAVERICK_KEY = process.env.MAVERICK_KEY;
+const GROQ_API_KEY = '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';
+const MAVERICK_KEY = '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';
 
 let geminiKeyIndex = 0;
 function nextGeminiKey() {
