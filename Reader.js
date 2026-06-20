@@ -111,6 +111,8 @@ function Reader(_a) {
     };
     var _t = useState('gemini-lite'), customizerModel = _t[0], setCustomizerModel = _t[1];
     var _u = useState('Bengali'), customizerLanguage = _u[0], setCustomizerLanguage = _u[1];
+    var _prefetch = useState(true), autoPrefetchNext = _prefetch[0], setAutoPrefetchNext = _prefetch[1];
+    var _prefetchCfg = useState(null), lastRewriteConfig = _prefetchCfg[0], setLastRewriteConfig = _prefetchCfg[1];
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
     var _x = useState(false), isAutoScrolling = _x[0], setIsAutoScrolling = _x[1];
@@ -174,6 +176,19 @@ function Reader(_a) {
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
+    /* ── Auto-prefetch next page rewrite in background ── */
+    useEffect(function () {
+        if (!autoPrefetchNext || !lastRewriteConfig) return;
+        var nextPage = currentPage + 1;
+        if (nextPage >= totalPages) return;
+        if (rewrittenPages[nextPage]) return;
+        if (rewritingStatus[nextPage]) return;
+        var cfg = lastRewriteConfig;
+        var timer = setTimeout(function () {
+            performRewrite(cfg.mode, cfg.instruction || '', nextPage);
+        }, 800);
+        return function () { clearTimeout(timer); };
+    }, [currentPage, totalPages, autoPrefetchNext, lastRewriteConfig]);
     /* Auto-save rich session state to parent whenever key state changes */
     useEffect(function () {
         if (onStateChange) {
@@ -730,6 +745,7 @@ function Reader(_a) {
     };
     var handleRewriteUI = function (mode, instruction) {
         if (instruction === void 0) { instruction = ''; }
+        setLastRewriteConfig({ mode: mode, instruction: instruction || '', model: customizerModel, language: customizerLanguage });
         performRewrite(mode, instruction, currentPage);
         closeCustomizer();
     };
@@ -1844,6 +1860,20 @@ function Reader(_a) {
                         React.createElement("div", { style:{display:'flex',alignItems:'center',gap:'8px',flexShrink:0} },
                             React.createElement("select", { value: customizerLanguage, onChange: function (e) { return setCustomizerLanguage(e.target.value); }, style:{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(150,170,210,0.7)',borderRadius:'10px',padding:'6px 10px',fontSize:'10px',fontWeight:700,textTransform:'uppercase',outline:'none'} }, ['Bengali', 'English', 'Urdu'].map(function (l) { return React.createElement("option", { key: l, value: l }, l); })),
                             React.createElement("select", { value: customizerModel, onChange: function (e) { return setCustomizerModel(e.target.value); }, style:{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(150,170,210,0.7)',borderRadius:'10px',padding:'6px 10px',fontSize:'10px',fontWeight:700,textTransform:'uppercase',outline:'none'} }, Object.keys(MODEL_LABELS).map(function (k) { return React.createElement("option", { key: k, value: k }, MODEL_LABELS[k]); })),
+                            !selectionRewrite && React.createElement("button", {
+                                onClick: function() { setAutoPrefetchNext(!autoPrefetchNext); },
+                                title: autoPrefetchNext ? "Auto-prefetch next page: ON" : "Auto-prefetch next page: OFF",
+                                style: {
+                                    width: '32px', height: '32px', borderRadius: '9px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    border: autoPrefetchNext ? '1px solid rgba(99,130,200,0.3)' : '1px solid rgba(255,255,255,0.08)',
+                                    background: autoPrefetchNext ? 'rgba(99,130,200,0.15)' : 'rgba(255,255,255,0.03)',
+                                    color: autoPrefetchNext ? 'rgba(160,190,240,0.8)' : 'rgba(120,150,200,0.3)',
+                                    cursor: 'pointer', outline: 'none', flexShrink: 0,
+                                    transition: 'all 0.2s ease'
+                                }
+                            }, React.createElement("svg", { width:"16", height:"16", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2.5" },
+                                React.createElement("path", { d:"M13 2L3 14h9l-1 8 10-12h-9l1-8z" }))),
                             selectionRewrite && React.createElement("button", {
                                 onClick: function() { setSelectionRewrite(null); closeCustomizer(); },
                                 style:{width:'32px',height:'32px',borderRadius:'9px',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(239,68,68,0.2)',background:'rgba(239,68,68,0.08)',color:'#fca5a5',cursor:'pointer',outline:'none',flexShrink:0}
