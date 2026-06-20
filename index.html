@@ -4441,6 +4441,7 @@ function Reader(_a) {
     var _m = useState(initialRewrittenPages || {}), rewrittenPages = _m[0], setRewrittenPages = _m[1];
     var _o = useState({}), rewritingStatus = _o[0], setRewritingStatus = _o[1];
     var _p = useState(false), isCustomizerOpen = _p[0], setIsCustomizerOpen = _p[1];
+    var _pfo = useState(false), isPdfFadingOut = _pfo[0], setIsPdfFadingOut = _pfo[1];
     var _q = useState(false), isCustomizerClosing = _q[0], setIsCustomizerClosing = _q[1];
     var custIsDragging = useRef(false);
     var custStartY = useRef(0);
@@ -4583,6 +4584,32 @@ function Reader(_a) {
         }
         prevPageRef.current = currentPage;
     }, [currentPage]);
+
+    /* Auto-open original PDF viewer when a page starts scanning */
+    useEffect(function() {
+        if (pdfFile && !extractedPages[currentPage]) {
+            setIsOriginalPdfOpen(true);
+        }
+    }, [currentPage, extractedPages[currentPage], pdfFile]);
+
+    /* Auto-close PDF viewer with a smooth fade-out when scanning finishes on the active page */
+    var scanTransitionPageRef = useRef(currentPage);
+    var prevExtractedReady = useRef(!!extractedPages[currentPage]);
+    useEffect(function() {
+        var isReady = !!extractedPages[currentPage];
+        if (currentPage === scanTransitionPageRef.current && isReady && !prevExtractedReady.current) {
+            if (isOriginalPdfOpen) {
+                setIsPdfFadingOut(true);
+                setTimeout(function() {
+                    setIsOriginalPdfOpen(false);
+                    setIsPdfFadingOut(false);
+                }, 500);
+            }
+        }
+        scanTransitionPageRef.current = currentPage;
+        prevExtractedReady.current = isReady;
+    }, [extractedPages[currentPage], currentPage, isOriginalPdfOpen]);
+
     /* Auto-save rich session state to parent whenever key state changes */
     useEffect(function () {
         if (onStateChange) {
@@ -6126,7 +6153,7 @@ function Reader(_a) {
                                     React.createElement("line", { x1:"10", y1:"14", x2:"21", y2:"3" })),
                                 "Open " + activeTab.label.replace(/^[^ ]+ /,''))));
                 })())),
-        isOriginalPdfOpen && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]" },
+        (isOriginalPdfOpen || isPdfFadingOut) && pdfFile && (React.createElement("div", { className: "fixed inset-0 z-[200] flex flex-col bg-[#0a0a0c]", style: { opacity: isPdfFadingOut ? 0 : 1, transition: 'opacity 0.5s ease-out' } },
             /* Scrollable canvas area */
             React.createElement("div", { className: "flex-1 overflow-auto", style: { paddingTop: '60px', paddingBottom: '70px' } },
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'center', minHeight: '100%', padding: '12px' } },
