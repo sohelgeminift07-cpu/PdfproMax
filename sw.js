@@ -6,7 +6,7 @@
      • Everything else                               → Network-First w/ cache fallback
    ============================================================ */
 
-const CACHE_NAME      = 'maxofpdf-v2';
+const CACHE_NAME      = 'maxofpdf-v3';
 const OFFLINE_URL     = '/';
 
 /* Resources to pre-cache on install (app shell) */
@@ -70,6 +70,12 @@ self.addEventListener('fetch', event => {
   // Skip non-GET and chrome-extension requests
   if (request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
+
+  // Network-only: API proxy routes (never cache)
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   // Network-only: Gemini API and other live APIs
   if (NETWORK_ONLY_ORIGINS.some(o => url.hostname.includes(o))) {
