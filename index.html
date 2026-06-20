@@ -2830,6 +2830,65 @@ function cleanupPdfDB(activeIds) {
     }).catch(function() {});
 }
 
+/* ── IndexedDB History Storage ── */
+var _historyDb = null;
+function openHistoryDB() {
+    if (_historyDb) return Promise.resolve(_historyDb);
+    return new Promise(function(resolve, reject) {
+        var req = indexedDB.open('maxofpdf_history_db', 1);
+        req.onupgradeneeded = function(e) {
+            e.target.result.createObjectStore('history', { keyPath: 'id' });
+        };
+        req.onsuccess = function(e) { _historyDb = e.target.result; resolve(_historyDb); };
+        req.onerror = function() { reject(req.error); };
+    });
+}
+function saveHistoryToDB(item) {
+    return openHistoryDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('history', 'readwrite');
+            tx.objectStore('history').put(item);
+            tx.oncomplete = function() { resolve(); };
+            tx.onerror = function() { reject(tx.error); };
+        });
+    });
+}
+function getHistoryFromDB() {
+    return openHistoryDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx = db.transaction('history', 'readonly');
+            var store = tx.objectStore('history');
+            var req = store.openCursor();
+            var results = [];
+            req.onsuccess = function(e) {
+                var cursor = e.target.result;
+                if (!cursor) { resolve(results); return; }
+                results.push(cursor.value);
+                cursor.continue();
+            };
+            req.onerror = function() { reject(req.error); };
+        });
+    });
+}
+function deleteHistoryFromDB(id) {
+    return openHistoryDB().then(function(db) {
+        return new Promise(function(resolve) {
+            var tx = db.transaction('history', 'readwrite');
+            tx.objectStore('history').delete(id);
+            tx.oncomplete = resolve;
+        });
+    });
+}
+function clearHistoryDB() {
+    return openHistoryDB().then(function(db) {
+        return new Promise(function(resolve) {
+            var tx = db.transaction('history', 'readwrite');
+            tx.objectStore('history').clear();
+            tx.oncomplete = resolve;
+        });
+    });
+}
+
 /* ── IndexedDB Custom Font Storage ── */
 var _fontDB = null;
 function openFontDB() {
@@ -4234,8 +4293,9 @@ function Settings(_a) {
                     React.createElement("div", { style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px'} },
                         React.createElement("span", { style:{fontSize:'10px', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(100,120,160,0.5)'} }, history.length + " saved sessions"),
                         React.createElement("button", { onClick: function() {
-                            try { localStorage.removeItem('maxofpdf_history'); } catch(e) {}
-                            window.dispatchEvent(new CustomEvent('maxofpdf_clear_history'));
+                            clearHistoryDB().then(function() {
+                                window.dispatchEvent(new CustomEvent('maxofpdf_clear_history'));
+                            });
                         }, style:{fontSize:'10px', color:'rgba(239,68,68,0.6)', background:'none', border:'none', cursor:'pointer', fontWeight:700, padding:'4px 8px', borderRadius:'6px'} }, "Clear All")),
                     history.map(function (item) {
                         var wordCount = item.data && item.data.rawText ? item.data.rawText.trim().split(/\s+/).filter(function(w){return w.length>0;}).length : 0;
@@ -4263,10 +4323,9 @@ function Settings(_a) {
                                 React.createElement("button", { onClick: function(e) {
                                     e.stopPropagation();
                                     try {
-                                        var saved = JSON.parse(localStorage.getItem('maxofpdf_history') || '[]');
-                                        var filtered = saved.filter(function(h){ return h.id !== item.id; });
-                                        localStorage.setItem('maxofpdf_history', JSON.stringify(filtered));
-                                        window.dispatchEvent(new CustomEvent('maxofpdf_delete_history', { detail: { id: item.id } }));
+                                        deleteHistoryFromDB(item.id).then(function() {
+                                            window.dispatchEvent(new CustomEvent('maxofpdf_delete_history', { detail: { id: item.id } }));
+                                        });
                                     } catch(e) {}
                                 }, style:{width:'28px', height:'28px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.15)', color:'rgba(239,68,68,0.5)', cursor:'pointer', fontSize:'14px', lineHeight:1, transition:'all 0.15s'}, onMouseEnter:function(e){e.currentTarget.style.background='rgba(239,68,68,0.18)';e.currentTarget.style.color='rgba(239,68,68,0.9)';}, onMouseLeave:function(e){e.currentTarget.style.background='rgba(239,68,68,0.08)';e.currentTarget.style.color='rgba(239,68,68,0.5)';} }, "×"),
                                 React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", style:{color:'rgba(100,116,139,0.4)', flexShrink:0} },
@@ -7085,16 +7144,13 @@ function App() {
     var _c = useState(null), pdfRange = _c[0], setPdfRange = _c[1];
     var _d = useState({}), extractedCache = _d[0], setExtractedCache = _d[1];
     var _f = useState(0), lastPageIndex = _f[0], setLastPageIndex = _f[1];
-    var _g = useState(function() {
-        try {
-            var saved = localStorage.getItem('maxofpdf_history');
-            if (saved) {
-                var parsed = JSON.parse(saved);
-                return parsed.filter(function(x){ return x && x.data; });
-            }
-        } catch(e) {}
-        return [];
-    }), history = _g[0], setHistory = _g[1];
+    var _g = useState([]), history = _g[0], setHistory = _g[1];
+    useEffect(function() {
+        getHistoryFromDB().then(function(list) {
+            var sorted = list.sort(function(a,b){ return b.timestamp - a.timestamp; });
+            setHistory(sorted);
+        });
+    }, []);
     /* Rich session state cache */
     var _rc1 = useState([]), cachedHighlights = _rc1[0], setCachedHighlights = _rc1[1];
     var _rc2 = useState({}), cachedRewrittenPages = _rc2[0], setCachedRewrittenPages = _rc2[1];
@@ -7213,20 +7269,10 @@ function App() {
                 timelineCache: (richState && richState.timelineCache) || {}
             }
         };
-        setHistory(function (p) {
-            var next = __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true).slice(0, 10);
-            /* Persist to localStorage — strip File objects, keep all other data */
-            try {
-                var serializable = next.map(function(x) {
-                    if (!x.data.pdfFile) return x;
-                    var d = Object.assign({}, x.data);
-                    delete d.pdfFile;
-                    d.pdfMeta = { name: x.data.pdfFile.name, size: x.data.pdfFile.size };
-                    return Object.assign({}, x, { data: d });
-                });
-                localStorage.setItem('maxofpdf_history', JSON.stringify(serializable));
-            } catch(e) {}
-            return next;
+        saveHistoryToDB(item).then(function() {
+            setHistory(function (p) {
+                return __spreadArray([item], p.filter(function (x) { return x.title !== item.title; }), true);
+            });
         });
     };
     var handleStartReading = function (text) {
