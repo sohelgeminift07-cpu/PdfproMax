@@ -7556,6 +7556,9 @@ ReactDOM.render(
 
     setTimeout(function () { banner.classList.add('show'); }, 100);
 
+    /* Auto-dismiss after 3 seconds */
+    setTimeout(function () { banner.classList.remove('show'); }, 3100);
+
     document.getElementById('pwa-install-ok').addEventListener('click', function () {
       banner.classList.remove('show');
       if (deferredPrompt) {
