@@ -380,6 +380,7 @@ function Reader(_a) {
                             geminiModel = 'gemini-3.1-flash-lite';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = '/api/gemini/' + encodeURIComponent(geminiModel) + '/generateContent';
+                            /* OCR via gemini-3.1-flash-lite: text prompt first, then image */
                             body = { contents: [{ parts: [{ text: prompt_1 + ' Return JSON only.' }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 } };
                             return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
                         case 4:
