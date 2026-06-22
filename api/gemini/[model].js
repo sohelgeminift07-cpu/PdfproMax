@@ -1,3 +1,5 @@
+export const config = { runtime: 'nodejs20.x' };
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
@@ -5,7 +7,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const model = req.query.model;
+  const rawModel = req.query?.model || req.params?.model || '';
+  const model = Array.isArray(rawModel) ? rawModel[0] : rawModel;
+
+  if (!model) {
+    return res.status(400).json({ error: 'Missing model parameter' });
+  }
+
   const GEMINI_KEYS = process.env.GEMINI_KEYS
     ? process.env.GEMINI_KEYS.split(',')
     : [];
@@ -33,13 +41,11 @@ export default async function handler(req, res) {
 
       if (upstream.ok) return res.status(200).json(data);
 
-      // Rate limit or key error — try next key
       if ([429, 400, 403].includes(upstream.status)) {
         lastError = { status: upstream.status, data };
         continue;
       }
 
-      // Other errors (e.g. 404 model not found) — return immediately
       return res.status(upstream.status).json(data);
     } catch (err) {
       lastError = { status: 500, data: { error: err.message } };

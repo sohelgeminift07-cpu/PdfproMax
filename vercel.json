@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/api/gemini-ws-token", "dest": "/api/gemini-ws-token.js" },
-    { "src": "/api/gemini/(.+)/generateContent", "dest": "/api/gemini/[model].js" },
-    { "src": "/api/groq", "dest": "/api/groq.js" },
-    { "src": "/api/config", "dest": "/api/config.js" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "rewrites": [
+    { "source": "/api/gemini-ws-token", "destination": "/api/gemini-ws-token" },
+    { "source": "/api/gemini/:model/generateContent", "destination": "/api/gemini/[model]" },
+    { "source": "/api/groq", "destination": "/api/groq" },
+    { "source": "/api/config", "destination": "/api/config" }
   ]
 }

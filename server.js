@@ -29,7 +29,6 @@ app.get('/api/config', (req, res) => {
 
 app.post('/api/gemini/:model/generateContent', async (req, res) => {
     const { model } = req.params;
-    const fetch = (await import('node-fetch')).default;
 
     let lastError = null;
     for (let i = 0; i < GEMINI_KEYS.length; i++) {
@@ -43,14 +42,11 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
                 body: JSON.stringify(req.body),
             });
             const data = await upstream.json();
-            // If OK, return immediately
             if (upstream.ok) return res.status(200).json(data);
-            // If rate limit (429) or key error (400/403), try next key
             if (upstream.status === 429 || upstream.status === 400 || upstream.status === 403) {
                 lastError = { status: upstream.status, data };
                 continue;
             }
-            // For other errors (e.g. 404 model not found), return immediately
             return res.status(upstream.status).json(data);
         } catch (err) {
             lastError = { error: err.message };
@@ -71,7 +67,6 @@ app.post('/api/groq', async (req, res) => {
     if (!key) return res.status(500).json({ error: 'No Groq API key configured' });
 
     try {
-        const fetch = (await import('node-fetch')).default;
         const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {

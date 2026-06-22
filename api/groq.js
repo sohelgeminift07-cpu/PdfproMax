@@ -1,3 +1,5 @@
+export const config = { runtime: 'nodejs20.x' };
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
