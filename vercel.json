@@ -1,9 +1,21 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/gemini-ws-token", "destination": "/api/gemini-ws-token" },
-    { "source": "/api/gemini/:model/generateContent", "destination": "/api/gemini/[model]" },
-    { "source": "/api/groq", "destination": "/api/groq" },
-    { "source": "/api/config", "destination": "/api/config" }
+    {
+      "source": "/api/gemini/:model/generateContent",
+      "destination": "/api/gemini/[model]"
+    },
+    {
+      "source": "/api/gemini-ws-token",
+      "destination": "/api/gemini-ws-token"
+    },
+    {
+      "source": "/api/groq",
+      "destination": "/api/groq"
+    },
+    {
+      "source": "/api/config",
+      "destination": "/api/config"
+    }
   ]
 }
