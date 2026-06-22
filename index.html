@@ -7502,42 +7502,84 @@ ReactDOM.render(
   /* ── Install banner styles ── */
   var style = document.createElement('style');
   style.textContent = [
+    '@keyframes pwaSlideUp{from{opacity:0;transform:translateX(-50%) translateY(28px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+    '@keyframes pwaSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(28px)}}',
+    '@keyframes pwaShrink{from{width:100%}to{width:0%}}',
+    '@keyframes pwaSlideInTop{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+    '@keyframes pwaSlideOutTop{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-20px)}}',
     '#pwa-install-banner{',
-      'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);',
-      'background:#1e1e2e;border:1px solid rgba(99,102,241,0.35);border-radius:16px;',
-      'padding:14px 20px;display:flex;align-items:center;gap:14px;',
-      'box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:99999;',
-      'transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);',
-      'max-width:calc(100vw - 32px);white-space:nowrap;',
+      'position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(28px);opacity:0;',
+      'background:linear-gradient(160deg,#0f1623 0%,#0d1220 60%,#0a0f1a 100%);',
+      'border:1px solid rgba(99,102,241,0.22);border-radius:20px;',
+      'padding:0;overflow:hidden;',
+      'box-shadow:0 24px 64px rgba(0,0,0,0.7),0 4px 16px rgba(0,0,0,0.4),inset 0 1px 0 rgba(120,140,255,0.08);',
+      'z-index:99999;width:340px;max-width:calc(100vw - 32px);',
+      'font-family:Inter,system-ui,sans-serif;',
     '}',
-    '#pwa-install-banner.show{transform:translateX(-50%) translateY(0);}',
-    '#pwa-install-banner .pwa-text{display:flex;flex-direction:column;gap:2px;}',
-    '#pwa-install-banner .pwa-title{font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:.01em;}',
-    '#pwa-install-banner .pwa-sub{font-size:11px;color:#94a3b8;}',
+    '#pwa-install-banner.show{animation:pwaSlideUp 0.42s cubic-bezier(0.22,1,0.36,1) forwards;}',
+    '#pwa-install-banner.hide{animation:pwaSlideDown 0.32s cubic-bezier(0.32,0,0.67,0) forwards;}',
+    '#pwa-install-banner .pwa-body{display:flex;align-items:center;gap:14px;padding:16px 18px 14px;}',
+    '#pwa-install-banner .pwa-icon{',
+      'width:44px;height:44px;border-radius:13px;flex-shrink:0;',
+      'background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.18));',
+      'border:1px solid rgba(99,102,241,0.3);',
+      'display:flex;align-items:center;justify-content:center;',
+      'font-size:22px;',
+      'box-shadow:0 4px 16px rgba(99,102,241,0.2);',
+    '}',
+    '#pwa-install-banner .pwa-text{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}',
+    '#pwa-install-banner .pwa-title{font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '#pwa-install-banner .pwa-sub{font-size:11px;color:rgba(148,163,184,0.8);line-height:1.4;}',
+    '#pwa-install-banner .pwa-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}',
     '#pwa-install-banner .pwa-btn{',
       'background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;',
-      'border:none;border-radius:8px;padding:8px 16px;',
-      'font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;',
-      'letter-spacing:.03em;',
+      'border:none;border-radius:10px;padding:8px 16px;',
+      'font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;',
+      'letter-spacing:.06em;text-transform:uppercase;',
+      'box-shadow:0 4px 14px rgba(99,102,241,0.4);',
+      'transition:filter 0.18s ease,transform 0.18s ease;',
     '}',
+    '#pwa-install-banner .pwa-btn:hover{filter:brightness(1.15);transform:translateY(-1px);}',
+    '#pwa-install-banner .pwa-btn:active{filter:brightness(0.92);transform:translateY(0);}',
     '#pwa-install-banner .pwa-dismiss{',
-      'background:none;border:none;color:#64748b;cursor:pointer;',
-      'font-size:18px;line-height:1;padding:2px 4px;',
+      'width:28px;height:28px;border-radius:8px;flex-shrink:0;',
+      'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);',
+      'color:rgba(100,116,139,0.7);cursor:pointer;',
+      'font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;',
+      'transition:background 0.18s,color 0.18s;',
     '}',
+    '#pwa-install-banner .pwa-dismiss:hover{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:#fca5a5;}',
+    '#pwa-install-banner .pwa-progress{height:2px;background:rgba(99,102,241,0.12);}',
+    '#pwa-install-banner .pwa-progress-bar{height:100%;width:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);}',
+    '#pwa-install-banner.show .pwa-progress-bar{animation:pwaShrink 3s linear forwards;}',
     '#pwa-update-toast{',
-      'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);',
-      'background:#1e1e2e;border:1px solid rgba(56,189,248,0.35);border-radius:12px;',
-      'padding:10px 18px;display:flex;align-items:center;gap:12px;',
-      'box-shadow:0 4px 20px rgba(0,0,0,0.4);z-index:99999;',
-      'transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);',
+      'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;',
+      'background:linear-gradient(160deg,#0f1623 0%,#0a0f1a 100%);',
+      'border:1px solid rgba(56,189,248,0.22);border-radius:14px;',
+      'padding:12px 16px;display:flex;align-items:center;gap:12px;',
+      'box-shadow:0 16px 48px rgba(0,0,0,0.6),inset 0 1px 0 rgba(56,189,248,0.08);',
+      'z-index:99999;font-family:Inter,system-ui,sans-serif;',
+      'max-width:calc(100vw - 32px);',
     '}',
-    '#pwa-update-toast.show{transform:translateX(-50%) translateY(0);}',
-    '#pwa-update-toast span{font-size:12px;color:#e2e8f0;}',
-    '#pwa-update-toast button{',
-      'background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);',
-      'color:#38bdf8;border-radius:6px;padding:4px 10px;',
-      'font-size:11px;font-weight:700;cursor:pointer;',
+    '#pwa-update-toast.show{animation:pwaSlideInTop 0.38s cubic-bezier(0.22,1,0.36,1) forwards;}',
+    '#pwa-update-toast.hide{animation:pwaSlideOutTop 0.28s cubic-bezier(0.32,0,0.67,0) forwards;}',
+    '#pwa-update-toast .upd-icon{',
+      'width:32px;height:32px;border-radius:9px;flex-shrink:0;',
+      'background:linear-gradient(135deg,rgba(56,189,248,0.18),rgba(14,165,233,0.1));',
+      'border:1px solid rgba(56,189,248,0.25);',
+      'display:flex;align-items:center;justify-content:center;font-size:15px;',
     '}',
+    '#pwa-update-toast .upd-text{display:flex;flex-direction:column;gap:1px;flex:1;}',
+    '#pwa-update-toast .upd-title{font-size:12px;font-weight:700;color:#e2e8f0;letter-spacing:.01em;}',
+    '#pwa-update-toast .upd-sub{font-size:10px;color:rgba(148,163,184,0.7);}',
+    '#pwa-update-toast .upd-btn{',
+      'background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.28);',
+      'color:#38bdf8;border-radius:8px;padding:6px 12px;',
+      'font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;',
+      'letter-spacing:.06em;text-transform:uppercase;',
+      'transition:background 0.18s,border-color 0.18s;',
+    '}',
+    '#pwa-update-toast .upd-btn:hover{background:rgba(56,189,248,0.22);border-color:rgba(56,189,248,0.45);}',
   ].join('');
   document.head.appendChild(style);
 
@@ -7546,29 +7588,43 @@ ReactDOM.render(
     var banner = document.createElement('div');
     banner.id = 'pwa-install-banner';
     banner.innerHTML =
-      '<div class="pwa-text">' +
-        '<div class="pwa-title">&#128279; Install MaxOfPdf</div>' +
-        '<div class="pwa-sub">Home screen-এ add করো — offline কাজ করবে</div>' +
+      '<div class="pwa-body">' +
+        '<div class="pwa-icon">&#128196;</div>' +
+        '<div class="pwa-text">' +
+          '<div class="pwa-title">Install MaxOfPdf</div>' +
+          '<div class="pwa-sub">Add to home screen — works offline</div>' +
+        '</div>' +
+        '<div class="pwa-actions">' +
+          '<button class="pwa-btn" id="pwa-install-ok">Install</button>' +
+          '<button class="pwa-dismiss" id="pwa-install-no" title="Dismiss">&times;</button>' +
+        '</div>' +
       '</div>' +
-      '<button class="pwa-btn" id="pwa-install-ok">Install</button>' +
-      '<button class="pwa-dismiss" id="pwa-install-no" title="Dismiss">&times;</button>';
+      '<div class="pwa-progress"><div class="pwa-progress-bar"></div></div>';
     document.body.appendChild(banner);
+
+    function dismiss(save) {
+      banner.classList.remove('show');
+      banner.classList.add('hide');
+      if (save) try { localStorage.setItem('pwa_dismissed', Date.now()); } catch(e) {}
+      setTimeout(function () { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 350);
+    }
 
     setTimeout(function () { banner.classList.add('show'); }, 100);
 
     /* Auto-dismiss after 3 seconds */
-    setTimeout(function () { banner.classList.remove('show'); }, 3100);
+    var autoDismiss = setTimeout(function () { dismiss(false); }, 3100);
 
     document.getElementById('pwa-install-ok').addEventListener('click', function () {
-      banner.classList.remove('show');
+      clearTimeout(autoDismiss);
+      dismiss(false);
       if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
       }
     });
     document.getElementById('pwa-install-no').addEventListener('click', function () {
-      banner.classList.remove('show');
-      try { localStorage.setItem('pwa_dismissed', Date.now()); } catch(e) {}
+      clearTimeout(autoDismiss);
+      dismiss(true);
     });
   }
 
@@ -7577,13 +7633,19 @@ ReactDOM.render(
     var toast = document.createElement('div');
     toast.id = 'pwa-update-toast';
     toast.innerHTML =
-      '<span>&#10024; নতুন ভার্সন আছে</span>' +
-      '<button id="pwa-reload-btn">Update</button>';
+      '<div class="upd-icon">&#10024;</div>' +
+      '<div class="upd-text">' +
+        '<div class="upd-title">Update available</div>' +
+        '<div class="upd-sub">A new version of MaxOfPdf is ready</div>' +
+      '</div>' +
+      '<button class="upd-btn" id="pwa-reload-btn">Reload</button>';
     document.body.appendChild(toast);
     setTimeout(function () { toast.classList.add('show'); }, 100);
     document.getElementById('pwa-reload-btn').addEventListener('click', function () {
+      toast.classList.remove('show');
+      toast.classList.add('hide');
       if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
+      setTimeout(function () { window.location.reload(); }, 300);
     });
   }
 
