@@ -1,16 +1,15 @@
 {
   "name": "pdfmax",
   "version": "1.0.0",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "echo \"No build step required for Vercel deployment\""
+    "build": "echo 'No build step required'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "MaxOfPdf — AI-powered PDF reader",
+  "description": "MaxOfPdf - AI-powered PDF reader",
   "dependencies": {
     "express": "^5.2.1",
     "node-fetch": "^3.3.2",
