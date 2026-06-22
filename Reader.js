@@ -385,8 +385,9 @@ function Reader(_a) {
                             return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
                         case 4:
                             r = _a.sent();
-                            if (!r.ok)
-                                throw new Error("Gemini ".concat(r.status));
+                            if (!r.ok) {
+                                return [2 /*return*/, r.text().then(function (errBody) { throw new Error("Gemini " + r.status + ": " + errBody); })];
+                            }
                             return [4 /*yield*/, r.json()];
                         case 5:
                             d = _a.sent();
@@ -427,8 +428,9 @@ function Reader(_a) {
                         case 10:
                             e_4 = _a.sent();
                             console.error("Scan error page ".concat(pageIndex), e_4);
-                            /* ANY error → rotate to next key and retry, until all keys exhausted */
-                            if (!(retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
+                            /* Client holds no Gemini keys (server proxy rotates them). Only rotate
+                               client-side when keys actually exist, to avoid NaN/undefined crashes. */
+                            if (!(GEMINI_KEYS.length > 0 && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
                             onRotateKey();
                             apiKeyRef.current = GEMINI_KEYS[(GEMINI_KEYS.indexOf(apiKeyRef.current) + 1) % GEMINI_KEYS.length];
                             return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, currentModel)];
