@@ -1068,8 +1068,8 @@ function Reader(_a) {
         return combined;
     }, [currentPage, extractedPages, displayPages, pdfFile]);
     var currentPageText = useMemo(function () { return pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') || '' : displayPages[currentPage] || ''; }, [currentPage, extractedPages, displayPages, pdfFile]);
-    // Render content
-    var renderContent = function () {
+    // Render content — memoized to avoid rebuilding blocks on every render
+    var renderContent = useMemo(function () { return function () {
         if (rewritingStatus[currentPage])
             return (React.createElement("div", { className: "flex flex-col items-center justify-center pt-16 space-y-4" },
                 React.createElement("div", { className: "w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" }),
@@ -1170,7 +1170,7 @@ function Reader(_a) {
                 return renderFigure(block.content, block.lineIndex, block.offset);
             return null;
         });
-    };
+    }; }(), [currentPage, rewrittenPages, extractedPages, pdfFile, displayPages, highlights, pendingHighlights, lookedUpHighlights, partialRewritePending, rewrittenRange, entityHighlightMode, entityCache, interlinearMode, interlinearCache, interlinearLoading, readerTheme, lineSpacing, boldness, scanningStatus, pdfRange, isComparing, rewritingStatus]);
     var renderFigure = function (line, lineIdx, lineStart) {
         try {
             var jc = line.trim().substring(9, line.trim().length - 3);
