@@ -33,6 +33,15 @@ function runLlamaScoutPageDesign(pageText, pageNum, highlightsArray) {
 function Reader(_a) {
     var _this = this;
     var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, activeOcrPromptMode = _a.activeOcrPromptMode, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, interlinearTextColor = _a.interlinearTextColor, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
+    /* ── Stable refs for OCR scan settings — changes don't re-trigger the scan loop ── */
+    var boldingLevelRef = useRef(boldingLevel);
+    var structureModeRef = useRef(structureMode);
+    var activeScanningModelRef = useRef(activeScanningModel);
+    var activeOcrPromptModeRef = useRef(activeOcrPromptMode);
+    useEffect(function () { boldingLevelRef.current = boldingLevel; }, [boldingLevel]);
+    useEffect(function () { structureModeRef.current = structureMode; }, [structureMode]);
+    useEffect(function () { activeScanningModelRef.current = activeScanningModel; }, [activeScanningModel]);
+    useEffect(function () { activeOcrPromptModeRef.current = activeOcrPromptMode; }, [activeOcrPromptMode]);
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
@@ -326,6 +335,13 @@ function Reader(_a) {
         var startPage = (pdfRange ? pdfRange.start : 1) || 1;
         var endPage = (pdfRange ? pdfRange.end : pdfDoc.numPages) || pdfDoc.numPages;
         var totalInRange = endPage - startPage + 1;
+        /* Read settings from refs so stale closures always use the latest values
+           without adding them to the dependency array (avoids re-running the scan
+           loop on every settings change). */
+        var boldingLevel = boldingLevelRef.current;
+        var structureMode = structureModeRef.current;
+        var activeScanningModel = activeScanningModelRef.current;
+        var activeOcrPromptMode = activeOcrPromptModeRef.current;
         var scanPage = function (pageIndex_1) {
             var args_1 = [];
             for (var _i = 1; _i < arguments.length; _i++) {
@@ -472,7 +488,7 @@ function Reader(_a) {
                     return;
             }
         }
-    }, [pdfDoc, currentPage, scanningStatus, pdfRange, activeScanningModel, activeOcrPromptMode, googleApiKey, boldingLevel, structureMode]);
+    }, [pdfDoc, currentPage, scanningStatus, pdfRange]);
     var getSelectionOffsets = function (container) {
         if (!container) return null;
         var sel = window.getSelection();
