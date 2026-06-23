@@ -3229,16 +3229,11 @@ function AnalysisModal(_a) {
         setIsGeneratingQuestions(true);
         setPreloadedQuestions(null);
         setPreloadedAnswers({});
-        var modelKey = (typeof MAVERICK_KEY !== 'undefined') ? MAVERICK_KEY : GROQ_API_KEY;
-        var modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
         var sys = 'You are a question generator. Given a selected word/phrase and its meaning, generate exactly 3 short, distinct, insightful questions that a curious reader would want answered. Questions should be in the same language as the meaning text (Bengali or English). Return ONLY valid JSON: {"questions":["q1","q2","q3"]}';
         var userP = 'Word/phrase: "' + data.word + '"\nMeaning: ' + data.meaning + '\nContext clues: ' + (data.context || '');
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
-            body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || '{}';
+        geminiGenerate('', 'gemini-2.5-flash', userP, { systemInstruction: sys, responseMimeType: 'application/json' })
+        .then(function(res) {
+            var text = res.text || '{}';
             var clean = text.replace(/```json\n?|```/g, '').trim();
             var parsed;
             try { parsed = JSON.parse(clean); } catch(e) { parsed = {}; }
