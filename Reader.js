@@ -32,7 +32,7 @@ function runLlamaScoutPageDesign(pageText, pageNum, highlightsArray) {
 // ============================================================
 function Reader(_a) {
     var _this = this;
-    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, activeOcrPromptMode = _a.activeOcrPromptMode, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
+    var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, activeOcrPromptMode = _a.activeOcrPromptMode, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, interlinearTextColor = _a.interlinearTextColor, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
     var _b = useState(initialPageIndex || 0), currentPage = _b[0], setCurrentPage = _b[1];
     var _c = useState(initialHighlights || []), highlights = _c[0], setHighlights = _c[1];
     var _d = useState([]), pendingHighlights = _d[0], setPendingHighlights = _d[1];
@@ -1463,7 +1463,7 @@ function Reader(_a) {
                     }
                     return p;
                 });
-                ilNode = React.createElement("span", { key: bk+"-il", className: "interlinear-line" }, ilRendered);
+                ilNode = React.createElement("span", { key: bk+"-il", className: "interlinear-line", style: { color: interlinearTextColor } }, ilRendered);
             } else if (showIlSkeleton) {
                 ilNode = React.createElement("span", { key: bk+"-ilsk", className: "interlinear-skeleton", style:{width: (55 + Math.abs(lineIdx * 7) % 35) + '%'} });
             }
