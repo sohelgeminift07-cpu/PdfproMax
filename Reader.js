@@ -33,7 +33,7 @@ function runLlamaScoutPageDesign(pageText, pageNum, highlightsArray) {
 function Reader(_a) {
     var _this = this;
     var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, activeOcrPromptMode = _a.activeOcrPromptMode, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, interlinearTextColor = _a.interlinearTextColor, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, onStateChange = _a.onStateChange;
-    /* ── Stable refs for OCR scan settings — changes don't re-trigger the scan loop (fix #1) ── */
+    /* ── Stable refs for OCR scan settings — changes don't re-trigger the scan loop ── */
     var boldingLevelRef = useRef(boldingLevel);
     var structureModeRef = useRef(structureMode);
     var activeScanningModelRef = useRef(activeScanningModel);
