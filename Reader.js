@@ -1060,12 +1060,19 @@ function Reader(_a) {
             analyzeText(sel_1, curText, newModel);
         }
     };
+    var cumulativeTextRef = useRef('');
+    var cumulativeTextPageRef = useRef(-1);
     var cumulativeText = useMemo(function () {
-        var combined = '';
-        for (var i = 0; i <= currentPage; i++) {
-            combined += '--- Folio ' + (i + 1) + ' ---\n' + (pdfFile ? ((extractedPages[i] ? extractedPages[i].body : '[Scanning...]')) : (displayPages[i] || '')) + '\n\n';
+        if (currentPage < cumulativeTextPageRef.current) {
+            cumulativeTextRef.current = '';
+            cumulativeTextPageRef.current = -1;
         }
-        return combined;
+        for (var i = cumulativeTextPageRef.current + 1; i <= currentPage; i++) {
+            var pageContent = pdfFile ? ((extractedPages[i] ? extractedPages[i].body : '[Scanning...]')) : (displayPages[i] || '');
+            cumulativeTextRef.current += '--- Folio ' + (i + 1) + ' ---\n' + pageContent + '\n\n';
+        }
+        cumulativeTextPageRef.current = currentPage;
+        return cumulativeTextRef.current;
     }, [currentPage, extractedPages, displayPages, pdfFile]);
     var currentPageText = useMemo(function () { return pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : '') || '' : displayPages[currentPage] || ''; }, [currentPage, extractedPages, displayPages, pdfFile]);
     // Render content — memoized to avoid rebuilding blocks on every render
