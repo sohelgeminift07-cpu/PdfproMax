@@ -527,21 +527,13 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         analysis = {};
                         modelName = MODEL_LABELS[selectedModel] || 'AI';
-                        /* Try Llama Maverick first, fallback to Kimi K2 */
-                        return [4 /*yield*/, (function() {
-                            var tryFetch = function(apiKey, modelId) {
-                                return fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sys + ' Return JSON.' }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' } }), signal: ctrl.signal });
-                            };
-                            return tryFetch(MAVERICK_KEY, 'meta-llama/llama-4-scout-17b-16e-instruct');
-                        })()];
+                        var targetModel = selectedModel.includes('gemini') ? selectedModel : 'gemini-2.5-flash';
+                        return [4 /*yield*/, geminiGenerate('', targetModel, userP, { systemInstruction: sys, responseMimeType: 'application/json', signal: ctrl.signal })];
                     case 2:
-                        r = _a.sent();
+                        resGen = _a.sent();
                         if (ctrl.signal.aborted)
                             throw new Error('Aborted');
-                        return [4 /*yield*/, r.json()];
-                    case 3:
-                        d = _a.sent();
-                        analysis = safeExtractJSON(stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}') || {};
+                        analysis = safeExtractJSON(resGen.text || '{}') || {};
                         return [3 /*break*/, 6];
                     case 4: return [3 /*break*/, 6];
                     case 5: return [3 /*break*/, 6];
@@ -703,16 +695,15 @@ function Reader(_a) {
                         newText_1 = r.text || '';
                         return [3 /*break*/, 6];
                     case 3:
-                        modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                        key = MAVERICK_KEY;
-                        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                        return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: 'Professional editor.' }, { role: 'user', content: fullP }], model: modelId }) })];
+                        var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
+                        return [4 /*yield*/, geminiGenerate('', targetModel, fullP, { systemInstruction: 'Professional editor.' })];
                     case 4:
-                        r = _a.sent();
-                        return [4 /*yield*/, r.json()];
+                        resGen = _a.sent();
+                        newText_1 = resGen.text || '';
+                        // Dummy steps to maintain switch flow consistency
+                        return [4 /*yield*/, Promise.resolve({ choices: [] })];
                     case 5:
-                        d = _a.sent();
-                        newText_1 = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '';
+                        _a.sent();
                         _a.label = 6;
                     case 6:
                         if (newText_1)
@@ -933,14 +924,15 @@ function Reader(_a) {
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    modelId = 'meta-llama/llama-4-scout-17b-16e-instruct'; key = MAVERICK_KEY; endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                    return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify({ messages: [{ role: 'system', content: sysMsgContent }, { role: 'user', content: userMsgContent }], model: modelId }) })];
+                    var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
+                    return [4 /*yield*/, geminiGenerate('', targetModel, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 4:
-                    rr = _a.sent();
-                    return [4 /*yield*/, rr.json()];
+                    resGen = _a.sent();
+                    newChunk = resGen.text || '';
+                    // Dummy steps to maintain switch flow consistency
+                    return [4 /*yield*/, Promise.resolve({ choices: [] })];
                 case 5:
-                    d = _a.sent();
-                    newChunk = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '';
+                    _a.sent();
                     _a.label = 6;
                 case 6:
                     if (newChunk) {
@@ -995,16 +987,14 @@ function Reader(_a) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, 5, 6]);
-                    xrayModelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                    xrayKey = MAVERICK_KEY;
-                    xrayEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                    return [4 /*yield*/, fetch(xrayEndpoint, { method: 'POST', signal: xrayAbortRef.current.signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + xrayKey }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsg }], model: xrayModelId, max_tokens: 1500, response_format: { type: 'json_object' } }) })];
+                    return [4 /*yield*/, geminiGenerate('', 'gemini-2.5-flash', userMsg, { systemInstruction: sysPrompt, responseMimeType: 'application/json', signal: xrayAbortRef.current.signal })];
                 case 2:
-                    r = _a.sent();
-                    return [4 /*yield*/, r.json()];
+                    resGen = _a.sent();
+                    rawText = resGen.text || '{}';
+                    // Dummy step to maintain switch flow consistency
+                    return [4 /*yield*/, Promise.resolve({ choices: [] })];
                 case 3:
-                    d = _a.sent();
-                    rawText = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}';
+                    _a.sent();
                     clean = rawText.replace(/```json\n?|```/g, '').trim();
                     try { parsed = JSON.parse(clean); } catch(e3) { parsed = {}; }
                     entities = Array.isArray(parsed.entities) ? parsed.entities : [];
