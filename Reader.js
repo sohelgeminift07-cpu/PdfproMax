@@ -149,6 +149,7 @@ function Reader(_a) {
     var _7d = useState(-1), historyIndex = _7d[0], setHistoryIndex = _7d[1];
     var containerRef = useRef(null);
     var apiKeyRef = useRef(googleApiKey);
+    var activeKeyIndexRef = useRef(0);
     var selectionTimerRef = useRef(null);
     var isPointerDownRef = useRef(false);
     var abortControllersRef = useRef(new Map());
@@ -184,6 +185,13 @@ function Reader(_a) {
     var ehTooltipTimer = useRef(null);
     var stateChangeDebounceRef = useRef(null);
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
+    /* Track current key index to avoid O(n) indexOf lookup on rotation */
+    useEffect(function () {
+        if (GEMINI_KEYS.length > 0) {
+            activeKeyIndexRef.current = GEMINI_KEYS.indexOf(googleApiKey);
+            if (activeKeyIndexRef.current === -1) activeKeyIndexRef.current = 0;
+        }
+    }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
     /* ── Auto-prefetch next page rewrite in background ── */
@@ -453,7 +461,8 @@ function Reader(_a) {
                                client-side when keys actually exist, to avoid NaN/undefined crashes. */
                             if (!(GEMINI_KEYS.length > 0 && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
                             onRotateKey();
-                            apiKeyRef.current = GEMINI_KEYS[(GEMINI_KEYS.indexOf(apiKeyRef.current) + 1) % GEMINI_KEYS.length];
+                            activeKeyIndexRef.current = (activeKeyIndexRef.current + 1) % GEMINI_KEYS.length;
+                            apiKeyRef.current = GEMINI_KEYS[activeKeyIndexRef.current];
                             return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, currentModel)];
                         case 11:
                             _a.sent();
