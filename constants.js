@@ -11,13 +11,12 @@ var katex = window.katex;
 
 // API keys are now managed securely on the server.
 // Client code uses /api/* proxy routes instead.
-var GROQ_API_KEY = null;
-var MAVERICK_KEY = null;
 var GEMINI_KEYS = [];
 
 var MODEL_LABELS = {
-    "gemini-lite": "Gemini 3.1 Flash-Lite",
-    "llama-maverick": "Llama 4 Scout",
+    "gemini-lite": "Gemini 2.5 Flash-Lite",
+    "gemini-flash": "Gemini 2.5 Flash",
+    "gemini-pro": "Gemini 2.5 Pro",
 };
 function stripThink(text) {
     if (!text) return text;
