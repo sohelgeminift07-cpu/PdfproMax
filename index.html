@@ -3359,7 +3359,7 @@ function AnalysisModal(_a) {
         return function () { window.removeEventListener('pointerdown', onDown); window.removeEventListener('pointerup', onUp); };
     }, [isOpen, isAutoOpen, onClose]);
     var handleAnalysisChatSend = function () { return __awaiter(_this, void 0, void 0, function () {
-        var userMsg, sysPrompt, userPrompt, r, d, aiText, e;
+        var userMsg, sysPrompt, userPrompt, resGen, aiText, e;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -3373,14 +3373,15 @@ function AnalysisModal(_a) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 4, 5, 6]);
-                    return [4, fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'qwen/qwen3.6-27b' }) })];
+                    return [4, geminiGenerate('', 'gemini-2.5-flash', userPrompt, { systemInstruction: sysPrompt })];
                 case 2:
-                    r = _b.sent();
-                    return [4, r.json()];
-                case 3:
-                    d = _b.sent();
-                    aiText = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'No response.';
+                    resGen = _b.sent();
+                    aiText = resGen.text || 'No response.';
                     setAnalysisChatMessages(function(p) { return __spreadArray(__spreadArray([], p, true), [{ role: 'ai', content: aiText }], false); });
+                    // Dummy steps to maintain switch flow consistency
+                    return [4, Promise.resolve({ choices: [] })];
+                case 3:
+                    _b.sent();
                     return [3, 6];
                 case 4:
                     e = _b.sent();
