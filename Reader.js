@@ -156,6 +156,7 @@ function Reader(_a) {
     var drawerStateRef = useRef({ isChatActive: false, lastTranscribed: '', isInputStructured: false });
     var drawerActionsRef = useRef({ structureText: function () { }, revertText: function () { } });
     var autoScrollRef = useRef(null);
+    var ocrCanvasRef = useRef(null);
     /* ── X-Ray state ── */
     var _xr0 = useState(false), isXRayOpen = _xr0[0], setIsXRayOpen = _xr0[1];
     var _xr1 = useState(false), isXRayLoading = _xr1[0], setIsXRayLoading = _xr1[1];
