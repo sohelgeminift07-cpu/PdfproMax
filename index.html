@@ -3399,16 +3399,11 @@ function AnalysisModal(_a) {
     var handlePreloadedTap = function(question, idx) {
         if (loadingAnswerIdx !== null || preloadedAnswers[idx] !== undefined || isAnalysisChatLoading) return;
         setLoadingAnswerIdx(idx);
-        var modelKey = (typeof MAVERICK_KEY !== 'undefined') ? MAVERICK_KEY : GROQ_API_KEY;
-        var modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
         var sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the question. Keep the answer short — 2-4 sentences or a brief bullet list.';
         var userPrompt = 'The user is analyzing: "' + (data.word || '') + '".\nMeaning: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nQuestion: ' + question;
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + modelKey },
-            body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: modelId, max_tokens: 400 })
-        }).then(function(r) { return r.json(); }).then(function(d) {
-            var text = (d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '') || 'কোনো উত্তর পাওয়া যায়নি।';
+        geminiGenerate('', 'gemini-2.5-flash', userPrompt, { systemInstruction: sysPrompt })
+        .then(function(res) {
+            var text = res.text || 'কোনো উত্তর পাওয়া যায়নি।';
             setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]=text; return n; });
         }).catch(function(e) {
             setPreloadedAnswers(function(prev) { var n = {}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[idx]='Error: ' + e.message; return n; });
