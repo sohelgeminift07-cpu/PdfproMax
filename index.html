@@ -2769,7 +2769,7 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(model, ":generateContent?key=").concat(apiKey);
+                    url = '/api/gemini/' + encodeURIComponent(model) + '/generateContent';
                     body = {
                         contents: Array.isArray(contents) ? contents.map(function (c) { return typeof c === 'string' ? { parts: [{ text: c }], role: 'user' } : c; }) : [{ parts: [{ text: contents }], role: 'user' }],
                         generationConfig: { maxOutputTokens: config.maxOutputTokens || 8192 }
