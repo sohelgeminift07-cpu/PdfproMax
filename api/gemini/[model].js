@@ -1,5 +1,41 @@
 export const config = { runtime: 'nodejs' };
 
+/* In-memory cache for identical requests (5 min TTL) */
+const requestCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; /* 5 minutes */
+
+function getCacheKey(model, body) {
+  /* Hash the model + request body to create a cache key */
+  const str = model + JSON.stringify(body);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; /* Convert to 32-bit integer */
+  }
+  return 'cache_' + Math.abs(hash).toString(36);
+}
+
+function getCachedResponse(model, body) {
+  const key = getCacheKey(model, body);
+  const cached = requestCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  if (cached) requestCache.delete(key);
+  return null;
+}
+
+function setCachedResponse(model, body, data) {
+  const key = getCacheKey(model, body);
+  requestCache.set(key, { data, timestamp: Date.now() });
+  /* Cleanup: remove oldest entries if cache grows too large */
+  if (requestCache.size > 100) {
+    const firstKey = requestCache.keys().next().value;
+    requestCache.delete(firstKey);
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
@@ -12,6 +48,12 @@ export default async function handler(req, res) {
 
   if (!model) {
     return res.status(400).json({ error: 'Missing model parameter' });
+  }
+
+  /* Check cache first */
+  const cachedResponse = getCachedResponse(model, req.body);
+  if (cachedResponse) {
+    return res.status(200).json(cachedResponse);
   }
 
   const GEMINI_KEYS = process.env.GEMINI_KEYS
@@ -39,7 +81,11 @@ export default async function handler(req, res) {
 
       const data = await upstream.json();
 
-      if (upstream.ok) return res.status(200).json(data);
+      if (upstream.ok) {
+        /* Cache successful responses */
+        setCachedResponse(model, req.body, data);
+        return res.status(200).json(data);
+      }
 
       if ([429, 400, 403].includes(upstream.status)) {
         lastError = { status: upstream.status, data };
