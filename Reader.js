@@ -207,6 +207,24 @@ function Reader(_a) {
         }, 800);
         return function () { clearTimeout(timer); };
     }, [currentPage, totalPages, autoPrefetchNext, lastRewriteConfig]);
+    /* Memory management: evict off-screen pages to prevent unbounded growth */
+    useEffect(function () {
+        var KEEP_RADIUS = 5;
+        var pagesToKeep = new Set();
+        for (var i = Math.max(0, currentPage - KEEP_RADIUS); i <= Math.min(totalPages - 1, currentPage + KEEP_RADIUS); i++) {
+            pagesToKeep.add(i);
+        }
+        setExtractedPages(function (prev) {
+            var next = {};
+            Object.keys(prev).forEach(function (pageStr) {
+                var pageNum = parseInt(pageStr, 10);
+                if (pagesToKeep.has(pageNum)) {
+                    next[pageNum] = prev[pageNum];
+                }
+            });
+            return next;
+        });
+    }, [currentPage, totalPages]);
     /* Auto-save rich session state to parent — debounced to avoid excessive re-renders */
     useEffect(function () {
         if (stateChangeDebounceRef.current) clearTimeout(stateChangeDebounceRef.current);
