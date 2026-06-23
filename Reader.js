@@ -416,7 +416,7 @@ function Reader(_a) {
                         case 2:
                             page = _a.sent();
                             viewport = page.getViewport({ scale: 2.0 });
-                            canvas = document.createElement('canvas');
+                            if (!ocrCanvasRef.current) ocrCanvasRef.current = document.createElement('canvas'); canvas = ocrCanvasRef.current; if (canvas.getContext('2d')) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
                             context = canvas.getContext('2d');
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
