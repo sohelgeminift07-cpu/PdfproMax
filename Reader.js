@@ -182,6 +182,7 @@ function Reader(_a) {
         glowTimerRef.current = setTimeout(function() { setActiveGlowBtn(null); }, 2100);
     };
     var ehTooltipTimer = useRef(null);
+    var stateChangeDebounceRef = useRef(null);
     useEffect(function () { apiKeyRef.current = googleApiKey; }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
@@ -198,18 +199,22 @@ function Reader(_a) {
         }, 800);
         return function () { clearTimeout(timer); };
     }, [currentPage, totalPages, autoPrefetchNext, lastRewriteConfig]);
-    /* Auto-save rich session state to parent whenever key state changes */
+    /* Auto-save rich session state to parent — debounced to avoid excessive re-renders */
     useEffect(function () {
-        if (onStateChange) {
-            onStateChange({
-                currentPage: currentPage,
-                extractedPages: extractedPages,
-                highlights: highlights,
-                rewrittenPages: rewrittenPages,
-                xrayCache: xrayCache
-            });
-        }
-    }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages]);
+        if (stateChangeDebounceRef.current) clearTimeout(stateChangeDebounceRef.current);
+        stateChangeDebounceRef.current = setTimeout(function () {
+            if (onStateChange) {
+                onStateChange({
+                    currentPage: currentPage,
+                    extractedPages: extractedPages,
+                    highlights: highlights,
+                    rewrittenPages: rewrittenPages,
+                    xrayCache: xrayCache
+                });
+            }
+        }, 300);
+        return function () { if (stateChangeDebounceRef.current) clearTimeout(stateChangeDebounceRef.current); };
+    }, [currentPage, highlights, rewrittenPages, xrayCache, extractedPages, onStateChange]);
     var displayPages = useMemo(function () { return text ? splitIntoPages(text) : []; }, [text]);
     var totalPages = pdfFile ? (pdfRange ? pdfRange.end - pdfRange.start + 1 : ((pdfDoc ? pdfDoc.numPages : 1) || 1)) : displayPages.length;
     /* ── Shared markdown sanitizer: strips hallucinated syntax from AI output ── */
