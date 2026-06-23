@@ -194,6 +194,15 @@ function Reader(_a) {
     }, [googleApiKey]);
     /* Close X-Ray panel on page navigation */
     useEffect(function () { setIsXRayOpen(false); setXrayFilter('all'); }, [currentPage]);
+    /* Prune lookedUpHighlights: keep only recent entries and clear old page entries */
+    useEffect(function () {
+        setLookedUpHighlights(function (prev) {
+            var MAX_ENTRIES = 100;
+            var KEEP_RADIUS = 10;
+            var filtered = prev.filter(function (lu) { return Math.abs(lu.pageNumber - currentPage) <= KEEP_RADIUS; }).slice(-MAX_ENTRIES);
+            return filtered;
+        });
+    }, [currentPage]);
     /* ── Auto-prefetch next page rewrite in background ── */
     useEffect(function () {
         if (!autoPrefetchNext || !lastRewriteConfig) return;
