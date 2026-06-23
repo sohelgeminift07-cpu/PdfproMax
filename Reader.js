@@ -144,9 +144,9 @@ function Reader(_a) {
     var isSelectingPortionRef = useRef(false);
     var _9 = useState(null), capturedPortion = _9[0], setCapturedPortion = _9[1];
     var capturedPortionRef = useRef(null);
-    var _5 = useState('summary'), drawerTab = _5[0], setDrawerTab = _5[1];
-    var _6 = useState([]), historyStack = _6[0], setHistoryStack = _6[1];
-    var _7 = useState(-1), historyIndex = _7[0], setHistoryIndex = _7[1];
+    var _5b = useState('summary'), drawerTab = _5b[0], setDrawerTab = _5b[1];
+    var _6c = useState([]), historyStack = _6c[0], setHistoryStack = _6c[1];
+    var _7d = useState(-1), historyIndex = _7d[0], setHistoryIndex = _7d[1];
     var containerRef = useRef(null);
     var apiKeyRef = useRef(googleApiKey);
     var selectionTimerRef = useRef(null);
