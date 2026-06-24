@@ -24,8 +24,16 @@ app.get('/api/config', (req, res) => {
     });
 });
 
+/* Map frontend model aliases to real Gemini API model IDs */
+const MODEL_MAP = {
+  'gemini-lite': 'gemini-3.1-flash-lite',
+  'gemini-flash': 'gemini-3.1-flash-lite',
+  'gemini-pro': 'gemini-3.1-flash-lite',
+};
+
 app.post('/api/gemini/:model/generateContent', async (req, res) => {
-    const { model } = req.params;
+    const rawModel = req.params.model;
+    const model = MODEL_MAP[rawModel] || rawModel;
 
     let lastError = null;
     for (let i = 0; i < GEMINI_KEYS.length; i++) {

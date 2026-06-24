@@ -2,9 +2,9 @@ export const config = { runtime: 'nodejs' };
 
 /* Map frontend model aliases to real Gemini API model IDs */
 const MODEL_MAP = {
-  'gemini-lite': 'gemini-2.5-flash-lite',
-  'gemini-flash': 'gemini-2.5-flash',
-  'gemini-pro': 'gemini-2.5-pro',
+  'gemini-lite': 'gemini-3.1-flash-lite',
+  'gemini-flash': 'gemini-3.1-flash-lite',
+  'gemini-pro': 'gemini-3.1-flash-lite',
 };
 
 /* In-memory cache for identical requests (5 min TTL) */

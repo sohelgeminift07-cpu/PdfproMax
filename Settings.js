@@ -45,12 +45,12 @@ function Settings(_a) {
     if (!isOpen && !closing)
         return null;
     var MODEL_OPTIONS = [
-        { id: 'gemini-lite', label: 'Gemini 2.5 Flash-Lite', provider: 'Google · Fast', color: 'from-indigo-500/20 to-indigo-900/5' },
-        { id: 'gemini-flash', label: 'Gemini 2.5 Flash', provider: 'Google · Standard', color: 'from-emerald-500/20 to-emerald-900/5' },
-        { id: 'gemini-pro', label: 'Gemini 2.5 Pro', provider: 'Google · Advanced', color: 'from-blue-500/20 to-blue-900/5' },
+        { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google · Fast', color: 'from-indigo-500/20 to-indigo-900/5' },
+        { id: 'gemini-flash', label: 'Gemini 3.1 Flash-Lite', provider: 'Google · Standard', color: 'from-emerald-500/20 to-emerald-900/5' },
+        { id: 'gemini-pro', label: 'Gemini 3.1 Flash-Lite', provider: 'Google · Advanced', color: 'from-blue-500/20 to-blue-900/5' },
     ];
     var SCANNING_OPTIONS = [
-        { id: 'gemini-lite', label: 'Gemini 2.5 Flash-Lite', provider: 'Google Vision · Default', color: 'from-indigo-600/30 to-indigo-900/10' },
+        { id: 'gemini-lite', label: 'Gemini 3.1 Flash-Lite', provider: 'Google Vision · Default', color: 'from-indigo-600/30 to-indigo-900/10' },
     ];
     var THEMES = [
         { id: 'dark', label: 'Dark', color: 'bg-[#0c0c0c]', border: 'border-slate-700' },
