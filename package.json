@@ -2,9 +2,9 @@
   "name": "pdfmax",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo 'No build step required'"
+    "start": "node index.js",
+    "dev": "node index.js",
+    "build": "echo 'Skipping build step (static + Node server deploy)' && exit 0"
   },
   "keywords": [],
   "author": "",
