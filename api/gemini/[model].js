@@ -1,5 +1,12 @@
 export const config = { runtime: 'nodejs' };
 
+/* Map frontend model aliases to real Gemini API model IDs */
+const MODEL_MAP = {
+  'gemini-lite': 'gemini-2.5-flash-lite',
+  'gemini-flash': 'gemini-2.5-flash',
+  'gemini-pro': 'gemini-2.5-pro',
+};
+
 /* In-memory cache for identical requests (5 min TTL) */
 const requestCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; /* 5 minutes */
@@ -44,11 +51,14 @@ export default async function handler(req, res) {
   }
 
   const rawModel = req.query?.model || req.params?.model || '';
-  const model = Array.isArray(rawModel) ? rawModel[0] : rawModel;
+  const incoming = Array.isArray(rawModel) ? rawModel[0] : rawModel;
 
-  if (!model) {
+  if (!incoming) {
     return res.status(400).json({ error: 'Missing model parameter' });
   }
+
+  /* Resolve alias to real Gemini API model ID */
+  const model = MODEL_MAP[incoming] || incoming;
 
   /* Check cache first */
   const cachedResponse = getCachedResponse(model, req.body);
