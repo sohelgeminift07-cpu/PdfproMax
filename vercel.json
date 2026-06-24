@@ -1,23 +1,23 @@
 {
   "version": 2,
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/gemini/:model/generateContent",
-      "destination": "/api/gemini/[model]"
+      "src": "server.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/api/gemini-ws-token",
-      "destination": "/api/gemini-ws-token"
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
     },
     {
-      "source": "/api/groq",
-      "destination": "/api/groq"
-    },
-    {
-      "source": "/api/config",
-      "destination": "/api/config"
+      "src": "/(.*)",
+      "dest": "index.html"
     }
   ]
 }
