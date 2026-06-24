@@ -131,6 +131,7 @@ function Reader(_a) {
     var _0 = useState(null), pdfDoc = _0[0], setPdfDoc = _0[1];
     var _1 = useState(initialExtractedPages || {}), extractedPages = _1[0], setExtractedPages = _1[1];
     var _2 = useState({}), scanningStatus = _2[0], setScanningStatus = _2[1];
+    var _2b = useState({}), scanErrors = _2b[0], setScanErrors = _2b[1];
     var _3 = useState(false), isComparing = _3[0], setIsComparing = _3[1];
     var _4 = useState(false), showHistoryControls = _4[0], setShowHistoryControls = _4[1];
     /* Selection-based partial rewrite */
@@ -508,6 +509,10 @@ function Reader(_a) {
                             setScanningStatus(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'error', _a)));
+                            });
+                            setScanErrors(function (p) {
+                                var _a;
+                                return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = e_4 && e_4.message ? e_4.message : String(e_4), _a)));
                             });
                             return [3 /*break*/, 15];
                         case 15: return [2 /*return*/];
@@ -1125,12 +1130,13 @@ function Reader(_a) {
             if (pdfFile) {
                 var ext = extractedPages[currentPage];
                 if (scanningStatus[currentPage] === 'error')
-                    return React.createElement("div", { className: "flex flex-col items-center justify-center pt-24 space-y-4" },
+                    return React.createElement("div", { className: "flex flex-col items-center justify-center pt-24 space-y-4 px-4" },
                         React.createElement("p", { className: "text-lg font-bold text-rose-200" }, "Scan Failed"),
+                        scanErrors[currentPage] ? React.createElement("p", { className: "text-xs text-rose-300 max-w-md text-center bg-rose-950/40 border border-rose-500/20 px-4 py-3 rounded-xl leading-relaxed" }, "Reason: " + scanErrors[currentPage]) : null,
                         React.createElement("button", { onClick: function () { return setScanningStatus(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[currentPage] = 'pending', _a)));
-                            }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase" }, "Retry"));
+                            }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase hover:bg-white/10 transition-colors" }, "Retry"));
                 if (!ext) {
                     var pageLabel = ((pdfRange ? pdfRange.start : 1) || 1) + currentPage;
                     var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : 'Llama 4 Maverick';
