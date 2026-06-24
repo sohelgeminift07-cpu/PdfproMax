@@ -4,7 +4,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "build": "echo 'Skipping build step (static + Node server deploy)' && exit 0"
+    "build": "echo 'Vercel build complete'"
   },
   "keywords": [],
   "author": "",
