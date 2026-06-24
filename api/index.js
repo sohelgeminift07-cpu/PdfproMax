@@ -5,16 +5,10 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '..')));
 
-// Normalize URL to handle Vercel routing differences
-app.use((req, res, next) => {
-  if (req.url.startsWith('/api/index.js')) {
-    req.url = req.url.replace('/api/index.js', '');
-  }
-  if (!req.url.startsWith('/api') && req.url !== '/' && req.url !== '') {
-    req.url = '/api' + req.url;
-  }
-  next();
-});
+// Only serve static files in development
+if (process.env.NODE_ENV !== 'production') {
+  // Static files are served by Vercel in production
+}
 
 /* ── Environment Variables ── */
 const GEMINI_KEYS = process.env.GEMINI_KEYS
