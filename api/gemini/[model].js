@@ -67,8 +67,11 @@ export default async function handler(req, res) {
   }
 
   const GEMINI_KEYS = process.env.GEMINI_KEYS
-    ? process.env.GEMINI_KEYS.split(',')
+    ? process.env.GEMINI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
     : [];
+  if (process.env.GEMINI_KEY_2) GEMINI_KEYS.push(process.env.GEMINI_KEY_2.trim());
+  if (process.env.GEMINI_KEY_3) GEMINI_KEYS.push(process.env.GEMINI_KEY_3.trim());
+  if (process.env.GEMINI_KEY_4) GEMINI_KEYS.push(process.env.GEMINI_KEY_4.trim());
 
   if (!GEMINI_KEYS.length) {
     return res.status(500).json({ error: 'No Gemini API key configured' });
