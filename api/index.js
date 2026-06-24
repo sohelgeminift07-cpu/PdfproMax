@@ -5,6 +5,17 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '..')));
 
+// Normalize URL to handle Vercel routing differences
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/index.js')) {
+    req.url = req.url.replace('/api/index.js', '');
+  }
+  if (!req.url.startsWith('/api') && req.url !== '/' && req.url !== '') {
+    req.url = '/api' + req.url;
+  }
+  next();
+});
+
 /* ── Environment Variables ── */
 const GEMINI_KEYS = process.env.GEMINI_KEYS
   ? process.env.GEMINI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
@@ -23,6 +34,7 @@ const MAVERICK_KEY = process.env.MAVERICK_KEY || '';
 
 let geminiKeyIndex = 0;
 function nextGeminiKey() {
+  if (GEMINI_KEYS.length === 0) return null;
   const key = GEMINI_KEYS[geminiKeyIndex % GEMINI_KEYS.length];
   geminiKeyIndex++;
   return key;
@@ -49,7 +61,7 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
   const model = MODEL_MAP[rawModel] || rawModel;
 
   let lastError = null;
-  for (let i = 0; i < GEMINI_KEYS.length; i++) {
+  for (let i = 0; i < Math.max(GEMINI_KEYS.length, 1); i++) {
     const apiKey = nextGeminiKey();
     if (!apiKey) break;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -80,11 +92,7 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
   }
 });
 
-/* ── Groq Proxy ──
-   Auto-detects which key to use based on the model in the request body.
-   Fallback: ?maverick=1 query param forces Maverick key.
-   The server NEVER exposes keys to the browser.
-*/
+/* ── Groq Proxy ── */
 app.post('/api/groq', async (req, res) => {
   const body = req.body;
   const modelId = body.model || '';
