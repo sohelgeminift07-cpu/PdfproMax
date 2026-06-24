@@ -11,9 +11,15 @@
   "license": "ISC",
   "description": "MaxOfPdf - AI-powered PDF reader",
   "dependencies": {
+    "@google/genai": "^2.9.0",
+    "drizzle-zod": "^0.8.3",
     "express": "^5.2.1",
     "node-fetch": "^3.3.2",
-    "ws": "^8.21.0"
+    "p-limit": "^7.3.0",
+    "p-retry": "^7.1.1",
+    "ws": "^8.21.0",
+    "zod": "^4.4.3",
+    "zod-validation-error": "^5.0.0"
   },
   "engines": {
     "node": "20.x"
