@@ -18,9 +18,6 @@ function nextGeminiKey() {
 
 app.get('/api/config', (req, res) => {
     res.json({
-        geminiKeys: GEMINI_KEYS,
-        groqKey: GROQ_API_KEY || null,
-        maverickKey: MAVERICK_KEY || null,
         hasGemini: GEMINI_KEYS.length > 0,
         hasGroq: !!GROQ_API_KEY,
         hasMaverick: !!MAVERICK_KEY,
