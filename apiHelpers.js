@@ -158,7 +158,7 @@ function geminiLiveAudio(apiKey, text, options) {
             ws.onopen = function() {
                 ws.send(JSON.stringify({
                     setup: {
-                        model: 'models/gemini-3.1-flash-lite',
+                        model: 'models/gemini-2.5-flash',
                         generation_config: {
                             response_modalities: ['AUDIO'],
                             speech_config: options.speechConfig || {

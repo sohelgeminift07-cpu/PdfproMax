@@ -436,10 +436,10 @@ function Reader(_a) {
                             var ocrEnhancement = OCR_PROMPT_LIBRARY[activeOcrPromptMode || 'default'] || '';
                             prompt_1 = ocrEnhancement + "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
-                            geminiModel = 'gemini-3.1-flash-lite';
+                            geminiModel = 'gemini-2.5-flash';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = '/api/gemini/' + encodeURIComponent(geminiModel) + '/generateContent';
-                            /* OCR via gemini-3.1-flash-lite: text prompt first, then image */
+                            /* OCR via gemini-2.5-flash: text prompt first, then image */
                             body = { contents: [{ parts: [{ text: prompt_1 + ' Return JSON only.' }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 } };
                             return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
                         case 4:
@@ -591,7 +591,7 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         analysis = {};
                         modelName = MODEL_LABELS[selectedModel] || 'AI';
-                        var targetModel = selectedModel.includes('gemini') ? selectedModel : 'gemini-3.1-flash-lite';
+                        var targetModel = selectedModel.includes('gemini') ? selectedModel : 'gemini-2.5-flash';
                         return [4 /*yield*/, geminiGenerate('', targetModel, userP, { systemInstruction: sys, responseMimeType: 'application/json', signal: ctrl.signal })];
                     case 2:
                         resGen = _a.sent();
@@ -752,14 +752,14 @@ function Reader(_a) {
                         _a.trys.push([1, 7, 8, 9]);
                         newText_1 = '';
                         if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                        gemM = customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite' : 'gemini-3.1-flash-lite';
+                        gemM = customizerModel === 'gemini-lite' ? 'gemini-2.5-flash' : 'gemini-2.5-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, fullP)];
                     case 2:
                         r = _a.sent();
                         newText_1 = r.text || '';
                         return [3 /*break*/, 6];
                     case 3:
-                        var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-3.1-flash-lite';
+                        var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
                         return [4 /*yield*/, geminiGenerate('', targetModel, fullP, { systemInstruction: 'Professional editor.' })];
                     case 4:
                         resGen = _a.sent();
@@ -823,7 +823,7 @@ function Reader(_a) {
             ? 'You are a Bengali language expert and educator specializing in Bengali literature. Given an array of Bengali text lines (which may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length. For each line:\n- If it is a heading or short label (starts with #): return a slightly expanded Bengali version that clarifies what the section is about\n- If it is a bullet or list item: return a clear, enriched Bengali explanation with concrete detail\n- If it is a paragraph: return a simple, easy-to-understand Bengali explanation (সহজবোধ্য বাংলা অর্থ) that captures the core meaning in plain, modern Bengali — NOT a shortened version, but a rephrasing that makes the meaning crystal clear to a general reader\n- Preserve markdown formatting in your output: use **bold** for key terms, keep structure\n- Write naturally flowing Bengali, not robotic or dictionary-like\nRespond with ONLY a raw JSON array: ["enriched line 1","enriched line 2",...]. No explanation, no markdown fences.'
             : 'You are an expert Bengali translator and educator. Given an array of text lines (may contain markdown like **bold**, ## headings, - bullets), return a JSON array of the same length where each element is a rich, detailed Bengali translation of the corresponding input line.\n- Preserve markdown formatting: use **bold** for key terms, keep heading levels, keep bullet structure\n- For technical or complex lines, add brief clarifying context in Bengali\n- Write naturally flowing Bengali, not robotic\nRespond with ONLY a raw JSON array: ["translation 1","translation 2",...]. No explanation, no markdown fences.';
         var userMsg = JSON.stringify(nonEmptyLines);
-        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite', userMsg, {
+        geminiGenerate(apiKeyRef.current, 'gemini-2.5-flash', userMsg, {
             systemInstruction: sysMsg,
             temperature: 0.2,
             maxOutputTokens: 4096
@@ -878,7 +878,7 @@ function Reader(_a) {
         if (entityAbortRef.current) try { entityAbortRef.current.abort(); } catch(_e) {}
         entityAbortRef.current = new AbortController();
         var sysMsg = 'You are an elite named entity recognition engine specialized in Bengali and English text. Your job is to extract EVERY single named entity — missing even one important name is a failure.\n\nGiven a page of text (Bengali, English, or mixed), you MUST:\n1. Extract ALL people (historical figures, politicians, authors, scientists, religious leaders, military commanders, rulers, etc.)\n2. Extract ALL places (cities, countries, regions, rivers, mountains, buildings, battlefields, etc.)\n3. Extract ALL organizations (governments, armies, parties, institutions, companies, etc.)\n4. Extract ALL important concepts, events, treaties, laws, doctrines\n5. Extract ALL technical/scientific terms\n\nCRITICAL RULES:\n- NEVER skip a person\'s name, even if mentioned only once\n- For Bengali text: detect names written in Bengali script (e.g. হিরোশিমা, হ্যারি ট্রুম্যান, মুজিবুর রহমান, হুমায়ূন আহমেদ)\n- "name" field MUST be the EXACT substring as it appears in the text — copy character-for-character, do NOT correct spelling, do NOT translate, do NOT paraphrase\n- For each entity provide:\n  * "name": EXACT string as it appears in the input text (copy verbatim)\n  * "type": one of person|place|org|concept|term\n  * "description": 1 concise sentence in BENGALI explaining who/what this is\n- Extract up to 40 entities — PRIORITIZE people and places\n- Return ONLY a raw JSON array, NO markdown, NO code fences, NO explanation\n\nExample: if text says "হুমায়ন আহমেদ" then name must be "হুমায়ন আহমেদ" exactly as written.';
-        geminiGenerate(apiKeyRef.current, 'gemini-3.1-flash-lite', 'Text:\n' + pageText.slice(0, 5000), {
+        geminiGenerate(apiKeyRef.current, 'gemini-2.5-flash', 'Text:\n' + pageText.slice(0, 5000), {
             systemInstruction: sysMsg,
             temperature: 0.1,
             maxOutputTokens: 3000
@@ -981,14 +981,14 @@ function Reader(_a) {
                     _a.trys.push([1, 7, 8, 9]);
                     newChunk = '';
                     if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
-                    gemM = customizerModel === 'gemini-lite' ? 'gemini-3.1-flash-lite' : 'gemini-3.1-flash-lite';
+                    gemM = customizerModel === 'gemini-lite' ? 'gemini-2.5-flash' : 'gemini-2.5-flash';
                     return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 2:
                     r = _a.sent();
                     newChunk = (r && r.text) ? r.text : '';
                     return [3 /*break*/, 6];
                 case 3:
-                    var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-3.1-flash-lite';
+                    var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
                     return [4 /*yield*/, geminiGenerate('', targetModel, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 4:
                     resGen = _a.sent();
@@ -1051,7 +1051,7 @@ function Reader(_a) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, 5, 6]);
-                    return [4 /*yield*/, geminiGenerate('', 'gemini-3.1-flash-lite', userMsg, { systemInstruction: sysPrompt, responseMimeType: 'application/json', signal: xrayAbortRef.current.signal })];
+                    return [4 /*yield*/, geminiGenerate('', 'gemini-2.5-flash', userMsg, { systemInstruction: sysPrompt, responseMimeType: 'application/json', signal: xrayAbortRef.current.signal })];
                 case 2:
                     resGen = _a.sent();
                     rawText = resGen.text || '{}';

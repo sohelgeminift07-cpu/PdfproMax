@@ -14,9 +14,9 @@ var katex = window.katex;
 var GEMINI_KEYS = [];
 
 var MODEL_LABELS = {
-    "gemini-lite": "Gemini 3.1 Flash-Lite",
-    "gemini-flash": "Gemini 3.1 Flash-Lite",
-    "gemini-pro": "Gemini 3.1 Flash-Lite",
+    "gemini-lite": "Gemini 2.5 Flash",
+    "gemini-flash": "Gemini 2.5 Flash",
+    "gemini-pro": "Gemini 2.5 Flash",
 };
 function stripThink(text) {
     if (!text) return text;
