@@ -3,7 +3,7 @@ const path = require('path');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, '..')));
 
 /* ── Environment Variables ── */
 const GEMINI_KEYS = process.env.GEMINI_KEYS
@@ -28,7 +28,7 @@ function nextGeminiKey() {
   return key;
 }
 
-/* ── Config / Health Check ── */
+/* ── Health / Config ── */
 app.get('/api/config', (req, res) => {
   res.json({
     hasGemini: GEMINI_KEYS.length > 0,
@@ -67,14 +67,14 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
       }
       return res.status(upstream.status).json(data);
     } catch (err) {
-      console.error('[Gemini Proxy] Error:', err.message);
+      console.error('Gemini proxy error:', err.message);
       lastError = { error: err.message };
       continue;
     }
   }
 
   if (lastError) {
-    res.status(lastError.status || 500).json(lastError.data || { error: lastError.error || 'All Gemini keys failed' });
+    res.status(lastError.status || 500).json(lastError.data || { error: lastError.error || 'All keys failed' });
   } else {
     res.status(500).json({ error: 'No Gemini API key configured' });
   }
@@ -92,8 +92,8 @@ app.post('/api/groq', async (req, res) => {
   const key = isMaverick ? MAVERICK_KEY : GROQ_API_KEY;
 
   if (!key) {
-    console.error('[Groq Proxy] No API key configured (model=' + modelId + ', maverick=' + isMaverick + ')');
-    return res.status(500).json({ error: 'No Groq API key configured', detail: 'Add GROQ_API_KEY or MAVERICK_KEY to Vercel Environment Variables' });
+    console.error('Groq proxy: No API key configured (model=' + modelId + ', maverick=' + isMaverick + ')');
+    return res.status(500).json({ error: 'No Groq API key configured' });
   }
 
   try {
@@ -107,11 +107,11 @@ app.post('/api/groq', async (req, res) => {
     });
     const data = await upstream.json();
     if (!upstream.ok) {
-      console.error('[Groq Proxy] Upstream error:', upstream.status, JSON.stringify(data).slice(0, 500));
+      console.error('Groq proxy upstream error:', upstream.status, data);
     }
     res.status(upstream.status).json(data);
   } catch (err) {
-    console.error('[Groq Proxy] Fetch error:', err.message);
+    console.error('Groq proxy error:', err.message);
     res.status(500).json({ error: err.message, status: 500 });
   }
 });
@@ -120,7 +120,7 @@ app.post('/api/groq', async (req, res) => {
 app.get('/api/gemini-ws-token', (req, res) => {
   const key = nextGeminiKey();
   if (!key) {
-    console.error('[Gemini WS Token] No key configured');
+    console.error('Gemini WS token: No key configured');
     return res.status(500).json({ error: 'No Gemini API key configured' });
   }
   res.json({ key });
