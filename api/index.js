@@ -3,12 +3,7 @@ const path = require('path');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static(path.join(__dirname, '..')));
-
-// Only serve static files in development
-if (process.env.NODE_ENV !== 'production') {
-  // Static files are served by Vercel in production
-}
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 /* ── Environment Variables ── */
 const GEMINI_KEYS = process.env.GEMINI_KEYS
