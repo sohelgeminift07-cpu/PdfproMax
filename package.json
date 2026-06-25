@@ -14,7 +14,7 @@
     "@google/genai": "^2.9.0",
     "drizzle-zod": "^0.8.3",
     "express": "^5.2.1",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "p-limit": "^7.3.0",
     "p-retry": "^7.1.1",
     "ws": "^8.21.0",
