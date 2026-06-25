@@ -18,9 +18,6 @@ if (GEMINI_KEY_2) GEMINI_KEYS.push(GEMINI_KEY_2);
 if (GEMINI_KEY_3) GEMINI_KEYS.push(GEMINI_KEY_3);
 if (GEMINI_KEY_4) GEMINI_KEYS.push(GEMINI_KEY_4);
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
-const MAVERICK_KEY = process.env.MAVERICK_KEY || '';
-
 let geminiKeyIndex = 0;
 function nextGeminiKey() {
   const key = GEMINI_KEYS[geminiKeyIndex % GEMINI_KEYS.length];
@@ -32,8 +29,6 @@ function nextGeminiKey() {
 app.get('/api/config', (req, res) => {
   res.json({
     hasGemini: GEMINI_KEYS.length > 0,
-    hasGroq: !!GROQ_API_KEY,
-    hasMaverick: !!MAVERICK_KEY,
   });
 });
 
@@ -77,42 +72,6 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
     res.status(lastError.status || 500).json(lastError.data || { error: lastError.error || 'All Gemini keys failed' });
   } else {
     res.status(500).json({ error: 'No Gemini API key configured' });
-  }
-});
-
-/* ── Groq Proxy ──
-   Auto-detects which key to use based on the model in the request body.
-   Fallback: ?maverick=1 query param forces Maverick key.
-   The server NEVER exposes keys to the browser.
-*/
-app.post('/api/groq', async (req, res) => {
-  const body = req.body;
-  const modelId = body.model || '';
-  const isMaverick = modelId.includes('llama-4-maverick') || req.query.maverick === '1';
-  const key = isMaverick ? MAVERICK_KEY : GROQ_API_KEY;
-
-  if (!key) {
-    console.error('[Groq Proxy] No API key configured (model=' + modelId + ', maverick=' + isMaverick + ')');
-    return res.status(500).json({ error: 'No Groq API key configured', detail: 'Add GROQ_API_KEY or MAVERICK_KEY to Vercel Environment Variables' });
-  }
-
-  try {
-    const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`,
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await upstream.json();
-    if (!upstream.ok) {
-      console.error('[Groq Proxy] Upstream error:', upstream.status, JSON.stringify(data).slice(0, 500));
-    }
-    res.status(upstream.status).json(data);
-  } catch (err) {
-    console.error('[Groq Proxy] Fetch error:', err.message);
-    res.status(500).json({ error: err.message, status: 500 });
   }
 });
 

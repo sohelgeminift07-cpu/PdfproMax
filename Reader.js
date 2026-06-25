@@ -389,8 +389,8 @@ function Reader(_a) {
             for (var _i = 1; _i < arguments.length; _i++) {
                 args_1[_i - 1] = arguments[_i];
             }
-            return __awaiter(_this, __spreadArray([pageIndex_1], args_1, true), void 0, function (pageIndex, retryCount, modelOverride) {
-                var currentModel, pdfPageNum, page, viewport, canvas, context, base64Image, boldingMap, boldingInstruction, structureInstruction, prevText, contextPrompt, prompt_1, result_2, geminiModel, url, body, r, d, txt, modelId, key, endpoint, r, d, cleanPN_1, cleanH_1, e_4, isQuota, idx;
+            return __awaiter(_this, __spreadArray([pageIndex_1], args_1, true), void 0, function (pageIndex, retryCount) {
+                var currentModel, pdfPageNum, page, viewport, canvas, context, base64Image, boldingMap, boldingInstruction, structureInstruction, prevText, contextPrompt, prompt_1, result_2, geminiModel, url, body, r, d, txt, cleanPN_1, cleanH_1, e_4;
                 if (retryCount === void 0) { retryCount = 0; }
                 return __generator(this, function (_a) {
                     switch (_a.label) {
@@ -408,10 +408,10 @@ function Reader(_a) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'scanning', _a)));
                             });
-                            currentModel = modelOverride || (activeScanningModel.includes('gemini') ? OCR_ROTATION[pageIndex % OCR_ROTATION.length] : activeScanningModel);
+                            currentModel = 'gemini-lite';
                             _a.label = 1;
                         case 1:
-                            _a.trys.push([1, 10, , 15]);
+                            _a.trys.push([1, 6, , 9]);
                             pdfPageNum = startPage + pageIndex;
                             return [4 /*yield*/, pdfDoc.getPage(pdfPageNum)];
                         case 2:
@@ -437,7 +437,6 @@ function Reader(_a) {
                             prompt_1 = ocrEnhancement + "You are a precise OCR engine. Your ONLY job is to read and transcribe the text EXACTLY as it appears in the image.\n\nCRITICAL RULES — follow without exception:\n1. TRANSCRIBE ONLY what is visually present in the image. Do NOT invent, paraphrase, complete, or assume any text.\n2. If a word is blurry or unclear, transcribe your best visual read — do NOT skip or replace it.\n3. Do NOT add commentary, explanations, or text that is not in the image.\n4. Preserve the original language exactly — do NOT translate.\n5. ".concat(structureInstruction, "\n6. BOLDING: ").concat(boldingInstruction, "\n7. After sentence-ending punctuation (. | \u0964), ensure exactly one space.\n8. Headers, footers, page numbers, watermarks: prefix with '^^ '.\n9. Math formulas: wrap in LaTeX $formula$. Tables: use Markdown.\n10. Context (do NOT copy this): ").concat(contextPrompt, "\n\nSTRICT MARKDOWN RULES — violations will break the reader:\n- ONLY allowed markdown: **bold**, # H1, ## H2, ### H3, - list, ^^ footer\n- NEVER output *** (triple asterisk) — use ** for bold only\n- NEVER output __ (double underscore) for bold\n- NEVER output a lone * on a word without a closing * on the same word\n- NEVER use ### for decorative separators — only use it if the text actually has a heading level 3\n- NEVER add extra # symbols beyond what the original text's visual hierarchy shows\n- If unsure whether something is a heading, treat it as a plain paragraph\n\nReturn ONLY this valid JSON — no other text:\n{\"header\": \"chapter or section title if visible, else empty\", \"pageNumber\": \"page number if visible, else empty\", \"body\": \"full transcribed text\"}");
                             result_2 = {};
                             geminiModel = 'gemini-2.5-flash';
-                            if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
                             url = '/api/gemini/' + encodeURIComponent(geminiModel) + '/generateContent';
                             /* OCR via gemini-2.5-flash: text prompt first, then image */
                             body = { contents: [{ parts: [{ text: prompt_1 + ' Return JSON only.' }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 } };
@@ -452,21 +451,7 @@ function Reader(_a) {
                             d = _a.sent();
                             txt = ((d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) ? d.candidates[0].content.parts.map(function (p) { return p.text || ''; }).join('') : '{}');
                             result_2 = safeExtractJSON(txt) || {};
-                            return [3 /*break*/, 9];
-                        case 6:
-                            modelId = 'meta-llama/llama-4-scout-17b-16e-instruct';
-                            key = MAVERICK_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-                            return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: prompt_1 + ' Output valid JSON.' }, { type: 'image_url', image_url: { url: "data:image/jpeg;base64,".concat(base64Image) } }] }], model: modelId, temperature: 0.1, max_completion_tokens: 4096 }) })];
-                        case 7:
-                            r = _a.sent();
-                            if (!r.ok)
-                                throw new Error("API ".concat(r.status));
-                            return [4 /*yield*/, r.json()];
-                        case 8:
-                            d = _a.sent();
-                            result_2 = safeExtractJSON(stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}') || {};
-                            _a.label = 9;
-                        case 9:
+                            _a.label = 7;
                             if (!result_2 || !result_2.body)
                                 throw new Error('Invalid JSON response');
                             cleanPN_1 = (result_2.pageNumber || '').replace(/(www\.|https?:\/\/)[^\s]+|[\w-]+\.(com|net|org|edu|gov|io)/gi, '').replace(/page\s+/i, '').trim();
@@ -483,29 +468,21 @@ function Reader(_a) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'complete', _a)));
                             });
-                            return [3 /*break*/, 13];
-                        case 10:
+                            return [3 /*break*/, 9];
+                        case 6:
                             e_4 = _a.sent();
                             console.error("Scan error page ".concat(pageIndex), e_4);
                             /* Client holds no Gemini keys (server proxy rotates them). Only rotate
                                client-side when keys actually exist, to avoid NaN/undefined crashes. */
-                            if (!(GEMINI_KEYS.length > 0 && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 12];
+                            if (!(GEMINI_KEYS.length > 0 && retryCount < GEMINI_KEYS.length)) return [3 /*break*/, 9];
                             onRotateKey();
                             activeKeyIndexRef.current = (activeKeyIndexRef.current + 1) % GEMINI_KEYS.length;
                             apiKeyRef.current = GEMINI_KEYS[activeKeyIndexRef.current];
-                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, currentModel)];
-                        case 11:
+                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1)];
+                        case 7:
                             _a.sent();
                             return [2 /*return*/];
-                        case 12:
-                            if (!(activeScanningModel.includes('gemini') && !modelOverride && retryCount < 3)) return [3 /*break*/, 14];
-                            idx = OCR_ROTATION.indexOf(currentModel);
-                            if (!(idx !== -1)) return [3 /*break*/, 14];
-                            return [4 /*yield*/, scanPage(pageIndex, retryCount + 1, OCR_ROTATION[(idx + 1) % OCR_ROTATION.length])];
-                        case 13:
-                            _a.sent();
-                            return [2 /*return*/];
-                        case 14:
+                        case 8:
                             setScanningStatus(function (p) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = 'error', _a)));
@@ -514,8 +491,8 @@ function Reader(_a) {
                                 var _a;
                                 return (__assign(__assign({}, p), (_a = {}, _a[pageIndex] = e_4 && e_4.message ? e_4.message : String(e_4), _a)));
                             });
-                            return [3 /*break*/, 15];
-                        case 15: return [2 /*return*/];
+                            return [3 /*break*/, 9];
+                        case 9: return [2 /*return*/];
                     }
                 });
             });
@@ -1139,7 +1116,7 @@ function Reader(_a) {
                             }); }, className: "mt-4 px-8 py-2 rounded-full bg-white/5 text-xs font-bold uppercase hover:bg-white/10 transition-colors" }, "Retry"));
                 if (!ext) {
                     var pageLabel = ((pdfRange ? pdfRange.start : 1) || 1) + currentPage;
-                    var modelLabel = activeScanningModel === 'gemini-lite' ? 'Gemini 3.1 Flash-Lite' : 'Llama 4 Maverick';
+                    var modelLabel = 'Gemini 3.1 Flash-Lite';
                     var keyNum = GEMINI_KEYS.indexOf(apiKeyRef.current) + 1 || 1;
                     return (React.createElement("div", { className: "flex flex-col items-center justify-center pt-16 space-y-6" },
                         React.createElement("div", { className: "ocr-upload" },

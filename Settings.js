@@ -130,8 +130,8 @@ function Settings(_a) {
                         React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                             React.createElement("div", { className: "radio-container scanning-radio", style: { '--total-radio': 3 } },
                                 SCANNING_OPTIONS.map(function (m) {
-                                    var icons = { 'llama': '⬡', 'llama-maverick': '⬡' };
-                                    var subs = { 'llama': 'Meta · Groq Vision' };
+                                    var icons = {};
+                                    var subs = {};
                                     var rid = "ocr-radio-".concat(m.id);
                                     return (React.createElement(React.Fragment, { key: m.id },
                                         React.createElement("input", { id: rid, name: "ocr-model-radio", type: "radio", checked: activeScanningModel === m.id, onChange: function () { return onSelectScanningModel(m.id); } }),
@@ -170,8 +170,8 @@ function Settings(_a) {
                         React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                             React.createElement("div", { className: "radio-container" },
                                 MODEL_OPTIONS.map(function (m, i) {
-                                    var icons = { 'kimi': '◈', 'llama-maverick': '⬡' };
-                                    var subs = { 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
+                                    var icons = {};
+                                    var subs = {};
                                     var rid = "reader-radio-".concat(m.id);
                                     return (React.createElement(React.Fragment, { key: m.id },
                                         React.createElement("input", { id: rid, name: "reader-model-radio", type: "radio", checked: activeReaderModel === m.id, onChange: function () { return onSelectReaderModel(m.id); } }),
@@ -204,8 +204,8 @@ function Settings(_a) {
                         React.createElement("div", { className: "bg-[#121214] rounded-2xl border border-white/5 p-4 max-w-xs" },
                             React.createElement("div", { className: "radio-container structure-radio" },
                                 MODEL_OPTIONS.map(function (m) {
-                                    var icons = { 'kimi': '◈', 'llama-maverick': '⬡' };
-                                    var subs = { 'kimi': 'Moonshot · Groq', 'llama-maverick': 'Meta · Groq' };
+                                    var icons = {};
+                                    var subs = {};
                                     var rid = "struct-radio-".concat(m.id);
                                     return (React.createElement(React.Fragment, { key: m.id },
                                         React.createElement("input", { id: rid, name: "struct-model-radio", type: "radio", checked: activeStructureModel === m.id, onChange: function () { return onSelectStructureModel(m.id); } }),
