@@ -11,8 +11,7 @@
   "license": "ISC",
   "description": "MaxOfPdf - AI-powered PDF reader",
   "dependencies": {
-    "express": "^5.2.1",
-    "node-fetch": "^2.7.0"
+    "express": "^5.2.1"
   },
   "engines": {
     "node": "24.x"
