@@ -503,14 +503,11 @@ function Reader(_a) {
                 break;
             var status_2 = scanningStatus[target];
             if (status_2 === 'scanning') {
-                if (i === 0)
-                    return;
-                continue;
+                return; // Stop and wait for the currently scanning page to finish
             }
             if (status_2 === 'pending' || !status_2) {
                 scanPage(target);
-                if (i === 0)
-                    return;
+                return; // Start scanning this page and wait (Sequential Queue)
             }
         }
     }, [pdfDoc, currentPage, scanningStatus, pdfRange]);
