@@ -4,6 +4,28 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static",
+      "config": { "excludeFiles": ["server.js", "api/**"] }
+    },
+    {
+      "src": "*.json",
+      "use": "@vercel/static",
+      "config": { "excludeFiles": ["package.json", "vercel.json"] }
+    },
+    {
+      "src": "*.png",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -12,7 +34,11 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/(?!api).*",
+      "src": "/(.*\\.(css|js|json|png|jpg|svg|ico|webp|woff2|woff|ttf))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
@@ -26,3 +52,4 @@
       ]
     }
   ]
+}

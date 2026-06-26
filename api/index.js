@@ -88,4 +88,4 @@ app.get('/api/gemini-ws-token', (req, res) => {
   res.json({ key });
 });
 
-module.exports = app;
+module.exports = (req, res) => app(req, res);
