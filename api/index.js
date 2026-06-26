@@ -88,4 +88,14 @@ app.get('/api/gemini-ws-token', (req, res) => {
   res.json({ key });
 });
 
-module.exports = (req, res) => app(req, res);
+const handler = (req, res) => app(req, res);
+
+handler.config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
+module.exports = handler;

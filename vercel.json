@@ -42,6 +42,11 @@
       "dest": "/index.html"
     }
   ],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

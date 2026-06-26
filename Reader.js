@@ -416,7 +416,7 @@ function Reader(_a) {
                             return [4 /*yield*/, pdfDoc.getPage(pdfPageNum)];
                         case 2:
                             page = _a.sent();
-                            viewport = page.getViewport({ scale: 2.0 });
+                            viewport = page.getViewport({ scale: 1.5 });
                             if (!ocrCanvasRef.current) ocrCanvasRef.current = document.createElement('canvas'); canvas = ocrCanvasRef.current;
                             context = canvas.getContext('2d');
                             canvas.height = viewport.height;
@@ -427,7 +427,7 @@ function Reader(_a) {
                             return [4 /*yield*/, page.render({ canvasContext: context, viewport: viewport }).promise];
                         case 3:
                             _a.sent();
-                            base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                            base64Image = canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
                             boldingMap = { lower: 'Bold ONLY proper nouns (minimal).', upper_medium: 'Bold key nouns and main verbs.', medium: 'Bold key entities, verbs, numbers.', medium_high: 'Bold most nouns, verbs, adjectives.', high: 'Bold almost every significant word.' };
                             boldingInstruction = (boldingMap[boldingLevel] || boldingMap.high) + ' CRITICAL: When bolding a word, always include its attached suffixes and prefixes inside the ** markers. Example: write **শাহ ফাহাদকে** not **শাহ ফাহাদ**কে, write **সৌদির** not **সৌদি**র. The suffix/prefix must be inside the closing **.';
                             structureInstruction = structureMode === 'original' ? '1. STRUCTURE: Transcribe verbatim. Fix punctuation/spacing only.' : '1. STRUCTURE: Create organized version with headers and bullets.';
