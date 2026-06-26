@@ -7,5 +7,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "MaxOfPdf - AI-powered PDF reader"
+  "description": "MaxOfPdf - AI-powered PDF reader",
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "drizzle-zod": "^0.8.3",
+    "express": "^5.2.1",
+    "p-limit": "^7.3.0",
+    "p-retry": "^7.1.1",
+    "zod": "^4.4.3",
+    "zod-validation-error": "^5.0.0"
+  }
 }
