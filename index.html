@@ -4925,7 +4925,7 @@ function Reader(_a) {
                             result_2 = {};
                             geminiModel = currentModel === 'gemini-lite' ? 'gemini-3.5-flash' : 'gemini-3.1-flash-lite';
                             if (!currentModel.includes('gemini')) return [3 /*break*/, 6];
-                            url = "https://generativelanguage.googleapis.com/v1beta/models/".concat(geminiModel, ":generateContent?key=").concat(apiKeyRef.current);
+                            url = '/api/gemini/' + encodeURIComponent(geminiModel) + '/generateContent';
                             body = { contents: [{ parts: [{ inlineData: { data: base64Image, mimeType: 'image/jpeg' } }, { text: prompt_1 + ' Return JSON only.' }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } };
                             return [4 /*yield*/, Promise.race([
                                 fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: (scanAbortControllersRef.current.get(pageIndex) || {}).signal }),
