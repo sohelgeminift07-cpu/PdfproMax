@@ -510,7 +510,27 @@ function Reader(_a) {
                 return; // Start scanning this page and wait (Sequential Queue)
             }
         }
-    }, [pdfDoc, currentPage, scanningStatus, pdfRange]);
+
+        /* ── Sequential background auto-rewriting ── */
+        var activeRewriteMode = lastRewriteConfig ? lastRewriteConfig.mode : null;
+        var savedCustomInstruction = lastRewriteConfig ? lastRewriteConfig.instruction || '' : '';
+        if (activeRewriteMode) {
+            for (var i = 0; i <= 2; i++) {
+                var target = currentPage + i;
+                if (target >= totalInRange)
+                    break;
+                // If a rewrite is currently in progress, wait
+                if (rewritingStatus[target]) {
+                    return;
+                }
+                // If page OCR is complete but the page has not been rewritten in the sticky mode yet
+                if (scanningStatus[target] === 'complete' && !rewrittenPages[target]) {
+                    performRewrite(activeRewriteMode, savedCustomInstruction, target);
+                    return; // Start rewrite and wait
+                }
+            }
+        }
+    }, [pdfDoc, currentPage, scanningStatus, pdfRange, lastRewriteConfig, rewritingStatus, rewrittenPages]);
     var getSelectionOffsets = function (container) {
         if (!container) return null;
         var sel = window.getSelection();
