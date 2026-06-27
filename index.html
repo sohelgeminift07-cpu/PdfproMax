@@ -4599,6 +4599,10 @@ function Reader(_a) {
     var _2 = useState({}), scanningStatus = _2[0], setScanningStatus = _2[1];
     var _3 = useState(false), isComparing = _3[0], setIsComparing = _3[1];
     var _3b = useState(false), activeRewriteMode = _3b[0], setActiveRewriteMode = _3b[1];
+    var cmpBtnRef = useRef(null);
+    var cmpPosRef = useRef({ bottom: 80, right: 16 });
+    var cmpDragRef = useRef(false);
+    var cmpStartRef = useRef({ x: 0, y: 0, r: 0, b: 0 });
     var _4 = useState(false), showHistoryControls = _4[0], setShowHistoryControls = _4[1];
     /* Selection-based partial rewrite */
     var _5 = useState(null), selectionRewrite = _5[0], setSelectionRewrite = _5[1];
