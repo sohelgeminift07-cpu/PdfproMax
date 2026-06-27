@@ -4589,16 +4589,6 @@ function Reader(_a) {
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
     var _x = useState(false), isAutoScrolling = _x[0], setIsAutoScrolling = _x[1];
-    /* ── Sticky Rewrite Mode state ── */
-    var _sw = useState(null), stickyRewriteMode = _sw[0], setStickyRewriteMode = _sw[1];
-    var _si = useState(''), stickyRewriteInstruction = _si[0], setStickyRewriteInstruction = _si[1];
-    var _sq = useState([]), stickyRewriteQueue = _sq[0], setStickyRewriteQueue = _sq[1];
-    var _sqr = useState(false), stickyQueueRunning = _sqr[0], setStickyQueueRunning = _sqr[1];
-    /* ── Floating restore button state ── */
-    var _fr = useState(false), showFloatingRestore = _fr[0], setShowFloatingRestore = _fr[1];
-    var _fp = useState({ x: 0, y: 0 }), floatingBtnPos = _fp[0], setFloatingBtnPos = _fp[1];
-    var floatingBtnDragging = useRef(false);
-    var floatingBtnDragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
     var _hv = useState(true), headerVisible = _hv[0], setHeaderVisible = _hv[1];
     var _y = useState(false), isOriginalPdfOpen = _y[0], setIsOriginalPdfOpen = _y[1];
     var _z = useState(1.0), pdfViewerZoom = _z[0], setPdfViewerZoom = _z[1];
@@ -4681,21 +4671,6 @@ function Reader(_a) {
             setIsOriginalPdfOpen(true);
         }
     }, [currentPage, extractedPages[currentPage], pdfFile]);
-    /* ── Auto-rewrite on page navigation when sticky mode is active ── */
-    useEffect(function() {
-        if (stickyRewriteMode && !rewritingStatus[currentPage] && !rewrittenPages[currentPage]) {
-            var hasText = (pdfFile || Object.keys(extractedPages).length > 0)
-                ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined)
-                : displayPages[currentPage];
-            if (hasText) {
-                /* Small delay to let the page settle before firing rewrite */
-                var timer_1 = setTimeout(function() {
-                    applyStickyRewriteToPage(currentPage);
-                }, 400);
-                return function() { clearTimeout(timer_1); };
-            }
-        }
-    }, [currentPage, stickyRewriteMode, extractedPages, displayPages, pdfFile]);
 
     /* Auto-close PDF viewer with a smooth fade-out when scanning finishes on the active page */
     var scanTransitionPageRef = useRef(currentPage);
@@ -5046,20 +5021,7 @@ function Reader(_a) {
                 return; // Start scanning this page and wait (Sequential Queue)
             }
         }
-        /* ── Sticky Rewrite: queue upcoming pages once OCR is complete ── */
-        if (stickyRewriteMode) {
-            for (var i = 1; i <= 2; i++) {
-                var target = currentPage + i;
-                if (target >= totalInRange)
-                    break;
-                if (scanningStatus[target] === 'complete' && !rewrittenPages[target] && !rewritingStatus[target]) {
-                    setStickyRewriteQueue(function (q) {
-                        return q.indexOf(target) === -1 ? q.concat(target) : q;
-                    });
-                }
-            }
-        }
-    }, [pdfDoc, currentPage, scanningStatus, pdfRange, activeScanningModel, googleApiKey, boldingLevel, structureMode, stickyRewriteMode, rewrittenPages, rewritingStatus]);
+    }, [pdfDoc, currentPage, scanningStatus, pdfRange, activeScanningModel, googleApiKey, boldingLevel, structureMode]);
     var getSelectionOffsets = function (container) {
         if (!container) return null;
         var sel = window.getSelection();
@@ -5346,57 +5308,10 @@ function Reader(_a) {
     };
     var handleRewriteUI = function (mode, instruction) {
         if (instruction === void 0) { instruction = ''; }
-        setStickyRewriteMode(mode);
-        setStickyRewriteInstruction(instruction || '');
         performRewrite(mode, instruction, currentPage);
         closeCustomizer();
     };
-    var handleRestoreOriginal = function (pageIdx) {
-        if (pageIdx === void 0) { pageIdx = currentPage; }
-        setRewrittenPages(function (p) { var n = __assign({}, p); delete n[pageIdx]; return n; });
-        setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== pageIdx; }); });
-        if (pageIdx === currentPage) {
-            setShowFloatingRestore(false);
-        }
-        /* If sticky mode is active, keep the mode but remove for this page only */
-        closeCustomizer();
-    };
-    /* Toggle between original and rewritten for current page */
-    var toggleRewrittenView = function () {
-        if (rewrittenPages[currentPage]) {
-            setShowFloatingRestore(function (show) {
-                if (show) {
-                    /* Currently showing original, switch back to rewritten */
-                    return false;
-                }
-                /* Currently showing rewritten, switch to original */
-                return true;
-            });
-        }
-    };
-    var applyStickyRewriteToPage = function (pageIdx) {
-        if (!stickyRewriteMode || rewritingStatus[pageIdx] || rewrittenPages[pageIdx])
-            return;
-        var hasText = (pdfFile || Object.keys(extractedPages).length > 0)
-            ? (extractedPages[pageIdx] ? extractedPages[pageIdx].body : undefined)
-            : displayPages[pageIdx];
-        if (!hasText)
-            return;
-        performRewrite(stickyRewriteMode, stickyRewriteInstruction, pageIdx);
-    };
-    /* ── Sequential sticky rewrite queue processor ── */
-    useEffect(function () {
-        if (stickyRewriteQueue.length === 0 || stickyQueueRunning)
-            return;
-        setStickyQueueRunning(true);
-        var idx = stickyRewriteQueue[0];
-        var timer = setTimeout(function () {
-            applyStickyRewriteToPage(idx);
-            setStickyRewriteQueue(function (q) { return q.slice(1); });
-            setStickyQueueRunning(false);
-        }, 800);
-        return function () { clearTimeout(timer); };
-    }, [stickyRewriteQueue, stickyQueueRunning]);
+    var handleRestoreOriginal = function () { setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; }); setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); }); closeCustomizer(); };
     /* ── Interlinear Translation ── */
     /* ── Interlinear Translation (indexed array approach) ── */
     var performInterlinearTranslation = function(pageIdx) {
@@ -5710,7 +5625,7 @@ function Reader(_a) {
             return (React.createElement("div", { className: "flex flex-col items-center justify-center pt-16 space-y-4" },
                 React.createElement("div", { className: "w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" }),
                 React.createElement("p", { className: "text-[10px] font-black text-indigo-400 uppercase tracking-[0.25em] animate-pulse" }, "Rewriting...")));
-        var isViewOrig = !rewrittenPages[currentPage] || isComparing || showFloatingRestore;
+        var isViewOrig = !rewrittenPages[currentPage] || isComparing;
         var pageText = isViewOrig ? null : rewrittenPages[currentPage];
         var hasPdfData = pdfFile || Object.keys(extractedPages).length > 0;
         if (!pageText) {
@@ -6495,14 +6410,7 @@ function Reader(_a) {
                             React.createElement("h3", { className: "display-serif text-2xl text-white", style:{margin:0} },
                                 selectionRewrite ? "Rewrite Selection" : "Text Customizer"),
                             React.createElement("p", { style:{fontSize:'10px',color:'rgba(120,150,200,0.5)',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',marginTop:'3px'} },
-                                selectionRewrite ? (selectionRewrite.endLine - selectionRewrite.startLine + 1) + " line(s) selected" : "Whole page"),
-                            stickyRewriteMode && !selectionRewrite && React.createElement("div", { style:{display:'flex',alignItems:'center',gap:'6px',marginTop:'6px'} },
-                                React.createElement("span", { style:{fontSize:'9px',color:'rgba(167,139,250,0.7)',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',padding:'2px 8px',borderRadius:'6px',background:'rgba(167,139,250,0.08)',border:'1px solid rgba(167,139,250,0.15)'} },
-                                    "Sticky: " + stickyRewriteMode + (stickyRewriteMode === 'custom' ? ' "' + (stickyRewriteInstruction.slice(0,12) + (stickyRewriteInstruction.length > 12 ? '...' : '')) + '"' : '')),
-                                React.createElement("button", {
-                                    onClick: function() { setStickyRewriteMode(null); setStickyRewriteInstruction(''); setStickyRewriteQueue([]); },
-                                    style:{fontSize:'9px',color:'rgba(239,68,68,0.7)',fontWeight:700,letterSpacing:'0.05em',textTransform:'uppercase',background:'transparent',border:'none',cursor:'pointer',outline:'none',padding:0}
-                                }, "Clear")) ),
+                                selectionRewrite ? (selectionRewrite.endLine - selectionRewrite.startLine + 1) + " line(s) selected" : "Whole page")),
                         React.createElement("div", { style:{display:'flex',alignItems:'center',gap:'8px',flexShrink:0} },
                             React.createElement("select", { value: customizerLanguage, onChange: function (e) { return setCustomizerLanguage(e.target.value); }, style:{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(150,170,210,0.7)',borderRadius:'10px',padding:'6px 10px',fontSize:'10px',fontWeight:700,textTransform:'uppercase',outline:'none'} }, ['Bengali', 'English', 'Urdu'].map(function (l) { return React.createElement("option", { key: l, value: l }, l); })),
                             React.createElement("select", { value: customizerModel, onChange: function (e) { return setCustomizerModel(e.target.value); }, style:{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(150,170,210,0.7)',borderRadius:'10px',padding:'6px 10px',fontSize:'10px',fontWeight:700,textTransform:'uppercase',outline:'none'} }, Object.keys(MODEL_LABELS).map(function (k) { return React.createElement("option", { key: k, value: k }, MODEL_LABELS[k]); })),
@@ -6632,71 +6540,8 @@ function Reader(_a) {
                         xrayFilterBar),
                     React.createElement("div", { className: "xray-scroll" }, xrayBody)));
         })(),
-        React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container", style: { position: 'relative' } },
-            React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px', fontFamily: readerFontFamily || undefined } }, renderContent()),
-            /* ── Floating Restore/Rewritten Toggle Button ── */
-            (rewrittenPages[currentPage] && !rewritingStatus[currentPage]) && React.createElement("button", {
-                onMouseDown: function(e) {
-                    floatingBtnDragging.current = true;
-                    floatingBtnDragStart.current = { x: e.clientX, y: e.clientY, bx: floatingBtnPos.x, by: floatingBtnPos.y };
-                },
-                onMouseMove: function(e) {
-                    if (!floatingBtnDragging.current) return;
-                    var dx = e.clientX - floatingBtnDragStart.current.x;
-                    var dy = e.clientY - floatingBtnDragStart.current.y;
-                    setFloatingBtnPos({ x: floatingBtnDragStart.current.bx + dx, y: floatingBtnDragStart.current.by + dy });
-                },
-                onMouseUp: function() { floatingBtnDragging.current = false; },
-                onMouseLeave: function() { floatingBtnDragging.current = false; },
-                onTouchStart: function(e) {
-                    floatingBtnDragging.current = true;
-                    var t = e.touches[0];
-                    floatingBtnDragStart.current = { x: t.clientX, y: t.clientY, bx: floatingBtnPos.x, by: floatingBtnPos.y };
-                },
-                onTouchMove: function(e) {
-                    if (!floatingBtnDragging.current) return;
-                    var t = e.touches[0];
-                    var dx = t.clientX - floatingBtnDragStart.current.x;
-                    var dy = t.clientY - floatingBtnDragStart.current.y;
-                    setFloatingBtnPos({ x: floatingBtnDragStart.current.bx + dx, y: floatingBtnDragStart.current.by + dy });
-                },
-                onTouchEnd: function() { floatingBtnDragging.current = false; },
-                onClick: function(e) {
-                    if (floatingBtnDragging.current) return;
-                    toggleRewrittenView();
-                },
-                style: {
-                    position: 'fixed',
-                    right: floatingBtnPos.x !== 0 ? 'auto' : '16px',
-                    left: floatingBtnPos.x !== 0 ? 'auto' : 'auto',
-                    bottom: floatingBtnPos.y !== 0 ? 'auto' : '100px',
-                    top: floatingBtnPos.y !== 0 ? 'auto' : 'auto',
-                    transform: floatingBtnPos.x !== 0 || floatingBtnPos.y !== 0 ? "translate(".concat(floatingBtnPos.x, "px, ").concat(-floatingBtnPos.y, "px)") : 'none',
-                    zIndex: 100,
-                    padding: '10px 14px',
-                    borderRadius: '999px',
-                    background: 'rgba(0,0,0,0.65)',
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: showFloatingRestore ? '#a5b4fc' : '#94a3b8',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    touchAction: 'none'
-                }
-            },
-                React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" },
-                    showFloatingRestore
-                        ? React.createElement("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12 M3 3v9h9" })
-                        : React.createElement("path", { d: "M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 12 M21 21v-9h-9" })),
-                showFloatingRestore ? "Show Rewritten" : "Restore Original"
-            ))),
+        React.createElement("div", { className: "flex-grow pt-36 pb-20 manuscript-container" },
+            React.createElement("div", { ref: containerRef, className: "manuscript-text serif ".concat(getThemeTextClass()), role: "main", style: { lineHeight: lineSpacing, fontSize: (mainFontSize || 20) + 'px', fontFamily: readerFontFamily || undefined } }, renderContent())),
         React.createElement("div", { className: "fixed bottom-6 left-0 right-0 z-40 flex justify-center px-3", style: { willChange: 'transform', transform: headerVisible ? 'translateY(0)' : 'translateY(120px)', transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)', isolation: 'isolate' } },
             React.createElement("div", { className: "dock-glow-wrap" + (activeGlowBtn ? ' dg-active' : ''), style: { flexDirection: 'column', alignItems: 'center' } },
                 React.createElement("div", { className: "dock-poda-layer dock-poda-glow" }),
