@@ -122,8 +122,8 @@ function Reader(_a) {
     var _u = useState('Bengali'), customizerLanguage = _u[0], setCustomizerLanguage = _u[1];
     var _prefetch = useState(true), autoPrefetchNext = _prefetch[0], setAutoPrefetchNext = _prefetch[1];
     var _prefetchCfg = useState(null), lastRewriteConfig = _prefetchCfg[0], setLastRewriteConfig = _prefetchCfg[1];
-    var _arm = useState(null), activeRewriteMode = _arm[0], setActiveRewriteMode = _arm[1];
-    var _ciVal = useState(''), savedCustomInstruction = _ciVal[0], setSavedCustomInstruction = _ciVal[1];
+    var _arm = useState(function () { return localStorage.getItem('activeRewriteMode') || null; }), activeRewriteMode = _arm[0], setActiveRewriteMode = _arm[1];
+    var _ciVal = useState(function () { return localStorage.getItem('savedCustomInstruction') || ''; }), savedCustomInstruction = _ciVal[0], setSavedCustomInstruction = _ciVal[1];
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
     var _x = useState(false), isAutoScrolling = _x[0], setIsAutoScrolling = _x[1];
@@ -220,6 +220,15 @@ function Reader(_a) {
         }, 800);
         return function () { clearTimeout(timer); };
     }, [currentPage, totalPages, autoPrefetchNext, activeRewriteMode, savedCustomInstruction, pdfDoc]);
+    /* ── Sticky Rewrite Mode ── */
+    useEffect(function () {
+        if (activeRewriteMode && activeRewriteMode !== 'original') {
+            var pageText = pdfFile ? (extractedPages[currentPage] ? extractedPages[currentPage].body : undefined) : displayPages[currentPage];
+            if (pageText && !rewrittenPages[currentPage] && !rewritingStatus[currentPage]) {
+                performRewrite(activeRewriteMode, savedCustomInstruction, currentPage);
+            }
+        }
+    }, [currentPage, activeRewriteMode, extractedPages, displayPages, pdfFile, rewrittenPages]);
     /* Memory management: evict off-screen pages to prevent unbounded growth */
     useEffect(function () {
         var KEEP_RADIUS = 5;
@@ -797,11 +806,21 @@ function Reader(_a) {
         if (instruction === void 0) { instruction = ''; }
         setActiveRewriteMode(mode);
         setSavedCustomInstruction(instruction || '');
+        localStorage.setItem('activeRewriteMode', mode || '');
+        localStorage.setItem('savedCustomInstruction', instruction || '');
         setLastRewriteConfig({ mode: mode, instruction: instruction || '', model: customizerModel, language: customizerLanguage });
         performRewrite(mode, instruction, currentPage);
         closeCustomizer();
     };
-    var handleRestoreOriginal = function () { setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; }); setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); }); setActiveRewriteMode(null); setSavedCustomInstruction(''); closeCustomizer(); };
+    var handleRestoreOriginal = function () {
+        setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; });
+        setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); });
+        setActiveRewriteMode(null);
+        setSavedCustomInstruction('');
+        localStorage.removeItem('activeRewriteMode');
+        localStorage.removeItem('savedCustomInstruction');
+        closeCustomizer();
+    };
     /* ── Interlinear Translation ── */
     /* ── Interlinear Translation (indexed array approach) ── */
     var performInterlinearTranslation = function(pageIdx) {
