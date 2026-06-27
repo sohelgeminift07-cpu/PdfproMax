@@ -6609,104 +6609,104 @@ function Reader(_a) {
                     React.createElement("button", { onClick: function () { return currentPage < totalPages - 1 && setCurrentPage(function (p) { return p + 1; }); }, disabled: currentPage === totalPages - 1, className: "flex items-center justify-center w-9 h-9 shrink-0 rounded-full transition-all disabled:opacity-20 ".concat(readerTheme === 'light' ? 'text-slate-600 hover:bg-black/5' : 'text-slate-400 hover:text-white hover:bg-white/10') },
                         React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
                             React.createElement("path", { d: "m9 18 6-6-6-6" }))))))),
-        rewrittenPages[currentPage] && !rewritingStatus[currentPage] && (function() {
-            var _cmpPos = window.__cmpBtnPos || { bottom: 80, right: 16 };
-            var _cmpEl = null;
-            var _cmpDrag = false;
-            var _cmpSX = 0, _cmpSY = 0, _cmpSR = 0, _cmpSB = 0;
-            var _cmpMove = function(ex, ey) {
-                if (!_cmpEl) return;
-                var dx = _cmpSX - ex, dy = _cmpSY - ey;
-                var nr = Math.max(8, Math.min(window.innerWidth - 56, _cmpSR + dx));
-                var nb = Math.max(8, Math.min(window.innerHeight - 56, _cmpSB + dy));
-                _cmpEl.style.right = nr + 'px';
-                _cmpEl.style.bottom = nb + 'px';
-                window.__cmpBtnPos = { bottom: nb, right: nr };
-            };
-            return React.createElement('button', {
-                ref: function(el) {
-                    if (!el) return;
-                    _cmpEl = el;
-                    el.style.right = _cmpPos.right + 'px';
-                    el.style.bottom = _cmpPos.bottom + 'px';
-                },
-                onMouseDown: function(e) {
-                    _cmpSX = e.clientX; _cmpSY = e.clientY;
-                    var r = _cmpEl ? _cmpEl.getBoundingClientRect() : null;
-                    _cmpSR = r ? (window.innerWidth - r.right) : _cmpPos.right;
-                    _cmpSB = r ? (window.innerHeight - r.bottom) : _cmpPos.bottom;
-                    _cmpDrag = false;
-                    var _moved = false;
-                    var onMv = function(me) {
-                        if (Math.abs(me.clientX - _cmpSX) > 4 || Math.abs(me.clientY - _cmpSY) > 4) { _cmpDrag = true; _moved = true; }
-                        _cmpMove(me.clientX, me.clientY);
-                    };
-                    var onUp = function() {
-                        if (!_moved) setIsComparing(false);
-                        _cmpDrag = false;
-                        window.removeEventListener('mousemove', onMv);
-                        window.removeEventListener('mouseup', onUp);
-                    };
-                    window.addEventListener('mousemove', onMv);
-                    window.addEventListener('mouseup', onUp);
-                    setIsComparing(true);
-                },
-                onTouchStart: function(e) {
-                    e.preventDefault();
-                    var t = e.touches[0];
-                    _cmpSX = t.clientX; _cmpSY = t.clientY;
-                    var r = _cmpEl ? _cmpEl.getBoundingClientRect() : null;
-                    _cmpSR = r ? (window.innerWidth - r.right) : _cmpPos.right;
-                    _cmpSB = r ? (window.innerHeight - r.bottom) : _cmpPos.bottom;
-                    _cmpDrag = false;
-                    setIsComparing(true);
-                },
-                onTouchMove: function(e) {
-                    e.preventDefault();
-                    var t = e.touches[0];
-                    if (Math.abs(t.clientX - _cmpSX) > 4 || Math.abs(t.clientY - _cmpSY) > 4) _cmpDrag = true;
-                    _cmpMove(t.clientX, t.clientY);
-                },
-                onTouchEnd: function() { setIsComparing(false); _cmpDrag = false; },
-                onTouchCancel: function() { setIsComparing(false); _cmpDrag = false; },
-                style: {
-                    position: 'fixed',
-                    bottom: _cmpPos.bottom + 'px',
-                    right: _cmpPos.right + 'px',
-                    zIndex: 1000,
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    border: isComparing ? '2px solid rgba(120,160,255,0.85)' : '1.5px solid rgba(99,130,200,0.3)',
-                    background: isComparing
-                        ? 'radial-gradient(circle at 38% 38%, rgba(90,120,220,0.75), rgba(15,25,55,0.95))'
-                        : 'radial-gradient(circle at 38% 38%, rgba(28,42,85,0.94), rgba(8,12,30,0.97))',
-                    color: isComparing ? '#ddeeff' : '#6a90cc',
-                    cursor: 'grab',
-                    boxShadow: isComparing
-                        ? '0 0 0 5px rgba(99,130,200,0.18), 0 6px 28px rgba(0,0,0,0.55)'
-                        : '0 4px 18px rgba(0,0,0,0.5)',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    touchAction: 'none',
-                    transition: 'background 0.18s, box-shadow 0.18s, border 0.18s, color 0.18s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0
-                }
+        rewrittenPages[currentPage] && !rewritingStatus[currentPage] && React.createElement('button', {
+            ref: function(el) {
+                if (!el) return;
+                cmpBtnRef.current = el;
+                el.style.right = cmpPosRef.current.right + 'px';
+                el.style.bottom = cmpPosRef.current.bottom + 'px';
             },
-            React.createElement('svg', {
-                width: '20', height: '20', viewBox: '0 0 24 24',
-                fill: 'none', stroke: 'currentColor', strokeWidth: '1.7',
-                strokeLinecap: 'round', strokeLinejoin: 'round',
-                style: { pointerEvents: 'none', transition: 'opacity 0.18s', opacity: isComparing ? 1 : 0.85 }
+            onMouseDown: function(e) {
+                var el = cmpBtnRef.current;
+                var r = el ? el.getBoundingClientRect() : null;
+                cmpStartRef.current = {
+                    x: e.clientX, y: e.clientY,
+                    r: r ? (window.innerWidth - r.right) : cmpPosRef.current.right,
+                    b: r ? (window.innerHeight - r.bottom) : cmpPosRef.current.bottom
+                };
+                cmpDragRef.current = false;
+                setIsComparing(true);
+                var onMv = function(me) {
+                    var s = cmpStartRef.current;
+                    var dx = s.x - me.clientX, dy = s.y - me.clientY;
+                    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) cmpDragRef.current = true;
+                    var nr = Math.max(8, Math.min(window.innerWidth - 56, s.r + dx));
+                    var nb = Math.max(8, Math.min(window.innerHeight - 56, s.b + dy));
+                    if (cmpBtnRef.current) { cmpBtnRef.current.style.right = nr + 'px'; cmpBtnRef.current.style.bottom = nb + 'px'; }
+                    cmpPosRef.current = { right: nr, bottom: nb };
+                };
+                var onUp = function() {
+                    if (!cmpDragRef.current) setIsComparing(false);
+                    window.removeEventListener('mousemove', onMv);
+                    window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMv);
+                window.addEventListener('mouseup', onUp);
             },
-                React.createElement('path', { d: 'M12 3v18' }),
-                React.createElement('path', { d: 'M3 7h6l3 3-3 3H3V7z' }),
-                React.createElement('path', { d: 'M21 7h-6l-3 3 3 3h6V7z', opacity: isComparing ? '1' : '0.45' })
-            ));
-        })())));
+            onTouchStart: function(e) {
+                e.preventDefault();
+                var t = e.touches[0];
+                var el = cmpBtnRef.current;
+                var r = el ? el.getBoundingClientRect() : null;
+                cmpStartRef.current = {
+                    x: t.clientX, y: t.clientY,
+                    r: r ? (window.innerWidth - r.right) : cmpPosRef.current.right,
+                    b: r ? (window.innerHeight - r.bottom) : cmpPosRef.current.bottom
+                };
+                cmpDragRef.current = false;
+                setIsComparing(true);
+            },
+            onTouchMove: function(e) {
+                e.preventDefault();
+                var t = e.touches[0];
+                var s = cmpStartRef.current;
+                var dx = s.x - t.clientX, dy = s.y - t.clientY;
+                if (Math.abs(dx) > 4 || Math.abs(dy) > 4) cmpDragRef.current = true;
+                var nr = Math.max(8, Math.min(window.innerWidth - 56, s.r + dx));
+                var nb = Math.max(8, Math.min(window.innerHeight - 56, s.b + dy));
+                if (cmpBtnRef.current) { cmpBtnRef.current.style.right = nr + 'px'; cmpBtnRef.current.style.bottom = nb + 'px'; }
+                cmpPosRef.current = { right: nr, bottom: nb };
+            },
+            onTouchEnd: function() { setIsComparing(false); },
+            onTouchCancel: function() { setIsComparing(false); },
+            style: {
+                position: 'fixed',
+                bottom: cmpPosRef.current.bottom + 'px',
+                right: cmpPosRef.current.right + 'px',
+                zIndex: 1000,
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                border: isComparing ? '2px solid rgba(120,160,255,0.85)' : '1.5px solid rgba(99,130,200,0.3)',
+                background: isComparing
+                    ? 'radial-gradient(circle at 38% 38%, rgba(90,120,220,0.75), rgba(15,25,55,0.95))'
+                    : 'radial-gradient(circle at 38% 38%, rgba(28,42,85,0.94), rgba(8,12,30,0.97))',
+                color: isComparing ? '#ddeeff' : '#6a90cc',
+                cursor: 'grab',
+                boxShadow: isComparing
+                    ? '0 0 0 5px rgba(99,130,200,0.18), 0 6px 28px rgba(0,0,0,0.55)'
+                    : '0 4px 18px rgba(0,0,0,0.5)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                touchAction: 'none',
+                transition: 'background 0.18s, box-shadow 0.18s, border 0.18s, color 0.18s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0
+            }
+        },
+        React.createElement('svg', {
+            width: '20', height: '20', viewBox: '0 0 24 24',
+            fill: 'none', stroke: 'currentColor', strokeWidth: '1.7',
+            strokeLinecap: 'round', strokeLinejoin: 'round',
+            style: { pointerEvents: 'none', opacity: isComparing ? 1 : 0.85 }
+        },
+            React.createElement('path', { d: 'M12 3v18' }),
+            React.createElement('path', { d: 'M3 7h6l3 3-3 3H3V7z' }),
+            React.createElement('path', { d: 'M21 7h-6l-3 3 3 3h6V7z', opacity: isComparing ? '1' : '0.45' })
+        ))));
+}
 // ============================================================
 // EDITOR COMPONENT
 // ============================================================
