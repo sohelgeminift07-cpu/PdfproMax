@@ -127,10 +127,6 @@ function Editor(_a) {
                         modelId = 'moonshotai/kimi-k2-instruct-0905', key = GROQ_API_KEY, endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                         if (activeStructureModel === 'kimi')
                             modelId = 'moonshotai/kimi-k2-instruct-0905';
-                        else if (activeStructureModel === 'llama-maverick') {
-                            modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
-                            key = MAVERICK_KEY;
-                        }
                         return [4 /*yield*/, fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': "Bearer ".concat(key) }, body: JSON.stringify({ messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: text }], model: modelId, temperature: 0.3, max_tokens: 16384 }) })];
                     case 4:
                         r = _a.sent();

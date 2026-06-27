@@ -61,7 +61,7 @@ function MaxDrawer(_a) {
     var contentAreaTouchHandlers = {
         onTouchStart: function(e) { e.stopPropagation(); setIsDragging(false); },
     };
-    var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'kimi-2': 'Kimi K2', 'llama-maverick': 'Llama Maverick' };
+    var MODEL_NAMES = { 'gemini-lite': 'Gemini 3.1 Flash-Lite', 'kimi-2': 'Kimi K2' };
     useEffect(function () { (messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })); }, [messages]);
     useEffect(function () { if (drawerStateRef)
         drawerStateRef.current.isChatActive = (activeTab === 'chat'); }, [activeTab, drawerStateRef]);
@@ -90,10 +90,6 @@ function MaxDrawer(_a) {
         generateTimeline(activeTimelineModel, true);
     }, [activeTimelineModel]);
     var getGroqModel = function (m) {
-        if (m === 'kimi-2')
-            return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
-        if (m === 'llama-maverick')
-            return { modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct', key: MAVERICK_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
         return { modelId: 'moonshotai/kimi-k2-instruct-0905', key: GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions' };
     };
     var generateSummary = function (modelOverride, forceRegen) { return __awaiter(_this, void 0, void 0, function () {

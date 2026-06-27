@@ -36,13 +36,12 @@ function AnalysisModal(_a) {
         setIsGeneratingQuestions(true);
         setPreloadedQuestions(null);
         setPreloadedAnswers({});
-        var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
         var sys = 'You are a question generator. Given a selected word/phrase and its meaning, generate exactly 3 short, distinct, insightful questions that a curious reader would want answered. Questions should be in the same language as the meaning text (Bengali or English). Return ONLY valid JSON: {"questions":["q1","q2","q3"]}';
         var userP = 'Word/phrase: "' + data.word + '"\nMeaning: ' + data.meaning + '\nContext clues: ' + (data.context || '');
         fetch('/api/groq', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], model: modelId, response_format: { type: 'json_object' }, max_tokens: 300 })
+            body: JSON.stringify({ messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], response_format: { type: 'json_object' }, max_tokens: 300 })
         }).then(function(r) { return r.json(); }).then(function(d) {
             var text = stripThink((d.choices && d.choices[0] && d.choices[0].message ? d.choices[0].message.content : '')) || '{}';
             var clean = text.replace(/```json\n?|```/g, '').trim();
@@ -119,7 +118,7 @@ function AnalysisModal(_a) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 4, 5, 6]);
-                    return [4, fetch('/api/groq', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }], model: 'meta-llama/llama-4-scout-17b-16e-instruct' }) })];
+                    return [4, fetch('/api/groq', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }] }) })];
                 case 2:
                     r = _b.sent();
                     return [4, r.json()];
@@ -144,7 +143,7 @@ function AnalysisModal(_a) {
     var handlePreloadedTap = function(question, idx) {
         if (loadingAnswerIdx !== null || preloadedAnswers[idx] !== undefined || isAnalysisChatLoading) return;
         setLoadingAnswerIdx(idx);
-        var modelId = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+        var modelId = 'gemini-2.5-flash';
         var sysPrompt = 'You are an expert literary and language AI assistant. Be concise, insightful, and use Markdown formatting (bold, bullets). Answer in the same language as the question. Keep the answer short — 2-4 sentences or a brief bullet list.';
         var userPrompt = 'The user is analyzing: "' + (data.word || '') + '".\nMeaning: ' + (data.meaning || '') + '\nContext: ' + (data.context || '') + '\n\nQuestion: ' + question;
         fetch('/api/groq', {
