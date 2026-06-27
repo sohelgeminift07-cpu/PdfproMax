@@ -122,6 +122,8 @@ function Reader(_a) {
     var _u = useState('Bengali'), customizerLanguage = _u[0], setCustomizerLanguage = _u[1];
     var _prefetch = useState(true), autoPrefetchNext = _prefetch[0], setAutoPrefetchNext = _prefetch[1];
     var _prefetchCfg = useState(null), lastRewriteConfig = _prefetchCfg[0], setLastRewriteConfig = _prefetchCfg[1];
+    var _arm = useState(null), activeRewriteMode = _arm[0], setActiveRewriteMode = _arm[1];
+    var _ciVal = useState(''), savedCustomInstruction = _ciVal[0], setSavedCustomInstruction = _ciVal[1];
     var _v = useState(false), showCustomInput = _v[0], setShowCustomInput = _v[1];
     var _w = useState(''), customPromptInput = _w[0], setCustomPromptInput = _w[1];
     var _x = useState(false), isAutoScrolling = _x[0], setIsAutoScrolling = _x[1];
@@ -205,19 +207,19 @@ function Reader(_a) {
             return filtered;
         });
     }, [currentPage]);
-    /* ── Auto-prefetch next page rewrite in background ── */
+    /* ── Auto-prefetch next page rewrite in background (plain text only — PDFs handled by unified queue) ── */
     useEffect(function () {
-        if (!autoPrefetchNext || !lastRewriteConfig) return;
+        if (pdfDoc) return; // PDFs use the unified queue in the OCR scanning useEffect
+        if (!autoPrefetchNext || !activeRewriteMode) return;
         var nextPage = currentPage + 1;
         if (nextPage >= totalPages) return;
         if (rewrittenPages[nextPage]) return;
         if (rewritingStatus[nextPage]) return;
-        var cfg = lastRewriteConfig;
         var timer = setTimeout(function () {
-            performRewrite(cfg.mode, cfg.instruction || '', nextPage);
+            performRewrite(activeRewriteMode, savedCustomInstruction, nextPage);
         }, 800);
         return function () { clearTimeout(timer); };
-    }, [currentPage, totalPages, autoPrefetchNext, lastRewriteConfig]);
+    }, [currentPage, totalPages, autoPrefetchNext, activeRewriteMode, savedCustomInstruction, pdfDoc]);
     /* Memory management: evict off-screen pages to prevent unbounded growth */
     useEffect(function () {
         var KEEP_RADIUS = 5;
@@ -512,8 +514,6 @@ function Reader(_a) {
         }
 
         /* ── Sequential background auto-rewriting ── */
-        var activeRewriteMode = lastRewriteConfig ? lastRewriteConfig.mode : null;
-        var savedCustomInstruction = lastRewriteConfig ? lastRewriteConfig.instruction || '' : '';
         if (activeRewriteMode) {
             for (var i = 0; i <= 2; i++) {
                 var target = currentPage + i;
@@ -530,7 +530,7 @@ function Reader(_a) {
                 }
             }
         }
-    }, [pdfDoc, currentPage, scanningStatus, pdfRange, lastRewriteConfig, rewritingStatus, rewrittenPages]);
+    }, [pdfDoc, currentPage, scanningStatus, pdfRange, activeRewriteMode, savedCustomInstruction, rewritingStatus, rewrittenPages]);
     var getSelectionOffsets = function (container) {
         if (!container) return null;
         var sel = window.getSelection();
@@ -795,11 +795,13 @@ function Reader(_a) {
     };
     var handleRewriteUI = function (mode, instruction) {
         if (instruction === void 0) { instruction = ''; }
+        setActiveRewriteMode(mode);
+        setSavedCustomInstruction(instruction || '');
         setLastRewriteConfig({ mode: mode, instruction: instruction || '', model: customizerModel, language: customizerLanguage });
         performRewrite(mode, instruction, currentPage);
         closeCustomizer();
     };
-    var handleRestoreOriginal = function () { setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; }); setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); }); closeCustomizer(); };
+    var handleRestoreOriginal = function () { setRewrittenPages(function (p) { var n = __assign({}, p); delete n[currentPage]; return n; }); setHighlights(function (p) { return p.filter(function (h) { return h.pageIndex !== currentPage; }); }); setActiveRewriteMode(null); setSavedCustomInstruction(''); closeCustomizer(); };
     /* ── Interlinear Translation ── */
     /* ── Interlinear Translation (indexed array approach) ── */
     var performInterlinearTranslation = function(pageIdx) {
@@ -964,6 +966,8 @@ function Reader(_a) {
                     }
                     setSelectionRewrite(null);
                     closeCustomizer();
+                    setActiveRewriteMode(mode);
+                    setSavedCustomInstruction(instruction || '');
                     boldMap = { lower: 'MINIMAL BOLDING (5-10%).', lower_medium: 'LIGHT BOLDING (15-20%).', medium: 'MODERATE BOLDING (25-30%).', medium_high: 'HEAVY BOLDING (35-45%).', high: 'EXTREMELY HEAVY BOLDING (50%+).' };
                     boldI = boldMap[boldingLevel] || boldMap.medium;
                     promptI = mode === 'simple' ? 'Rewrite simpler with easier words.' : mode === 'intermediate' ? 'Rewrite with balanced natural flow.' : mode === 'advanced' ? 'Rewrite with sophisticated literary vocabulary.' : ("Rewrite with this style: '" + instruction + "'.");
