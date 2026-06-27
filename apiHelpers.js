@@ -25,7 +25,10 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    return [4, fetch('/api/gemini/' + encodeURIComponent(model) + '/generateContent', {
+                    var fetchUrl = apiKey 
+                        ? 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey
+                        : '/api/gemini/' + encodeURIComponent(model) + '/generateContent';
+                    return [4, fetch(fetchUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)

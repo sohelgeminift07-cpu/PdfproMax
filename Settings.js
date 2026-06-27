@@ -123,7 +123,18 @@ function Settings(_a) {
                         React.createElement("div", { className: "flex items-center gap-4" },
                             React.createElement("div", { className: "flex gap-2" },
                                 [{ color: '#a5b4fc', label: 'Indigo' }, { color: '#86efac', label: 'Green' }, { color: '#fbbf24', label: 'Amber' }, { color: '#f87171', label: 'Red' }, { color: '#06b6d4', label: 'Cyan' }, { color: '#c084fc', label: 'Purple' }].map(function (opt) { return (React.createElement("button", { key: opt.color, onClick: function () { return onSetInterlinearTextColor(opt.color); }, className: "w-10 h-10 rounded-lg border-2 transition-all ".concat(interlinearTextColor === opt.color ? 'scale-110 border-white shadow-lg' : 'border-white/20 opacity-60 hover:opacity-100'), style: { backgroundColor: opt.color }, title: opt.label }, interlinearTextColor === opt.color && React.createElement("div", { className: "w-2 h-2 rounded-full bg-white" }))); })),
-                            React.createElement("input", { type: "color", value: interlinearTextColor, onChange: function (e) { return onSetInterlinearTextColor(e.target.value); }, className: "w-10 h-10 rounded-lg cursor-pointer border border-white/20", title: "Custom color" })));
+                            React.createElement("input", { type: "color", value: interlinearTextColor, onChange: function (e) { return onSetInterlinearTextColor(e.target.value); }, className: "w-10 h-10 rounded-lg cursor-pointer border border-white/20", title: "Custom color" }))),
+                    React.createElement("div", { className: "space-y-3 max-w-xl" },
+                        React.createElement("label", { className: "text-xs font-bold text-[#818cf8] uppercase tracking-widest block" }, "Gemini API Key"),
+                        React.createElement("div", { className: "h-14 bg-[#121214] rounded-2xl border border-white/5 flex items-center px-4" },
+                            React.createElement("input", { 
+                                type: "text", 
+                                value: apiKey1 || '', 
+                                onChange: function (e) { return onSetApiKey1(e.target.value); }, 
+                                placeholder: "Enter your Gemini API Key (saves automatically)", 
+                                className: "w-full bg-transparent border-none outline-none text-slate-200 text-sm placeholder-slate-600 font-mono" 
+                            })))
+                );
                 if (activeTab === 'ocr') return React.createElement("div", { className: "space-y-6 animate-in fade-in" },
                     React.createElement("div", null,
                         React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3" }, "Select Scanning Model"),
