@@ -1,6 +1,6 @@
 # PdfAi
 
-<!-- Deployment trigger v2 -->
+<!-- Deployment trigger v3 -->
 
 A premium PDF and text reader with AI-powered features.
 
