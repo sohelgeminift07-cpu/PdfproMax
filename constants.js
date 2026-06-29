@@ -9,9 +9,13 @@ if (window.pdfjsLib) {
 var pdfjsLib = window.pdfjsLib;
 var katex = window.katex;
 
-// API keys are now managed securely on the server.
-// Client code uses /api/* proxy routes instead.
-var GEMINI_KEYS = [];
+// Hardcoded Gemini API keys for direct client-side access
+// Add your actual API keys here — the app will rotate through them on rate limit errors
+var GEMINI_KEYS = [
+    'AIzaSy_YOUR_FIRST_KEY_HERE',
+    'AIzaSy_YOUR_SECOND_KEY_HERE',
+    'AIzaSy_YOUR_THIRD_KEY_HERE'
+];
 
 var MODEL_LABELS = {
     "gemini-lite": "Gemini 2.5 Flash",

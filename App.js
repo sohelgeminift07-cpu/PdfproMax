@@ -36,8 +36,8 @@ function App() {
     var _u = useState(0), activeKeyIndex = _u[0], setActiveKeyIndex = _u[1];
     var _v = useState('#a5b4fc'), interlinearTextColor = _v[0], setInterlinearTextColor = _v[1];
     var _uak = useState(function() { return localStorage.getItem('user_gemini_api_key') || ''; }), userApiKey = _uak[0], setUserApiKey = _uak[1];
-    var googleApiKey = userApiKey || GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
-    var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
+    var googleApiKey = userApiKey || (GEMINI_KEYS.length > 0 ? GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length] : '');
+    var handleRotateKey = function () { var next = GEMINI_KEYS.length > 0 ? (activeKeyIndex + 1) % GEMINI_KEYS.length : 0; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
     /* Listen for clear-history event dispatched from Settings */
     useEffect(function() {
         var handler = function() { setHistory([]); };
