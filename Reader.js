@@ -1031,15 +1031,15 @@ function Reader(_a) {
                             setRewrittenRange({ start: hlStart, end: hlStart + cleanedForHL.length });
                         }
                     }
-                    return [3 /*break*/, 9];
-                case 7:
+                    return [3 /*break*/, 5];
+                case 3:
                     e_sel = _a.sent();
                     setNotification({ message: 'Partial rewrite failed: ' + e_sel.message, type: 'error' });
-                    return [3 /*break*/, 9];
-                case 8:
+                    return [3 /*break*/, 5];
+                case 4:
                     setPartialRewritePending(null);
                     return [7 /*endfinally*/];
-                case 9: return [2 /*return*/];
+                case 5: return [2 /*return*/];
             }
         });
     }); };
