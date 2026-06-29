@@ -952,7 +952,7 @@ function Reader(_a) {
     }, [currentPage, entityHighlightMode]);
     /* ── Partial (selection-based) rewrite ── */
     var performPartialRewrite = function (mode, instruction) { return __awaiter(_this, void 0, void 0, function () {
-        var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, r, resGen, modelId, key, endpoint, rr, d, e_sel;
+        var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, e_sel;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
