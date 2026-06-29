@@ -12,9 +12,9 @@ var katex = window.katex;
 // Hardcoded Gemini API keys for direct client-side access
 // Add your actual API keys here — the app will rotate through them on rate limit errors
 var GEMINI_KEYS = [
-    'AIzaSy_YOUR_FIRST_KEY_HERE',
-    'AIzaSy_YOUR_SECOND_KEY_HERE',
-    'AIzaSy_YOUR_THIRD_KEY_HERE'
+    'AIzaSyA-Ce5Uo5cmX2b984iZD_GLiJ6i2-5lN2c',
+    'AIzaSyBK1PM_dEejUssljAoeHMT_9S4LVwrAQcM',
+    'AIzaSyCJ9b7y7-XXKHgKh4jwg6NVGdR-mEW1uKA'
 ];
 
 var MODEL_LABELS = {
