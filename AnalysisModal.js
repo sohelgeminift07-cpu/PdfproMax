@@ -337,7 +337,7 @@ function AnalysisModal(_a) {
                                 React.createElement("line", { x1:"22", y1:"2", x2:"11", y2:"13" }),
                                 React.createElement("polygon", { points:"22 2 15 22 11 13 2 9 22 2" }))))),
 
-                React.createElement("div", { className: "h-8" })))) : (React.createElement("div", { className: "flex-grow flex flex-col overflow-hidden" },
+                React.createElement("div", { className: "h-8" }))) : (React.createElement("div", { className: "flex-grow flex flex-col overflow-hidden" },
 
                 /* ── Entity badge + source tabs ── */
                 React.createElement("div", { className: "entity-img-header", onTouchStart: function(e){e.stopPropagation();} },
