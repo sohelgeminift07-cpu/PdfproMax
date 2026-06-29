@@ -448,7 +448,7 @@ function Reader(_a) {
                             geminiModel = 'gemini-2.5-flash-lite';
                             url = '/.netlify/functions/gemini';
                             /* OCR via gemini-2.5-flash through server proxy */
-                            body = { contents: [{ parts: [{ text: prompt_1 + ' Return JSON only.' }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 } };
+                            body = { model: geminiModel, apiKey: (apiKeyRef.current || GEMINI_KEYS[0] || ''), body: { contents: [{ parts: [{ text: prompt_1 + ' Return JSON only.' }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }], role: 'user' }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 } } };
                             return [4 /*yield*/, fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })];
                         case 4:
                             r = _a.sent();
