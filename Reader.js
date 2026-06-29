@@ -756,21 +756,10 @@ function Reader(_a) {
                         gemM = customizerModel === 'gemini-lite' ? 'gemini-2.5-flash' : 'gemini-2.5-flash';
                         return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, fullP)];
                     case 2:
-                        r = _a.sent();
-                        newText_1 = r.text || '';
-                        return [3 /*break*/, 6];
+                        var _resGenRw = _a.sent();
+                        newText_1 = (_resGenRw && _resGenRw.text) ? _resGenRw.text : '';
+                        _a.label = 3;
                     case 3:
-                        var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
-                        return [4 /*yield*/, geminiGenerate('', targetModel, fullP, { systemInstruction: 'Professional editor.' })];
-                    case 4:
-                        resGen = _a.sent();
-                        newText_1 = resGen.text || '';
-                        // Dummy steps to maintain switch flow consistency
-                        return [4 /*yield*/, Promise.resolve({ choices: [] })];
-                    case 5:
-                        _a.sent();
-                        _a.label = 6;
-                    case 6:
                         if (newText_1)
                             setRewrittenPages(function (p) {
                                 var _a;
