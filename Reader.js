@@ -989,27 +989,15 @@ function Reader(_a) {
                     userMsgContent = '<TEXT>\n' + originalText + '\n</TEXT>';
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 7, 8, 9]);
+                    _a.trys.push([1, 3, 4, 5]);
                     newChunk = '';
-                    if (!customizerModel.includes('gemini')) return [3 /*break*/, 3];
                     gemM = customizerModel === 'gemini-lite' ? 'gemini-2.5-flash' : 'gemini-2.5-flash';
                     return [4 /*yield*/, geminiGenerate(apiKeyRef.current, gemM, userMsgContent, { systemInstruction: sysMsgContent })];
                 case 2:
-                    r = _a.sent();
-                    newChunk = (r && r.text) ? r.text : '';
-                    return [3 /*break*/, 6];
+                    var _resGenPart = _a.sent();
+                    newChunk = (_resGenPart && _resGenPart.text) ? _resGenPart.text : '';
+                    return [3 /*break*/, 5];
                 case 3:
-                    var targetModel = customizerModel.includes('gemini') ? customizerModel : 'gemini-2.5-flash';
-                    return [4 /*yield*/, geminiGenerate('', targetModel, userMsgContent, { systemInstruction: sysMsgContent })];
-                case 4:
-                    resGen = _a.sent();
-                    newChunk = resGen.text || '';
-                    // Dummy steps to maintain switch flow consistency
-                    return [4 /*yield*/, Promise.resolve({ choices: [] })];
-                case 5:
-                    _a.sent();
-                    _a.label = 6;
-                case 6:
                     if (newChunk) {
                         /* Strip any accidental <TEXT> tags the model might echo back */
                         var cleaned = newChunk.trim().replace(/^<TEXT>\n?/i, '').replace(/\n?<\/TEXT>$/i, '').trim();
