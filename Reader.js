@@ -952,7 +952,7 @@ function Reader(_a) {
     }, [currentPage, entityHighlightMode]);
     /* ── Partial (selection-based) rewrite ── */
     var performPartialRewrite = function (mode, instruction) { return __awaiter(_this, void 0, void 0, function () {
-        var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, r, modelId, key, endpoint, rr, d, e_sel;
+        var sel, pageText, lines, startLine, endLine, originalText, blockIndices, boldMap, boldI, promptI, sysMsgContent, userMsgContent, newChunk, gemM, r, resGen, modelId, key, endpoint, rr, d, e_sel;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1045,7 +1045,7 @@ function Reader(_a) {
     }); };
     /* ── X-Ray: scan current page for key entities ── */
     var performXRay = function () { return __awaiter(_this, void 0, void 0, function () {
-        var pageText, cached, sysPrompt, userMsg, xrayModelId, xrayKey, xrayEndpoint, r, d, rawText, clean, parsed, entities, xErr;
+        var pageText, cached, sysPrompt, userMsg, xrayModelId, xrayKey, xrayEndpoint, r, resGen, d, rawText, clean, parsed, entities, xErr;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
