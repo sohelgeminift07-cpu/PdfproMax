@@ -79,7 +79,7 @@ function AnalysisModal(_a) {
         setIsPlaying(true);
         var textToSpeak = data.word;
         liveAudioRef.current = geminiLiveAudio(googleApiKey, textToSpeak, {
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } },
+            speechConfig: { voice_config: { prebuilt_voice_config: { voice_name: 'Fenrir' } } },
             onStart: function () { },
             onEnd: function () { setIsStreamingAudio(false); setIsPlaying(false); },
             onError: function (err) { console.error('Live audio error:', err); setIsStreamingAudio(false); setIsPlaying(false); }

@@ -25,13 +25,13 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    var fetchUrl = apiKey 
-                        ? 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey
-                        : '/api/gemini/' + encodeURIComponent(model) + '/generateContent';
+                    var fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/'
+                        + model + ':generateContent?key=' + (apiKey || GEMINI_KEYS[0] || '');
                     return [4, fetch(fetchUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
+                        body: JSON.stringify(body),
+                        signal: config.signal || undefined
                     })];
                 case 1:
                     res = _a.sent();
@@ -151,14 +151,12 @@ function geminiLiveAudio(apiKey, text, options) {
 
     player.onEnd = function() { onEnd(); };
 
-    fetch('/api/gemini-ws-token')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (!data.key) { onError(new Error('No Gemini key available')); return; }
-            var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + data.key;
-            ws = new WebSocket(url);
+    var _wsKey = apiKey || GEMINI_KEYS[0] || '';
+    if (!_wsKey) { onError(new Error('No Gemini key available')); return; }
+    var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + _wsKey;
+    ws = new WebSocket(url);
 
-            ws.onopen = function() {
+    ws.onopen = function() {
                 ws.send(JSON.stringify({
                     setup: {
                         model: 'models/gemini-2.5-flash',
@@ -174,7 +172,7 @@ function geminiLiveAudio(apiKey, text, options) {
                 }));
             };
 
-            ws.onmessage = function(event) {
+    ws.onmessage = function(event) {
                 var msg;
                 try { msg = JSON.parse(event.data); } catch(e) { return; }
 
@@ -198,17 +196,15 @@ function geminiLiveAudio(apiKey, text, options) {
                     }
                 }
 
-                if (msg.serverContent && msg.serverContent.turnComplete) {
-                    player.finish();
-                }
-            };
+        if (msg.serverContent && msg.serverContent.turnComplete) {
+            player.finish();
+        }
+    };
 
-            ws.onerror = function(err) { onError(err); };
-            ws.onclose = function() {
-                if (!isSetupComplete) onError(new Error('Live connection closed'));
-            };
-        })
-        .catch(function(err) { onError(err); });
+    ws.onerror = function(err) { onError(err); };
+    ws.onclose = function() {
+        if (!isSetupComplete) onError(new Error('Live connection closed'));
+    };
 
     return {
         stop: function() {
