@@ -1,11 +1,5 @@
 {
   "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/api/gemini/:model/generateContent",
-      "destination": "/api/gemini?model=:model"
-    }
-  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -16,7 +10,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "public, max-age=3600"
         }
       ]
     },
@@ -28,6 +22,21 @@
           "value": "application/manifest+json"
         }
       ]
+    },
+    {
+      "source": "/pwa.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/gemini/:model/generateContent",
+      "destination": "/api/gemini?model=:model"
     }
   ]
 }
