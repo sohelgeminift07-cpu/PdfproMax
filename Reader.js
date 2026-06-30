@@ -982,8 +982,6 @@ function Reader(_a) {
                 case 2:
                     var _resGenPart = _a.sent();
                     newChunk = (_resGenPart && _resGenPart.text) ? _resGenPart.text : '';
-                    return [3 /*break*/, 5];
-                case 3:
                     if (newChunk) {
                         /* Strip any accidental <TEXT> tags the model might echo back */
                         var cleaned = newChunk.trim().replace(/^<TEXT>\n?/i, '').replace(/\n?<\/TEXT>$/i, '').trim();
@@ -1005,11 +1003,11 @@ function Reader(_a) {
                             setRewrittenRange({ start: hlStart, end: hlStart + cleanedForHL.length });
                         }
                     }
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 4];
                 case 3:
                     e_sel = _a.sent();
                     setNotification({ message: 'Partial rewrite failed: ' + e_sel.message, type: 'error' });
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 4];
                 case 4:
                     setPartialRewritePending(null);
                     return [7 /*endfinally*/];
