@@ -599,11 +599,9 @@ function Reader(_a) {
                         if (ctrl.signal.aborted)
                             throw new Error('Aborted');
                         analysis = safeExtractJSON(resGen.text || '{}') || {};
-                        return [3 /*break*/, 6];
-                    case 4: return [3 /*break*/, 6];
-                    case 5: return [3 /*break*/, 6];
-                        _a.label = 6;
-                    case 6:
+                        return [3 /*break*/, 4];
+                    case 3: return [3 /*break*/, 4];
+                    case 4:
                         if (ctrl.signal.aborted)
                             return [2 /*return*/];
                         result = { word: cleanText, meaning: String((analysis && analysis.meaning ? analysis.meaning : '') || 'নির্ধারিত নয়'), context: String((analysis && analysis.explanation ? analysis.explanation : '') || 'বিশ্লেষণ পাওয়া যায়নি।'), searchQuery: (analysis ? analysis.searchQuery : undefined), entityType: (analysis ? analysis.entityType : 'other') || 'other', wikiTitle: (analysis ? analysis.wikiTitle : undefined), smartQuery: (analysis ? analysis.smartQuery : undefined), modelName: modelName, modelId: selectedModel, rawSelection: selection };
