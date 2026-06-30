@@ -25,8 +25,7 @@ function geminiGenerate(apiKey_1, model_1, contents_1) {
                         body.generationConfig.responseModalities = config.responseModalities;
                     if (config.speechConfig)
                         body.generationConfig.speechConfig = config.speechConfig;
-                    var fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/'
-                        + model + ':generateContent?key=' + (apiKey || GEMINI_KEYS[0] || '');
+                    var fetchUrl = '/api/gemini/' + encodeURIComponent(model) + '/generateContent';
                     return [4, fetch(fetchUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -151,60 +150,62 @@ function geminiLiveAudio(apiKey, text, options) {
 
     player.onEnd = function() { onEnd(); };
 
-    var _wsKey = apiKey || GEMINI_KEYS[0] || '';
-    if (!_wsKey) { onError(new Error('No Gemini key available')); return; }
-    var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + _wsKey;
-    ws = new WebSocket(url);
+    fetch('/api/gemini-ws-token').then(function(r) { return r.json(); }).then(function(data) {
+        var _wsKey = data.key || '';
+        if (!_wsKey) { onError(new Error('No Gemini key available')); return; }
+        var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + _wsKey;
+        ws = new WebSocket(url);
 
-    ws.onopen = function() {
-                ws.send(JSON.stringify({
-                    setup: {
-                        model: 'models/gemini-2.5-flash',
-                        generation_config: {
-                            response_modalities: ['AUDIO'],
-                            speech_config: options.speechConfig || {
-                                voice_config: {
-                                    prebuilt_voice_config: { voice_name: 'Fenrir' }
-                                }
+        ws.onopen = function() {
+            ws.send(JSON.stringify({
+                setup: {
+                    model: 'models/gemini-2.5-flash',
+                    generation_config: {
+                        response_modalities: ['AUDIO'],
+                        speech_config: options.speechConfig || {
+                            voice_config: {
+                                prebuilt_voice_config: { voice_name: 'Fenrir' }
                             }
                         }
                     }
-                }));
-            };
-
-    ws.onmessage = function(event) {
-                var msg;
-                try { msg = JSON.parse(event.data); } catch(e) { return; }
-
-                if (msg.setupComplete) {
-                    isSetupComplete = true;
-                    ws.send(JSON.stringify({
-                        client_content: {
-                            turns: [{ role: 'user', parts: [{ text: text }] }],
-                            turn_complete: true
-                        }
-                    }));
-                    onStart();
                 }
+            }));
+        };
 
-                if (msg.serverContent && msg.serverContent.modelTurn) {
-                    var parts = msg.serverContent.modelTurn.parts || [];
-                    for (var i = 0; i < parts.length; i++) {
-                        if (parts[i].inlineData && parts[i].inlineData.data) {
-                            player.feed(parts[i].inlineData.data);
-                        }
+        ws.onmessage = function(event) {
+            var msg;
+            try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+            if (msg.setupComplete) {
+                isSetupComplete = true;
+                ws.send(JSON.stringify({
+                    client_content: {
+                        turns: [{ role: 'user', parts: [{ text: text }] }],
+                        turn_complete: true
+                    }
+                }));
+                onStart();
+            }
+
+            if (msg.serverContent && msg.serverContent.modelTurn) {
+                var parts = msg.serverContent.modelTurn.parts || [];
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i].inlineData && parts[i].inlineData.data) {
+                        player.feed(parts[i].inlineData.data);
                     }
                 }
+            }
 
-        if (msg.serverContent && msg.serverContent.turnComplete) {
-            player.finish();
-        }
-    };
+            if (msg.serverContent && msg.serverContent.turnComplete) {
+                player.finish();
+            }
+        };
 
-    ws.onerror = function(err) { onError(err); };
-    ws.onclose = function() {
-        if (!isSetupComplete) onError(new Error('Live connection closed'));
-    };
+        ws.onerror = function(err) { onError(err); };
+        ws.onclose = function() {
+            if (!isSetupComplete) onError(new Error('Live connection closed'));
+        };
+    }).catch(function(err) { onError(err); });
 
     return {
         stop: function() {
