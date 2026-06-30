@@ -572,7 +572,7 @@ function Reader(_a) {
             args_1[_i - 3] = arguments[_i];
         }
         return __awaiter(_this, __spreadArray([selection_1, fullContext_1, selectedModel_1], args_1, true), void 0, function (selection, fullContext, selectedModel, retryCount) {
-            var ctrl, cleanText, wc, isSentence, wordSys, sentSys, sys, userP, analysis, modelName, geminiM, r, modelId, key, endpoint, r, d, result, newHL_1, err_2;
+            var ctrl, cleanText, wc, isSentence, wordSys, sentSys, sys, userP, analysis, modelName, resGen, result, newHL_1, err_2;
             if (retryCount === void 0) { retryCount = 0; }
             setIsRegenerating(true);
             return __generator(this, function (_a) {
