@@ -232,6 +232,30 @@
   <!-- ── PWA Service Worker Registration ── -->
   <script src="/pwa.js"></script>
 
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/animations.css" />
+  <link rel="stylesheet" href="/base.css" />
+  <link rel="stylesheet" href="/components.css" />
+  <link rel="stylesheet" href="/uiverse.css" />
+  <link rel="stylesheet" href="/reader.css" />
+
+  <!-- App scripts (dependency order) -->
+  <script src="/constants.js"></script>
+  <script src="/polyfills.js"></script>
+  <script src="/textUtils.js"></script>
+  <script src="/storageUtils.js"></script>
+  <script src="/apiHelpers.js"></script>
+  <script src="/FormattedContent.js"></script>
+  <script src="/SkeletonLoader.js"></script>
+  <script src="/HistoryModal.js"></script>
+  <script src="/AnalysisModal.js"></script>
+  <script src="/MaxDrawer.js"></script>
+  <script src="/VocabTab.js"></script>
+  <script src="/Settings.js"></script>
+  <script src="/Editor.js"></script>
+  <script src="/Reader.js"></script>
+  <script src="/App.js"></script>
+
   <!-- ── Global error handler for unhandled rejections ── -->
   <script>
     window.addEventListener('unhandledrejection', function(event) {
