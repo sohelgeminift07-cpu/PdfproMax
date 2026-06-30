@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>MaxOfPdf – Premium Reader</title>
 
-  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- PWA / Mobile meta -->
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,48 +18,38 @@
   <meta name="msapplication-TileColor" content="#4f46e5" />
   <meta name="msapplication-TileImage" content="/icon-144x144.png" />
 
-  <!-- Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
   <link rel="apple-touch-icon" href="/icon-192x192.png" />
   <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png" />
 
-  <!-- Open Graph -->
   <meta property="og:title" content="MaxOfPdf – Premium Reader" />
   <meta property="og:description" content="A premium PDF and text reader with AI-powered features." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/icon-512x512.png" />
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- KaTeX CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
 
   <!-- React -->
   <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
 
-  <!-- PDF.js (required for PDF rendering) -->
+  <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <!-- KaTeX JS -->
+  <!-- KaTeX -->
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous" onload="window.katex=window.katex"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html {
-      height: 100%;
-      width: 100%;
-      background-color: #0c0c0c;
-    }
+    html { height: 100%; width: 100%; background-color: #0c0c0c; }
     body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
+      height: 100%; width: 100%; margin: 0;
       padding-top: env(safe-area-inset-top);
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
@@ -74,72 +62,21 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: none;
     }
-    #root {
-      min-height: 100%;
-    }
-
-    /* Bouncing box loader (for generate button) */
-    .md-fab-loader {
-      width: 14px;
-      height: 14px;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .md-fab-loader:before {
-      content: '';
-      width: 14px;
-      height: 2px;
-      background: rgba(110,231,183,0.4);
-      position: absolute;
-      top: 18px;
-      left: 0;
-      border-radius: 50%;
-      animation: fabLoaderShadow 0.5s linear infinite;
-    }
-    .md-fab-loader:after {
-      content: '';
-      width: 100%;
-      height: 100%;
-      background: #6ee7b7;
-      position: absolute;
-      top: 0;
-      left: 0;
-      border-radius: 2px;
-      animation: fabLoaderJump 0.5s linear infinite;
-    }
-    .md-fab.timeline-fab .md-fab-loader:before { background: rgba(252,211,77,0.4); }
-    .md-fab.timeline-fab .md-fab-loader:after  { background: #fcd34d; }
-    @keyframes fabLoaderJump {
-      15% { border-bottom-right-radius: 2px; }
-      25% { transform: translateY(3px) rotate(22.5deg); }
-      50% { transform: translateY(6px) scale(1,.9) rotate(45deg); border-bottom-right-radius: 8px; }
-      75% { transform: translateY(3px) rotate(67.5deg); }
-      100% { transform: translateY(0) rotate(90deg); }
-    }
-    @keyframes fabLoaderShadow {
-      0%,100% { transform: scale(1,1); }
-      50% { transform: scale(1.2,1); }
-    }
-    .serif { font-family: 'Merriweather', 'Noto Serif Bengali', 'Amiri', serif; }
-    .display-serif { font-family: 'Playfair Display', 'Noto Serif Bengali', 'Amiri', serif; }
-    .caps-spacing { letter-spacing: 0.2em; }
-    .glass-header {
-      background: rgba(10,10,15,0.97);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .glass-dock {
-      background: rgba(14,14,20,0.98);
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.9);
-    }
-    .manuscript-container { width:100%; max-width:780px; margin:0 auto; position:relative; contain: layout style; }
-    .manuscript-text {
-      line-height:1.9; color:#a1a1aa;
-      user-select:text; -webkit-user-select:text;
-      -webkit-font-smoothing:antialiased;
-      text-rendering: optimizeSpeed;
-      white-space:normal; word-break:break-word; overflow-wrap:break-word; max-width:100%;
-    }
+    #root { min-height: 100%; }
+    .md-fab-loader { width:14px; height:14px; position:relative; flex-shrink:0; }
+    .md-fab-loader:before { content:''; width:14px; height:2px; background:rgba(110,231,183,0.4); position:absolute; top:18px; left:0; border-radius:50%; animation:fabLoaderShadow 0.5s linear infinite; }
+    .md-fab-loader:after { content:''; width:100%; height:100%; background:#6ee7b7; position:absolute; top:0; left:0; border-radius:2px; animation:fabLoaderJump 0.5s linear infinite; }
+    .md-fab.timeline-fab .md-fab-loader:before { background:rgba(252,211,77,0.4); }
+    .md-fab.timeline-fab .md-fab-loader:after { background:#fcd34d; }
+    @keyframes fabLoaderJump { 15%{border-bottom-right-radius:2px} 25%{transform:translateY(3px) rotate(22.5deg)} 50%{transform:translateY(6px) scale(1,.9) rotate(45deg);border-bottom-right-radius:8px} 75%{transform:translateY(3px) rotate(67.5deg)} 100%{transform:translateY(0) rotate(90deg)} }
+    @keyframes fabLoaderShadow { 0%,100%{transform:scale(1,1)} 50%{transform:scale(1.2,1)} }
+    .serif { font-family:'Merriweather','Noto Serif Bengali','Amiri',serif; }
+    .display-serif { font-family:'Playfair Display','Noto Serif Bengali','Amiri',serif; }
+    .caps-spacing { letter-spacing:0.2em; }
+    .glass-header { background:rgba(10,10,15,0.97); border-bottom:1px solid rgba(255,255,255,0.04); }
+    .glass-dock { background:rgba(14,14,20,0.98); border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 32px 0 rgba(0,0,0,0.9); }
+    .manuscript-container { width:100%; max-width:780px; margin:0 auto; position:relative; contain:layout style; }
+    .manuscript-text { line-height:1.9; color:#a1a1aa; user-select:text; -webkit-user-select:text; -webkit-font-smoothing:antialiased; text-rendering:optimizeSpeed; white-space:normal; word-break:break-word; overflow-wrap:break-word; max-width:100%; }
     .premium-highlight { display:inline; padding:0!important; margin:0!important; border:none!important; color:#000!important; border-radius:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
     .premium-highlight .md-bold-text { color:inherit!important; }
     .highlight-final { background-color:#b45309!important; cursor:pointer; }
@@ -161,16 +98,8 @@
     .table-scroll-container::-webkit-scrollbar { height:8px; }
     .table-scroll-container::-webkit-scrollbar-track { background:rgba(255,255,255,0.05); border-radius:4px; }
     .table-scroll-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:4px; }
-    /* Hide global scrollbars completely for a distraction-free experience */
-    html, body {
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
-    }
-    ::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
-    }
+    html, body { scrollbar-width:none!important; -ms-overflow-style:none!important; }
+    ::-webkit-scrollbar { display:none!important; width:0!important; height:0!important; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:transparent; }
     ::selection { background-color:rgba(79,70,229,0.4); color:#fff; }
@@ -187,59 +116,24 @@
     .animate-in { animation:fadeIn 0.3s ease-out; }
     @keyframes slideInBottom { from{transform:translateY(100%);opacity:0.8} to{transform:translateY(0);opacity:1} }
     .slide-in-from-bottom-full { animation:slideInBottom 0.28s cubic-bezier(0.22,1,0.36,1) both; }
-
-    /* Error Boundary Fallback UI */
-    .error-boundary-fallback {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
-      padding: 20px;
-      color: #e0e7ff;
-      text-align: center;
-    }
-    .error-boundary-fallback h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      color: #fca5a5;
-    }
-    .error-boundary-fallback p {
-      font-size: 14px;
-      color: #cbd5e1;
-      max-width: 400px;
-      margin-bottom: 20px;
-    }
-    .error-boundary-fallback button {
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      background: #6366f1;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-    .error-boundary-fallback button:hover {
-      background: #4f46e5;
-    }
+    .error-boundary-fallback { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 100%); padding:20px; color:#e0e7ff; text-align:center; }
+    .error-boundary-fallback h1 { font-size:28px; margin-bottom:10px; color:#fca5a5; }
+    .error-boundary-fallback p { font-size:14px; color:#cbd5e1; max-width:400px; margin-bottom:20px; }
+    .error-boundary-fallback button { padding:10px 20px; border-radius:8px; border:none; background:#6366f1; color:white; cursor:pointer; font-weight:600; transition:background 0.2s; }
+    .error-boundary-fallback button:hover { background:#4f46e5; }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <!-- PWA service worker -->
   <script src="/pwa.js"></script>
 
-  <!-- Stylesheets -->
   <link rel="stylesheet" href="/animations.css" />
   <link rel="stylesheet" href="/base.css" />
   <link rel="stylesheet" href="/components.css" />
   <link rel="stylesheet" href="/uiverse.css" />
   <link rel="stylesheet" href="/reader.css" />
 
-  <!-- App scripts -->
   <script src="/constants.js"></script>
   <script src="/polyfills.js"></script>
   <script src="/textUtils.js"></script>
@@ -260,22 +154,16 @@
     window.addEventListener('unhandledrejection', function(event) {
       console.error('[MaxOfPdf] Unhandled Promise rejection:', event.reason);
     });
-
     window.addEventListener('error', function(event) {
       console.error('[MaxOfPdf] Global error:', event.error);
     });
-
-    /* Setup React error boundary fallback */
     window._ReactErrorBoundary = function(error, info) {
       console.error('[MaxOfPdf] React Error Boundary caught:', error, info);
       var root = document.getElementById('root');
       if (root) {
-        root.innerHTML = '<div class="error-boundary-fallback">' +
-          '<h1>&#9888;&#65039; Something went wrong</h1>' +
-          '<p>' + (error ? error.message || error.toString() : 'Unknown error') + '</p>' +
-          '<p>The app encountered an error. Try refreshing the page.</p>' +
-          '<button onclick="window.location.reload()">Refresh Page</button>' +
-        '</div>';
+        root.innerHTML = '<div class="error-boundary-fallback"><h1>Something went wrong</h1><p>' +
+          (error ? error.message || error.toString() : 'Unknown error') +
+          '</p><p>Try refreshing the page.</p><button onclick="window.location.reload()">Refresh</button></div>';
       }
     };
   </script>
