@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>MaxOfPdf – Premium Reader</title>
 
-  <!-- ── PWA Manifest ── -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- ── PWA / Theme Meta ── -->
+  <!-- PWA / Mobile meta -->
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,14 +20,14 @@
   <meta name="msapplication-TileColor" content="#4f46e5" />
   <meta name="msapplication-TileImage" content="/icon-144x144.png" />
 
-  <!-- ── PWA Icons ── -->
+  <!-- Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
   <link rel="apple-touch-icon" href="/icon-192x192.png" />
   <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png" />
 
-  <!-- ── Open Graph (nice share previews) ── -->
+  <!-- Open Graph -->
   <meta property="og:title" content="MaxOfPdf – Premium Reader" />
   <meta property="og:description" content="A premium PDF and text reader with AI-powered features." />
   <meta property="og:type" content="website" />
@@ -36,22 +36,22 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Merriweather:i[...]
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet" />
 
   <!-- KaTeX CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
 
-  <!-- React 17 (production minified) -->
+  <!-- React -->
   <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
 
-  <!-- KaTeX JS — deferred, ~80KB, needed for math rendering -->
+  <!-- PDF.js (required for PDF rendering) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- KaTeX JS -->
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous" onload="window.katex=window.katex"></script>
-  <!-- PDF.js — lazy loaded on first PDF upload via ensurePdfJs() -->
 
   <style>
-
-
     *, *::before, *::after { box-sizing: border-box; }
     html {
       height: 100%;
@@ -78,7 +78,7 @@
       min-height: 100%;
     }
 
-    /* ── Bouncing box loader (for generate button) ── */
+    /* Bouncing box loader (for generate button) */
     .md-fab-loader {
       width: 14px;
       height: 14px;
@@ -140,7 +140,7 @@
       text-rendering: optimizeSpeed;
       white-space:normal; word-break:break-word; overflow-wrap:break-word; max-width:100%;
     }
-    .premium-highlight { display:inline; padding:0!important; margin:0!important; border:none!important; color:#000!important; border-radius:4px; box-decoration-break:clone; -webkit-box-decoratio[...]
+    .premium-highlight { display:inline; padding:0!important; margin:0!important; border:none!important; color:#000!important; border-radius:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
     .premium-highlight .md-bold-text { color:inherit!important; }
     .highlight-final { background-color:#b45309!important; cursor:pointer; }
     .highlight-pending { background-color:rgba(254,240,138,0.35)!important; animation:pulse-soft 2s infinite; }
@@ -163,11 +163,11 @@
     .table-scroll-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:4px; }
     /* Hide global scrollbars completely for a distraction-free experience */
     html, body {
-        scrollbar-width: none !important; /* Firefox */
-        -ms-overflow-style: none !important; /* IE/Edge */
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
     }
     ::-webkit-scrollbar {
-        display: none !important; /* Safari and Chrome */
+        display: none !important;
         width: 0 !important;
         height: 0 !important;
     }
@@ -229,7 +229,7 @@
 <body>
   <div id="root"></div>
 
-  <!-- ── PWA Service Worker Registration ── -->
+  <!-- PWA service worker -->
   <script src="/pwa.js"></script>
 
   <!-- Stylesheets -->
@@ -239,7 +239,7 @@
   <link rel="stylesheet" href="/uiverse.css" />
   <link rel="stylesheet" href="/reader.css" />
 
-  <!-- App scripts (dependency order) -->
+  <!-- App scripts -->
   <script src="/constants.js"></script>
   <script src="/polyfills.js"></script>
   <script src="/textUtils.js"></script>
@@ -256,16 +256,13 @@
   <script src="/Reader.js"></script>
   <script src="/App.js"></script>
 
-  <!-- ── Global error handler for unhandled rejections ── -->
   <script>
     window.addEventListener('unhandledrejection', function(event) {
       console.error('[MaxOfPdf] Unhandled Promise rejection:', event.reason);
-      /* Don't prevent default — let React handle it */
     });
 
     window.addEventListener('error', function(event) {
       console.error('[MaxOfPdf] Global error:', event.error);
-      /* Don't prevent default */
     });
 
     /* Setup React error boundary fallback */
@@ -274,15 +271,14 @@
       var root = document.getElementById('root');
       if (root) {
         root.innerHTML = '<div class="error-boundary-fallback">' +
-          '<h1>⚠️ Something went wrong</h1>' +
+          '<h1>&#9888;&#65039; Something went wrong</h1>' +
           '<p>' + (error ? error.message || error.toString() : 'Unknown error') + '</p>' +
-          '<p style="font-size: 12px; color: #94a3b8;">The app encountered an error. Try refreshing the page.</p>' +
+          '<p>The app encountered an error. Try refreshing the page.</p>' +
           '<button onclick="window.location.reload()">Refresh Page</button>' +
         '</div>';
       }
     };
   </script>
 
-  <!-- All JS bundles are inlined in index.html by the build process -->
 </body>
 </html>
