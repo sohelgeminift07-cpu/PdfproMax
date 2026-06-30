@@ -612,12 +612,11 @@ function Reader(_a) {
                         setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         try { var _vRaw = localStorage.getItem('maxofpdf_vocab'); var _vStore = _vRaw ? JSON.parse(_vRaw) : {}; var _vKey = cleanText.trim().toLowerCase(); _vStore[_vKey] = { word: result.word, meaning: result.meaning, m: result.meaning, entityType: result.entityType, ts: Date.now() }; localStorage.setItem('maxofpdf_vocab', JSON.stringify(_vStore)); window.dispatchEvent(new CustomEvent('maxofpdf_vocab_updated')); } catch(_e) {}
                         setModalData(result);
-                        return [3 /*break*/, 9];
-                    case 7:
+                        return [3 /*break*/, 7];
+                    case 5:
                         err_2 = _a.sent();
                         if (err_2.name === 'AbortError' || err_2.message === 'Aborted')
                             return [2 /*return*/];
-                        if (err_2.name === 'AbortError' || err_2.message === 'Aborted') return [2 /*return*/];
                         if (retryCount < 1) {
                             onRotateKey();
                             setTimeout(function () { return analyzeText(selection, fullContext, selectedModel, retryCount + 1); }, 800);
@@ -626,12 +625,12 @@ function Reader(_a) {
                             setNotification({ message: 'API error — check your keys or try again.', type: 'error' });
                             setPendingHighlights(function (p) { return p.filter(function (ph) { return ph.id !== selection.id; }); });
                         }
-                        return [3 /*break*/, 9];
-                    case 8:
+                        return [3 /*break*/, 7];
+                    case 6:
                         abortControllersRef.current.delete(selection.id);
                         setIsRegenerating(false);
                         return [7 /*endfinally*/];
-                    case 9: return [2 /*return*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
