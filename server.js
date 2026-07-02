@@ -7,7 +7,6 @@ const path = require('path');
 const https = require('https');
 
 const app = express();
-app.use(express.json({ limit: '50mb' }));
 
 function getApiKey() {
   const raw = process.env.GEMINI_API_KEY || '';
@@ -15,7 +14,8 @@ function getApiKey() {
 }
 
 // Proxy: POST /api/gemini/:model/generateContent
-app.post('/api/gemini/:model/generateContent', async (req, res) => {
+// Specific limit for this endpoint as it may handle large PDF page images.
+app.post('/api/gemini/:model/generateContent', express.json({ limit: '50mb' }), async (req, res) => {
   const apiKey = getApiKey();
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
@@ -47,6 +47,9 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
   proxyReq.write(body);
   proxyReq.end();
 });
+
+// Global limit for all other JSON payloads
+app.use(express.json({ limit: '1mb' }));
 
 // Endpoint for the Live Audio WebSocket token
 app.get('/api/gemini-ws-token', (req, res) => {
