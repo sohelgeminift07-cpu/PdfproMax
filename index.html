@@ -5430,7 +5430,6 @@ function Reader(_a) {
             maxOutputTokens: 3000
         }).then(function(r) {
             var raw = r.text || '';
-            console.log('[LENS] raw response:', raw.slice(0, 300));
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             var parsed = null;
             /* 1) Try clean parse first */
@@ -5462,10 +5461,8 @@ function Reader(_a) {
                         }
                     }
                 }
-                if (recovered.length > 0) { parsed = recovered; console.log('[LENS] recovered', recovered.length, 'entities from truncated JSON'); }
-                else { console.log('[LENS] parse failed: could not recover any entities'); }
+                if (recovered.length > 0) { parsed = recovered; }
             }
-            console.log('[LENS] parsed entities:', parsed);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 setEntityCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
             }
@@ -7267,7 +7264,7 @@ function App() {
     var _cf1 = useState([]), customFonts = _cf1[0], setCustomFonts = _cf1[1];
 
     var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
-    var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); console.log("Switched to Gemini API Key #".concat(next + 1)); };
+    var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); };
     /* ── Auto-save draft session every 10s ── */
     useEffect(function() {
         if (!state.isReading || pdfFile) return; /* only for text sessions (PDF files not serializable) */
