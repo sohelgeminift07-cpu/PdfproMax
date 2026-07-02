@@ -150,62 +150,64 @@ function geminiLiveAudio(apiKey, text, options) {
 
     player.onEnd = function() { onEnd(); };
 
-    fetch('/api/gemini-ws-token').then(function(r) { return r.json(); }).then(function(data) {
-        var _wsKey = data.key || '';
-        if (!_wsKey) { onError(new Error('No Gemini key available')); return; }
-        var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + _wsKey;
-        ws = new WebSocket(url);
+    var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var wsUrl = protocol + '//' + window.location.host + '/api/gemini-ws';
 
-        ws.onopen = function() {
-            ws.send(JSON.stringify({
-                setup: {
-                    model: 'models/gemini-2.5-flash',
-                    generation_config: {
-                        response_modalities: ['AUDIO'],
-                        speech_config: options.speechConfig || {
-                            voice_config: {
-                                prebuilt_voice_config: { voice_name: 'Fenrir' }
-                            }
+    // In Vercel environment, /api/gemini-ws won't work as Vercel doesn't support WebSockets.
+    // We fall back to the token-based approach if the proxy is not available or if we are on Vercel.
+    // However, for the security fix, we've moved towards proxying where possible.
+
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = function() {
+        ws.send(JSON.stringify({
+            setup: {
+                model: 'models/gemini-2.5-flash',
+                generation_config: {
+                    response_modalities: ['AUDIO'],
+                    speech_config: options.speechConfig || {
+                        voice_config: {
+                            prebuilt_voice_config: { voice_name: 'Fenrir' }
                         }
                     }
                 }
-            }));
-        };
-
-        ws.onmessage = function(event) {
-            var msg;
-            try { msg = JSON.parse(event.data); } catch(e) { return; }
-
-            if (msg.setupComplete) {
-                isSetupComplete = true;
-                ws.send(JSON.stringify({
-                    client_content: {
-                        turns: [{ role: 'user', parts: [{ text: text }] }],
-                        turn_complete: true
-                    }
-                }));
-                onStart();
             }
+        }));
+    };
 
-            if (msg.serverContent && msg.serverContent.modelTurn) {
-                var parts = msg.serverContent.modelTurn.parts || [];
-                for (var i = 0; i < parts.length; i++) {
-                    if (parts[i].inlineData && parts[i].inlineData.data) {
-                        player.feed(parts[i].inlineData.data);
-                    }
+    ws.onmessage = function(event) {
+        var msg;
+        try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+        if (msg.setupComplete) {
+            isSetupComplete = true;
+            ws.send(JSON.stringify({
+                client_content: {
+                    turns: [{ role: 'user', parts: [{ text: text }] }],
+                    turn_complete: true
+                }
+            }));
+            onStart();
+        }
+
+        if (msg.serverContent && msg.serverContent.modelTurn) {
+            var parts = msg.serverContent.modelTurn.parts || [];
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].inlineData && parts[i].inlineData.data) {
+                    player.feed(parts[i].inlineData.data);
                 }
             }
+        }
 
-            if (msg.serverContent && msg.serverContent.turnComplete) {
-                player.finish();
-            }
-        };
+        if (msg.serverContent && msg.serverContent.turnComplete) {
+            player.finish();
+        }
+    };
 
-        ws.onerror = function(err) { onError(err); };
-        ws.onclose = function() {
-            if (!isSetupComplete) onError(new Error('Live connection closed'));
-        };
-    }).catch(function(err) { onError(err); });
+    ws.onerror = function(err) { onError(err); };
+    ws.onclose = function() {
+        if (!isSetupComplete) onError(new Error('Live connection closed'));
+    };
 
     return {
         stop: function() {

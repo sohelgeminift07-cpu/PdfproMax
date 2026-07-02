@@ -5,8 +5,13 @@
 const express = require('express');
 const path = require('path');
 const https = require('https');
+const http = require('http');
+const WebSocket = require('ws');
+const url = require('url');
 
 const app = express();
+const server = http.createServer(app);
+
 app.use(express.json({ limit: '50mb' }));
 
 function getApiKey() {
@@ -48,15 +53,6 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
   proxyReq.end();
 });
 
-// Endpoint for the Live Audio WebSocket token
-app.get('/api/gemini-ws-token', (req, res) => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
-  }
-  res.json({ key: apiKey });
-});
-
 // Serve static files from root
 app.use(express.static(path.join(__dirname, '.')));
 
@@ -65,7 +61,78 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// WebSocket proxy for Gemini Live API
+const wss = new WebSocket.Server({ noServer: true });
+
+wss.on('connection', (ws, req, geminiWs) => {
+  console.log('Client connected to Gemini WebSocket proxy');
+
+  ws.on('message', (message) => {
+    if (geminiWs.readyState === WebSocket.OPEN) {
+      geminiWs.send(message);
+    }
+  });
+
+  geminiWs.on('message', (message) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(message);
+    }
+  });
+
+  ws.on('close', (code, reason) => {
+    console.log(`Client disconnected from proxy: ${code} ${reason}`);
+    geminiWs.close();
+  });
+
+  geminiWs.on('close', (code, reason) => {
+    console.log(`Gemini disconnected from proxy: ${code} ${reason}`);
+    ws.close();
+  });
+
+  ws.on('error', (err) => {
+    console.error('Client WS error:', err);
+    geminiWs.close();
+  });
+
+  geminiWs.on('error', (err) => {
+    console.error('Gemini WS error:', err);
+    ws.close();
+  });
+});
+
+server.on('upgrade', (request, socket, head) => {
+  const pathname = url.parse(request.url).pathname;
+
+  if (pathname === '/api/gemini-ws') {
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    const geminiUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`;
+    const geminiWs = new WebSocket(geminiUrl);
+
+    // Wait for Gemini connection to be established before upgrading client
+    geminiWs.on('open', () => {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request, geminiWs);
+      });
+    });
+
+    geminiWs.on('error', (err) => {
+      console.error('Failed to connect to Gemini:', err);
+      socket.write('HTTP/1.1 502 Bad Gateway\r\n\r\n');
+      socket.destroy();
+    });
+  } else {
+    // Let other handlers or express handle it (though usually Express doesn't handle upgrades)
+    socket.destroy();
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`MaxOfPdf server running on http://localhost:${PORT}`);
 });
