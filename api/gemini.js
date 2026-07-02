@@ -12,12 +12,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
     const response = await fetch(googleUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
       },
       body: JSON.stringify(req.body)
     });

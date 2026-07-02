@@ -153,6 +153,8 @@ function geminiLiveAudio(apiKey, text, options) {
     fetch('/api/gemini-ws-token').then(function(r) { return r.json(); }).then(function(data) {
         var _wsKey = data.key || '';
         if (!_wsKey) { onError(new Error('No Gemini key available')); return; }
+        // Browser WebSockets do not support custom headers, so the API key must
+        // be passed in the query string as required by the Gemini Live API.
         var url = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + _wsKey;
         ws = new WebSocket(url);
 
