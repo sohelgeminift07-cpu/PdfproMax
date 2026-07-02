@@ -25,6 +25,14 @@ function runPageDesign(pageText, pageNum, highlightsArray) {
     return styled;
 }
 
+var parseTableRows = function (rows) {
+    var parsed = rows.map(function (r) { return r.trim().replace(/^\||\\|$/g, '').split('|').map(function (c) { return c.trim(); }); });
+    var headerRow = parsed[0];
+    var sepIdx = parsed.findIndex(function (r) { return r.every(function (c) { return /^[-\s:]+$/.test(c); }); });
+    var hasHeader = sepIdx === 1;
+    var bodyRows = hasHeader ? parsed.slice(2) : parsed;
+    return { headerRow: headerRow, bodyRows: bodyRows, hasHeader: hasHeader };
+};
 // ============================================================
 // READER COMPONENT
 // ============================================================
@@ -1165,7 +1173,7 @@ function Reader(_a) {
             var line = lines[i];
             if (line.trim().startsWith('^^^FIGURE') && line.trim().endsWith('^^^')) {
                 if (tableRows.length > 0) {
-                    blocks.push({ type: 'table', content: tableRows, offset: offset });
+                    blocks.push({ type: 'table', content: parseTableRows(tableRows), offset: offset });
                     offset += tableRows.join('\n').length + 1;
                     tableRows = [];
                 }
@@ -1179,7 +1187,7 @@ function Reader(_a) {
             }
             if (tableRows.length > 0) {
                 var tc = tableRows.join('\n');
-                blocks.push({ type: 'table', content: tableRows, offset: offset });
+                blocks.push({ type: 'table', content: parseTableRows(tableRows), offset: offset });
                 offset += tc.length + 1;
                 tableRows = [];
             }
@@ -1190,7 +1198,7 @@ function Reader(_a) {
         }
         if (tableRows.length > 0) {
             var tc = tableRows.join('\n');
-            blocks.push({ type: 'table', content: tableRows, offset: offset });
+            blocks.push({ type: 'table', content: parseTableRows(tableRows), offset: offset });
             offset += tc.length + 1;
         }
         /* ── Page-level entity hit counter: max 2 highlights per entity per page ── */
@@ -1217,12 +1225,10 @@ function Reader(_a) {
             return null;
         }
     };
-    var renderTable = function (rows, idx, offset) {
-        var parsed = rows.map(function (r) { return r.trim().replace(/^\||\\|$/g, '').split('|').map(function (c) { return c.trim(); }); });
-        var headerRow = parsed[0];
-        var sepIdx = parsed.findIndex(function (r) { return r.every(function (c) { return /^[-\s:]+$/.test(c); }); });
-        var hasHeader = sepIdx === 1;
-        var bodyRows = hasHeader ? parsed.slice(2) : parsed;
+    var renderTable = function (tableData, idx, offset) {
+        var headerRow = tableData.headerRow;
+        var hasHeader = tableData.hasHeader;
+        var bodyRows = tableData.bodyRows;
         var renderCell = function (ct) {
             var ps = ct.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
             return ps.map(function (p, i) {
