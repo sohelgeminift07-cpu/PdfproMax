@@ -17,14 +17,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const rawKeys = process.env.GEMINI_API_KEY || '';
-  const key = rawKeys.split(',').map((k) => k.trim()).filter(Boolean)[0];
-
-  if (!key) {
-    return res.status(500).json({
-      error: 'GEMINI_API_KEY is not configured. Add it in Vercel → Settings → Environment Variables.',
-    });
-  }
-
-  return res.status(200).json({ key });
+  return res.status(403).json({
+    error: 'Direct API key exposure is disabled for security reasons. Vercel does not support WebSocket proxying. For the Live Audio feature, use the local dev server (npm start) which includes a secure proxy, or use a restricted Gemini API key if client-side exposure is acceptable for your use case.'
+  });
 }
