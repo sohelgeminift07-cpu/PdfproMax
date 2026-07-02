@@ -879,7 +879,6 @@ function Reader(_a) {
             maxOutputTokens: 3000
         }).then(function(r) {
             var raw = r.text || '';
-            console.log('[LENS] raw response:', raw.slice(0, 300));
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             var parsed = null;
             /* 1) Try clean parse first */
@@ -911,10 +910,8 @@ function Reader(_a) {
                         }
                     }
                 }
-                if (recovered.length > 0) { parsed = recovered; console.log('[LENS] recovered', recovered.length, 'entities from truncated JSON'); }
-                else { console.log('[LENS] parse failed: could not recover any entities'); }
+                if (recovered.length > 0) { parsed = recovered; }
             }
-            console.log('[LENS] parsed entities:', parsed);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 setEntityCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
             }
