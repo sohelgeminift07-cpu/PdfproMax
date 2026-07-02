@@ -3066,7 +3066,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
     __extends(ErrorBoundary, _super);
     function ErrorBoundary(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { hasError: false, error: null };
+        _this.state = { hasError: false, error: null, componentStack: '' };
         return _this;
     }
     ErrorBoundary.getDerivedStateFromError = function (error) {
@@ -3074,6 +3074,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
     };
     ErrorBoundary.prototype.componentDidCatch = function (error, info) {
         console.error('[MaxOfPdf] Component error:', error, info);
+        this.setState({ componentStack: (info && info.componentStack) || '' });
     };
     ErrorBoundary.prototype.render = function () {
         if (this.state.hasError) {
@@ -3105,6 +3106,14 @@ var ErrorBoundary = /** @class */ (function (_super) {
                             whiteSpace: 'pre-wrap', wordBreak: 'break-word'
                         }
                     }, (this.state.error && (this.state.error.stack || this.state.error.message)) || String(this.state.error)) : null,
+                    this.state.componentStack ? React.createElement('pre', {
+                        style: {
+                            color: '#94a3b8', fontSize: '0.65rem', lineHeight: 1.5, textAlign: 'left',
+                            background: '#050505', border: '1px solid rgba(148,163,184,0.15)', borderRadius: '10px',
+                            padding: '0.75rem', marginBottom: '1rem', maxHeight: '140px', overflow: 'auto',
+                            whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+                        }
+                    }, this.state.componentStack) : null,
                     React.createElement('button', {
                         onClick: function () {
                             try {
