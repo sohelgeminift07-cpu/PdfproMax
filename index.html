@@ -4538,6 +4538,7 @@ function VocabTab() {
 // READER COMPONENT
 // ============================================================
 function Reader(_a) {
+    if (!_a) return null;
     var _this = this;
     var text = _a.text, pdfFile = _a.pdfFile, pdfRange = _a.pdfRange, initialExtractedPages = _a.initialExtractedPages, initialPageIndex = _a.initialPageIndex, activeModel = _a.activeModel, activeStructureModel = _a.activeStructureModel, structureMode = _a.structureMode, onModelChange = _a.onModelChange, activeScanningModel = _a.activeScanningModel, readerTheme = _a.readerTheme, boldingLevel = _a.boldingLevel, lineSpacing = _a.lineSpacing, boldness = _a.boldness, autoScrollSpeed = _a.autoScrollSpeed, autoPlayTTS = _a.autoPlayTTS, mainFontSize = _a.mainFontSize, ilFontSize = _a.ilFontSize, _rf = _a.readerFontFamily, readerFontFamily = _rf === void 0 ? '' : _rf, onBack = _a.onBack, onOpenSettings = _a.onOpenSettings, googleApiKey = _a.googleApiKey, onRotateKey = _a.onRotateKey, initialHighlights = _a.initialHighlights, initialRewrittenPages = _a.initialRewrittenPages, initialXrayCache = _a.initialXrayCache, initialSummaryCache = _a.initialSummaryCache, initialTimelineCache = _a.initialTimelineCache, onStateChange = _a.onStateChange;
     var _b = useState(initialPageIndex != null ? initialPageIndex : 0), currentPage = _b[0], setCurrentPage = _b[1];
@@ -5430,6 +5431,7 @@ function Reader(_a) {
             maxOutputTokens: 3000
         }).then(function(r) {
             var raw = r.text || '';
+            console.log('[LENS] raw response:', raw.slice(0, 300));
             var clean = raw.replace(/```json\n?|```/g, '').trim();
             var parsed = null;
             /* 1) Try clean parse first */
@@ -5461,8 +5463,10 @@ function Reader(_a) {
                         }
                     }
                 }
-                if (recovered.length > 0) { parsed = recovered; }
+                if (recovered.length > 0) { parsed = recovered; console.log('[LENS] recovered', recovered.length, 'entities from truncated JSON'); }
+                else { console.log('[LENS] parse failed: could not recover any entities'); }
             }
+            console.log('[LENS] parsed entities:', parsed);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 setEntityCache(function(p) { var n = Object.assign({}, p); n[pageIdx] = parsed; return n; });
             }
@@ -7263,8 +7267,13 @@ function App() {
     }), readerFontFamily = _ff1[0], setReaderFontFamily = _ff1[1];
     var _cf1 = useState([]), customFonts = _cf1[0], setCustomFonts = _cf1[1];
 
-    var googleApiKey = GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length];
-    var handleRotateKey = function () { var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; setActiveKeyIndex(next); };
+    var googleApiKey = (GEMINI_KEYS.length > 0) ? GEMINI_KEYS[activeKeyIndex % GEMINI_KEYS.length] : '';
+    var handleRotateKey = function () { 
+        if (GEMINI_KEYS.length === 0) return;
+        var next = (activeKeyIndex + 1) % GEMINI_KEYS.length; 
+        setActiveKeyIndex(next); 
+        console.log("Switched to Gemini API Key #".concat(next + 1)); 
+    };
     /* ── Auto-save draft session every 10s ── */
     useEffect(function() {
         if (!state.isReading || pdfFile) return; /* only for text sessions (PDF files not serializable) */
