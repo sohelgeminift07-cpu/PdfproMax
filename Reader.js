@@ -1160,12 +1160,29 @@ function Reader(_a) {
         var blocks = [];
         var tableRows = [];
         var isTableLine = function (l) { return l.trim().startsWith('|') && l.trim().endsWith('|'); };
+        var parseTable = function (rows) {
+            var parseRow = function (r) { return r.trim().replace(/^\||\\|$/g, '').split('|').map(function (c) { return c.trim(); }); };
+            if (rows.length >= 2) {
+                var secondRowParsed = parseRow(rows[1]);
+                var isSep = secondRowParsed.every(function (c) { return /^[-\s:]+$/.test(c); });
+                if (isSep) {
+                    return {
+                        headerRow: parseRow(rows[0]),
+                        bodyRows: rows.slice(2).map(parseRow),
+                        hasHeader: true
+                    };
+                }
+            }
+            var bodyRows = rows.map(parseRow);
+            return { headerRow: bodyRows[0], bodyRows: bodyRows, hasHeader: false };
+        };
         var offset = 0;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
             if (line.trim().startsWith('^^^FIGURE') && line.trim().endsWith('^^^')) {
                 if (tableRows.length > 0) {
-                    blocks.push({ type: 'table', content: tableRows, offset: offset });
+                    var tableData = parseTable(tableRows);
+                    blocks.push({ type: 'table', content: tableData, offset: offset });
                     offset += tableRows.join('\n').length + 1;
                     tableRows = [];
                 }
@@ -1179,7 +1196,8 @@ function Reader(_a) {
             }
             if (tableRows.length > 0) {
                 var tc = tableRows.join('\n');
-                blocks.push({ type: 'table', content: tableRows, offset: offset });
+                var tableData = parseTable(tableRows);
+                blocks.push({ type: 'table', content: tableData, offset: offset });
                 offset += tc.length + 1;
                 tableRows = [];
             }
@@ -1190,7 +1208,8 @@ function Reader(_a) {
         }
         if (tableRows.length > 0) {
             var tc = tableRows.join('\n');
-            blocks.push({ type: 'table', content: tableRows, offset: offset });
+            var tableData = parseTable(tableRows);
+            blocks.push({ type: 'table', content: tableData, offset: offset });
             offset += tc.length + 1;
         }
         /* ── Page-level entity hit counter: max 2 highlights per entity per page ── */
@@ -1217,12 +1236,10 @@ function Reader(_a) {
             return null;
         }
     };
-    var renderTable = function (rows, idx, offset) {
-        var parsed = rows.map(function (r) { return r.trim().replace(/^\||\\|$/g, '').split('|').map(function (c) { return c.trim(); }); });
-        var headerRow = parsed[0];
-        var sepIdx = parsed.findIndex(function (r) { return r.every(function (c) { return /^[-\s:]+$/.test(c); }); });
-        var hasHeader = sepIdx === 1;
-        var bodyRows = hasHeader ? parsed.slice(2) : parsed;
+    var renderTable = function (tableData, idx, offset) {
+        var headerRow = tableData.headerRow;
+        var hasHeader = tableData.hasHeader;
+        var bodyRows = tableData.bodyRows;
         var renderCell = function (ct) {
             var ps = ct.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
             return ps.map(function (p, i) {
