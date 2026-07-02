@@ -26,11 +26,12 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
 
   const options = {
     hostname: 'generativelanguage.googleapis.com',
-    path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    path: `/v1beta/models/${model}:generateContent`,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(body),
+      'x-goog-api-key': apiKey,
     },
   };
 
