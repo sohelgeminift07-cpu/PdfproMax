@@ -3095,8 +3095,35 @@ var ErrorBoundary = /** @class */ (function (_super) {
                         style: { color: '#f87171', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.6rem' }
                     }, 'কিছু একটা সমস্যা হয়েছে'),
                     React.createElement('p', {
-                        style: { color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1.5rem' }
+                        style: { color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem' }
                     }, 'অ্যাপের একটি অংশে ত্রুটি ঘটেছে।'),
+                    this.state.error ? React.createElement('pre', {
+                        style: {
+                            color: '#fca5a5', fontSize: '0.7rem', lineHeight: 1.5, textAlign: 'left',
+                            background: '#050505', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px',
+                            padding: '0.75rem', marginBottom: '1rem', maxHeight: '160px', overflow: 'auto',
+                            whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+                        }
+                    }, (this.state.error && (this.state.error.stack || this.state.error.message)) || String(this.state.error)) : null,
+                    React.createElement('button', {
+                        onClick: function () {
+                            try {
+                                localStorage.clear();
+                                if (window.indexedDB && indexedDB.databases) {
+                                    indexedDB.databases().then(function (dbs) {
+                                        (dbs || []).forEach(function (db) { if (db.name) indexedDB.deleteDatabase(db.name); });
+                                    }).catch(function () {});
+                                }
+                            } catch (e) {}
+                            window.location.reload();
+                        },
+                        style: {
+                            background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.25)',
+                            color: '#cbd5e1', borderRadius: '12px', padding: '0.6rem 1.5rem',
+                            fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', marginBottom: '0.75rem',
+                            display: 'block', width: '100%'
+                        }
+                    }, 'ডেটা মুছে আবার লোড করুন'),
                     React.createElement('button', {
                         onClick: function () { window.location.reload(); },
                         style: {
