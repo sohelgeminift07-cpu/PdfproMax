@@ -1,20 +1,18 @@
 {
-  "name": "pdfmax",
+  "name": "maxofpdf",
   "version": "1.0.0",
-  "scripts": {
-    "build": "echo 'Static site - no build required'"
-  },
-  "keywords": [],
-  "author": "",
+  "private": true,
+  "description": "MaxOfPdf - AI-powered PDF and text reader",
   "license": "ISC",
-  "description": "MaxOfPdf - AI-powered PDF reader",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'Static site - no build step required'"
+  },
   "dependencies": {
-    "@google/genai": "^2.10.0",
-    "drizzle-zod": "^0.8.3",
-    "express": "^5.2.1",
-    "p-limit": "^7.3.0",
-    "p-retry": "^7.1.1",
-    "zod": "^4.4.3",
-    "zod-validation-error": "^5.0.0"
+    "express": "^5.2.1"
   }
 }

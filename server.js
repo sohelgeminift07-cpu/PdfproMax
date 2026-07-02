@@ -1,3 +1,7 @@
+// Local / self-hosted dev server. Not used by Vercel (Vercel serves
+// index.html as a static file and runs api/*.js as serverless functions
+// directly) — this is only for `npm start` / `node server.js` on your own
+// machine or a Node host such as Replit/Railway/Render.
 const express = require('express');
 const path = require('path');
 const https = require('https');
@@ -5,38 +9,30 @@ const https = require('https');
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 
-const GEMINI_API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
-const GEMINI_BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com';
+function getApiKey() {
+  const raw = process.env.GEMINI_API_KEY || '';
+  return raw.split(',').map((k) => k.trim()).filter(Boolean)[0] || '';
+}
 
 // Proxy: POST /api/gemini/:model/generateContent
 app.post('/api/gemini/:model/generateContent', async (req, res) => {
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'Gemini API key not configured' });
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
   }
 
   const model = req.params.model;
   const body = JSON.stringify(req.body);
 
-  const apiVersion = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL ? '' : 'v1beta';
-  const urlPath = apiVersion
-    ? `/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`
-    : `/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
-  const baseHost = GEMINI_BASE_URL.replace(/^https?:\/\//, '');
-
   const options = {
-    hostname: baseHost,
-    path: urlPath,
+    hostname: 'generativelanguage.googleapis.com',
+    path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(body),
     },
   };
-
-  if (process.env.AI_INTEGRATIONS_GEMINI_BASE_URL) {
-    options.headers['x-goog-api-key'] = GEMINI_API_KEY;
-  }
 
   const proxyReq = https.request(options, (proxyRes) => {
     res.status(proxyRes.statusCode);
@@ -52,12 +48,13 @@ app.post('/api/gemini/:model/generateContent', async (req, res) => {
   proxyReq.end();
 });
 
-// Endpoint for WebSocket token (live audio)
+// Endpoint for the Live Audio WebSocket token
 app.get('/api/gemini-ws-token', (req, res) => {
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'Gemini API key not configured' });
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
   }
-  res.json({ key: GEMINI_API_KEY });
+  res.json({ key: apiKey });
 });
 
 // Serve static files from root
@@ -70,5 +67,5 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`MaxOfPdf server running on port ${PORT}`);
+  console.log(`MaxOfPdf server running on http://localhost:${PORT}`);
 });
